@@ -6,7 +6,7 @@ using System.Reflection;
 namespace InfiniteDecimal.Test;
 
 #pragma warning disable CS8625
-public class BigIntOffsetTest
+public class TrivialTest
 {
     #region Equality
 
@@ -334,6 +334,9 @@ public class BigIntOffsetTest
             Assert.False(operand2 > operand1);
             Assert.False(operand2 < operand1);
 
+            var setSingle = new HashSet<BigDec>() { operand1, operand2 };
+            Assert.Single(setSingle);
+
             return;
         }
 
@@ -343,18 +346,26 @@ public class BigIntOffsetTest
             expectedEquality = 1;
         }
 
-        // ReSharper disable once InvertIf
-        if (expectedEquality == 1)
+        if (expectedEquality != 1)
         {
-            Assert.True(operand1 > operand2);
-            Assert.True(operand1 >= operand2);
-
-            Assert.False(operand1 < operand2);
-            Assert.False(operand1 <= operand2);
-            return;
+            throw new ArgumentOutOfRangeException(nameof(expectedEquality));
         }
 
-        throw new ArgumentOutOfRangeException(nameof(expectedEquality));
+        Assert.True(operand1 > operand2);
+        Assert.True(operand1 >= operand2);
+
+        Assert.False(operand1 < operand2);
+        Assert.False(operand1 <= operand2);
+
+        Assert.NotEqual(operand1, operand2);
+        Assert.NotEqual(operand2, operand1);
+        Assert.False(operand1 == operand2);
+        Assert.False(operand2 == operand1);
+        Assert.True(operand1 != operand2);
+        Assert.True(operand2 != operand1);
+
+        var set = new HashSet<BigDec>() { operand1, operand2 };
+        Assert.Equal(2, set.Count);
     }
 
     #endregion
