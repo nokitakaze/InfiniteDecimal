@@ -111,7 +111,7 @@ public static class BigDecConstructor
             return text1 + "\n\n" + text2;
         }
 
-        if (oper1 is ">" or "==")
+        if (oper1 is ">" or "<" or "==")
         {
             return string.Empty;
         }

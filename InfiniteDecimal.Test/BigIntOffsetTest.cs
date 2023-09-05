@@ -1,16 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.Linq;
 using System.Numerics;
 using System.Reflection;
-using System.Threading.Tasks;
-using Xunit;
-using InfiniteDecimal;
 
 namespace InfiniteDecimal.Test;
 
+#pragma warning disable CS8625
 public class BigIntOffsetTest
 {
     #region Equality
@@ -782,6 +777,7 @@ public class BigIntOffsetTest
                 return t;
             })
             .Where(x => x is not null)
+            .Cast<object[]>()
             .ToArray();
     }
 
@@ -893,12 +889,12 @@ public class BigIntOffsetTest
 
     #region Culture ToString
 
-    public static object[][] TestCultureData()
+    public static object?[][] TestCultureData()
     {
         var russiaCulture = CultureInfo.GetCultureInfo("ru-RU");
         var usaCulture = CultureInfo.GetCultureInfo("en-US");
 
-        var items = new (decimal value, CultureInfo cultureInfo, string expectedString)[]
+        var items = new (decimal value, CultureInfo? cultureInfo, string expectedString)[]
         {
             (1.1m, null, "1.1"),
             (1.1m, CultureInfo.InvariantCulture, "1.1"),
@@ -913,7 +909,7 @@ public class BigIntOffsetTest
         };
 
         return items
-            .Select(t => new object[] { t.value, t.cultureInfo, t.expectedString })
+            .Select(t => new object?[] { t.value, t.cultureInfo, t.expectedString })
             .ToArray();
     }
 

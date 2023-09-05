@@ -22,12 +22,12 @@ public partial class BigDec : System.IConvertible
 
     public char ToChar(IFormatProvider provider)
     {
-        throw new InfiniteDecimalException("Can't type cast BigIntegerOffset to char");
+        throw new InfiniteDecimalException("Can't type cast BigDec to char");
     }
 
     public DateTime ToDateTime(IFormatProvider provider)
     {
-        throw new InfiniteDecimalException("Can't type cast BigIntegerOffset to DateTime");
+        throw new InfiniteDecimalException("Can't type cast BigDec to DateTime");
     }
 
     public decimal ToDecimal(IFormatProvider provider)

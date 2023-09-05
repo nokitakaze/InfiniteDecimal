@@ -1,5 +1,6 @@
 using System;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 
 namespace InfiniteDecimal;
 
@@ -74,14 +75,6 @@ public partial class BigDec
         return (a._offset == b._offset) && (a.Value == b.Value);
     }
 
-    /*
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool operator >=(BigDec a, BigDec b)
-    {
-        return !(b > a);
-    }
-    */
-
     public static bool operator >(BigDec a, BigDec b)
     {
         if (a == b)
@@ -100,6 +93,12 @@ public partial class BigDec
         }
 
         return (a - b).Value > 0;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool operator <(BigDec a, BigDec b)
+    {
+        return (b > a);
     }
 
     #endregion
