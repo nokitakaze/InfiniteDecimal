@@ -201,6 +201,8 @@ public partial class BigDec
         NormalizeOffset();
     }
 
+    // TODO public BigDec(flaot value)
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public BigDec WithPrecision(int newPrecision)
     {

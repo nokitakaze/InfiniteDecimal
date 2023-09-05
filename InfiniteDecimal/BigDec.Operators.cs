@@ -1,6 +1,5 @@
 using System;
 using System.Numerics;
-using System.Runtime.CompilerServices;
 
 namespace InfiniteDecimal;
 
@@ -14,6 +13,12 @@ public partial class BigDec
         }
 
         return (this == other);
+    }
+
+    public override int GetHashCode()
+    {
+        // ReSharper disable once NonReadonlyMemberInGetHashCode
+        return System.HashCode.Combine(this.Value, this.MaxPrecision);
     }
 
     #region operator type casting
@@ -157,101 +162,6 @@ public partial class BigDec
         return newValue;
     }
 
-    public static BigDec operator +(BigInteger b, BigDec a)
-    {
-        return a + b;
-    }
-
-    public static BigDec operator -(BigDec a, BigInteger b)
-    {
-        return a + (-b);
-    }
-
-    public static BigDec operator -(BigInteger b, BigDec a)
-    {
-        return b + (-a);
-    }
-
-    public static BigDec operator +(BigDec a, long b)
-    {
-        return a + new BigInteger(b);
-    }
-
-    public static BigDec operator +(long b, BigDec a)
-    {
-        return a + new BigInteger(b);
-    }
-
-    public static BigDec operator -(BigDec a, long b)
-    {
-        return a + new BigInteger(-b);
-    }
-
-    public static BigDec operator -(long b, BigDec a)
-    {
-        return -a + new BigInteger(b);
-    }
-
-    public static BigDec operator +(BigDec a, ulong b)
-    {
-        return a + new BigInteger(b);
-    }
-
-    public static BigDec operator +(ulong b, BigDec a)
-    {
-        return a + new BigInteger(b);
-    }
-
-    public static BigDec operator -(BigDec a, ulong b)
-    {
-        return a - new BigInteger(b);
-    }
-
-    public static BigDec operator -(ulong b, BigDec a)
-    {
-        return -a + new BigInteger(b);
-    }
-
-    public static BigDec operator +(BigDec a, decimal b)
-    {
-        return a + new BigDec(b);
-    }
-
-    public static BigDec operator +(decimal b, BigDec a)
-    {
-        return a + new BigDec(b);
-    }
-
-    public static BigDec operator -(BigDec a, decimal b)
-    {
-        return a + new BigDec(-b);
-    }
-
-    public static BigDec operator -(decimal b, BigDec a)
-    {
-        return new BigDec(b) - a;
-    }
-
-    public static BigDec operator +(BigDec a, double b)
-    {
-        return a + new BigDec(b);
-    }
-
-    public static BigDec operator +(double b, BigDec a)
-    {
-        return a + b;
-    }
-
-    public static BigDec operator -(BigDec a, double b)
-    {
-        return a + new BigDec(-b);
-    }
-
-    public static BigDec operator -(double b, BigDec a)
-    {
-        return new BigDec(b) - a;
-    }
-
     #endregion
 
     #region operator *
@@ -273,46 +183,6 @@ public partial class BigDec
         newValue.NormalizeOffset();
 
         return newValue;
-    }
-
-    public static BigDec operator *(BigInteger b, BigDec a)
-    {
-        return a * b;
-    }
-
-    public static BigDec operator *(BigDec a, long b)
-    {
-        return a * new BigInteger(b);
-    }
-
-    public static BigDec operator *(long b, BigDec a)
-    {
-        return a * new BigInteger(b);
-    }
-
-    public static BigDec operator *(BigDec a, ulong b)
-    {
-        return a * new BigInteger(b);
-    }
-
-    public static BigDec operator *(ulong b, BigDec a)
-    {
-        return a * new BigInteger(b);
-    }
-
-    public static BigDec operator *(decimal b, BigDec a)
-    {
-        return a * new BigDec(b);
-    }
-
-    public static BigDec operator *(double b, BigDec a)
-    {
-        return a * new BigDec(b);
-    }
-
-    public static BigDec operator *(BigDec a, double b)
-    {
-        return a * new BigDec(b);
     }
 
     #endregion
@@ -362,56 +232,6 @@ public partial class BigDec
 
         result.NormalizeOffset();
         return result;
-    }
-
-    public static BigDec operator /(BigDec a, BigInteger b)
-    {
-        return a / new BigDec(b);
-    }
-
-    public static BigDec operator /(BigInteger a, BigDec b)
-    {
-        return new BigDec(a) / b;
-    }
-
-    public static BigDec operator /(BigDec a, decimal b)
-    {
-        return a / new BigDec(b);
-    }
-
-    public static BigDec operator /(decimal a, BigDec b)
-    {
-        return new BigDec(a) / b;
-    }
-
-    public static BigDec operator /(BigDec a, long b)
-    {
-        return a / new BigDec(b);
-    }
-
-    public static BigDec operator /(long a, BigDec b)
-    {
-        return new BigDec(a) / b;
-    }
-
-    public static BigDec operator /(BigDec a, ulong b)
-    {
-        return a / new BigDec(b);
-    }
-
-    public static BigDec operator /(ulong a, BigDec b)
-    {
-        return new BigDec(a) / b;
-    }
-
-    public static BigDec operator /(BigDec a, double b)
-    {
-        return a / new BigDec(b);
-    }
-
-    public static BigDec operator /(double a, BigDec b)
-    {
-        return new BigDec(a) / b;
     }
 
     #endregion

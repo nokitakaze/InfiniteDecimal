@@ -32,14 +32,30 @@ public static class BigDecConstructor
 
         foreach (var type in types)
         {
-            var text = "";
+            var operatorText = "";
             foreach (var (oper1, oper2) in operators)
             {
-                text += Generate(type, oper1, oper2);
-                text += "\n\n";
-                text += Generate(type, oper2, oper1);
-                text += "\n\n";
+                operatorText += GenerateOperator(type, oper1, oper2);
+                operatorText += "\n\n";
+                operatorText += GenerateOperator(type, oper2, oper1);
+                operatorText += "\n\n";
             }
+
+            var mathOperations = "";
+            if (type != "BigDec")
+            {
+                // ReSharper disable once LoopCanBeConvertedToQuery
+                foreach (var oper in new string[] { "+", "-", "/", "*" })
+                {
+                    mathOperations += GenerateMathOperation(type, oper);
+                }
+            }
+
+            var text = string.Format(
+                template,
+                operatorText,
+                mathOperations
+            );
 
             while (true)
             {
@@ -52,7 +68,6 @@ public static class BigDecConstructor
                 text = s;
             }
 
-            text = string.Format(template, text);
             await File.WriteAllTextAsync($"./BigDec.Operators_{type.ToLowerInvariant()}.cs", text);
         }
 
@@ -73,7 +88,7 @@ public static class BigDecConstructor
         "    return {2}({3});\n" +
         "}}\n";
 
-    public static string Generate(string type, string oper1, string oper2)
+    public static string GenerateOperator(string type, string oper1, string oper2)
     {
         if (type != "BigDec")
         {
@@ -111,5 +126,48 @@ public static class BigDecConstructor
             expr
         );
         return text;
+    }
+
+    private static string MathOperationTemplate1 =
+        "[MethodImpl(MethodImplOptions.AggressiveInlining)]\n" +
+        "public static BigDec operator {0}(BigDec a, {1} b)\n" +
+        "{{\n" +
+        "    return a {0} new BigDec(b);\n" +
+        "}}\n";
+
+    private static string MathOperationTemplate2 =
+        "[MethodImpl(MethodImplOptions.AggressiveInlining)]\n" +
+        "public static BigDec operator {0}({1} b, BigDec a)\n" +
+        "{{\n" +
+        "    return new BigDec(b) {0} a;\n" +
+        "}}\n";
+
+    public static string GenerateMathOperation(string type, string oper)
+    {
+        if (type == "BigDec")
+        {
+            return string.Empty;
+        }
+
+        var text1 = string.Empty;
+        if ((type == "BigInteger") && (oper is "+" or "*"))
+        {
+        }
+        else
+        {
+            text1 = string.Format(
+                MathOperationTemplate1,
+                oper,
+                type
+            );
+        }
+
+        var text2 = string.Format(
+            MathOperationTemplate2,
+            oper,
+            type
+        );
+
+        return text1 + "\n\n" + text2 + "\n\n";
     }
 }

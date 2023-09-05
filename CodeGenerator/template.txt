@@ -6,5 +6,15 @@ namespace InfiniteDecimal;
 
 public partial class BigDec
 {{
+    #region Operators
+
 {0}
+
+    #endregion
+    
+    #region Math operations
+
+{1}
+
+    #endregion
 }}

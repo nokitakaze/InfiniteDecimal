@@ -66,7 +66,7 @@ public partial class BigDec
         }
     }
 
-    public string ToStringDouble(CultureInfo cultureInfo = null)
+    public string ToStringDouble(CultureInfo? cultureInfo = null)
     {
         if (_offset == 0)
         {

@@ -6,6 +6,8 @@ namespace InfiniteDecimal;
 
 public partial class BigDec
 {
+    #region Operators
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool operator !=(BigDec a, BigDec b)
     {
@@ -29,4 +31,10 @@ public partial class BigDec
     {
         return !(a < b);
     }
+
+    #endregion
+
+    #region Math operations
+
+    #endregion
 }
