@@ -368,6 +368,10 @@ public class TrivialTest
         Assert.True(operand1 >= operand2);
         Assert.False(operand1 < operand2);
         Assert.False(operand1 <= operand2);
+        Assert.False(operand1 == operand2);
+        Assert.False(operand2 == operand1);
+        Assert.True(operand1 != operand2);
+        Assert.True(operand2 != operand1);
 
         Assert.True(operand1 > (decimal)operand2);
         Assert.True(operand1 >= (decimal)operand2);
@@ -377,6 +381,10 @@ public class TrivialTest
         Assert.False(operand1 <= (decimal)operand2);
         Assert.False((decimal)operand1 < operand2);
         Assert.False((decimal)operand1 <= operand2);
+        Assert.False((decimal)operand1 == operand2);
+        Assert.True((decimal)operand1 != operand2);
+        Assert.False(operand1 == (decimal)operand2);
+        Assert.True(operand1 != (decimal)operand2);
 
         Assert.True(operand1 > (double)operand2);
         Assert.True(operand1 >= (double)operand2);
@@ -386,6 +394,10 @@ public class TrivialTest
         Assert.False(operand1 <= (double)operand2);
         Assert.False((double)operand1 < operand2);
         Assert.False((double)operand1 <= operand2);
+        Assert.False((double)operand1 == operand2);
+        Assert.True((double)operand1 != operand2);
+        Assert.False(operand1 == (double)operand2);
+        Assert.True(operand1 != (double)operand2);
 
         if (operand1.IsInteger)
         {
@@ -401,12 +413,43 @@ public class TrivialTest
             Assert.False((long)operand1 <= operand2);
             Assert.False((int)operand1 < operand2);
             Assert.False((int)operand1 <= operand2);
+            Assert.False((long)operand1 == operand2);
+            Assert.True((long)operand1 != operand2);
+            Assert.False((int)operand1 == operand2);
+            Assert.True((int)operand1 != operand2);
+            Assert.False((BigInteger)operand1 == operand2);
+            Assert.True((BigInteger)operand1 != operand2);
+            Assert.False((BigInteger)operand1 == operand2);
+            Assert.True((BigInteger)operand1 != operand2);
+
+            if ((operand1 >= ulong.MinValue) && (operand1 <= ulong.MaxValue))
+            {
+                Assert.True(operand1.ToUInt64(null) > operand2);
+                Assert.True(operand1.ToUInt64(null) >= operand2);
+                Assert.False(operand1.ToUInt64(null) < operand2);
+                Assert.False(operand1.ToUInt64(null) <= operand2);
+                Assert.False(operand1.ToUInt64(null) == operand2);
+                Assert.True(operand1.ToUInt64(null) != operand2);
+            }
+
+            if ((operand1 >= uint.MinValue) && (operand1 <= uint.MaxValue))
+            {
+                Assert.True(operand1.ToUInt32(null) > operand2);
+                Assert.True(operand1.ToUInt32(null) >= operand2);
+                Assert.False(operand1.ToUInt32(null) < operand2);
+                Assert.False(operand1.ToUInt32(null) <= operand2);
+                Assert.False(operand1.ToUInt32(null) == operand2);
+                Assert.True(operand1.ToUInt32(null) != operand2);
+            }
+
             if ((operand1 >= ushort.MinValue) && (operand1 <= ushort.MaxValue))
             {
                 Assert.True(operand1.ToUInt16(null) > operand2);
                 Assert.True(operand1.ToUInt16(null) >= operand2);
                 Assert.False(operand1.ToUInt16(null) < operand2);
                 Assert.False(operand1.ToUInt16(null) <= operand2);
+                Assert.False(operand1.ToUInt16(null) == operand2);
+                Assert.True(operand1.ToUInt16(null) != operand2);
             }
 
             if ((operand1 >= short.MinValue) && (operand1 <= short.MaxValue))
@@ -415,6 +458,8 @@ public class TrivialTest
                 Assert.True(operand1.ToInt16(null) >= operand2);
                 Assert.False(operand1.ToInt16(null) < operand2);
                 Assert.False(operand1.ToInt16(null) <= operand2);
+                Assert.False(operand1.ToInt16(null) == operand2);
+                Assert.True(operand1.ToInt16(null) != operand2);
             }
 
             if ((operand1 >= byte.MinValue) && (operand1 <= byte.MaxValue))
@@ -423,6 +468,8 @@ public class TrivialTest
                 Assert.True(operand1.ToByte(null) >= operand2);
                 Assert.False(operand1.ToByte(null) < operand2);
                 Assert.False(operand1.ToByte(null) <= operand2);
+                Assert.False(operand1.ToByte(null) == operand2);
+                Assert.True(operand1.ToByte(null) != operand2);
             }
 
             if ((operand1 >= sbyte.MinValue) && (operand1 <= sbyte.MaxValue))
@@ -431,6 +478,8 @@ public class TrivialTest
                 Assert.True((sbyte)operand1 >= operand2);
                 Assert.False((sbyte)operand1 < operand2);
                 Assert.False((sbyte)operand1 <= operand2);
+                Assert.False((sbyte)operand1 == operand2);
+                Assert.True((sbyte)operand1 != operand2);
             }
         }
 
@@ -448,12 +497,43 @@ public class TrivialTest
             Assert.False(operand1 <= (long)operand2);
             Assert.False(operand1 < (int)operand2);
             Assert.False(operand1 <= (int)operand2);
+            Assert.False(operand1 == (long)operand2);
+            Assert.True(operand1 != (long)operand2);
+            Assert.False(operand1 == (int)operand2);
+            Assert.True(operand1 != (int)operand2);
+            Assert.False(operand1 == (BigInteger)operand2);
+            Assert.True(operand1 != (BigInteger)operand2);
+            Assert.False(operand1 == (BigInteger)operand2);
+            Assert.True(operand1 != (BigInteger)operand2);
+
+            if ((operand2 >= ulong.MinValue) && (operand2 <= ulong.MaxValue))
+            {
+                Assert.True(operand1 > operand2.ToUInt64(null));
+                Assert.True(operand1 >= operand2.ToUInt64(null));
+                Assert.False(operand1 < operand2.ToUInt64(null));
+                Assert.False(operand1 <= operand2.ToUInt64(null));
+                Assert.False(operand1 == operand2.ToUInt64(null));
+                Assert.True(operand1 != operand2.ToUInt64(null));
+            }
+
+            if ((operand2 >= uint.MinValue) && (operand2 <= uint.MaxValue))
+            {
+                Assert.True(operand1 > operand2.ToUInt32(null));
+                Assert.True(operand1 >= operand2.ToUInt32(null));
+                Assert.False(operand1 < operand2.ToUInt32(null));
+                Assert.False(operand1 <= operand2.ToUInt32(null));
+                Assert.False(operand1 == operand2.ToUInt32(null));
+                Assert.True(operand1 != operand2.ToUInt32(null));
+            }
+
             if ((operand2 >= ushort.MinValue) && (operand2 <= ushort.MaxValue))
             {
                 Assert.True(operand1 > operand2.ToUInt16(null));
                 Assert.True(operand1 >= operand2.ToUInt16(null));
                 Assert.False(operand1 < operand2.ToUInt16(null));
                 Assert.False(operand1 <= operand2.ToUInt16(null));
+                Assert.False(operand1 == operand2.ToUInt16(null));
+                Assert.True(operand1 != operand2.ToUInt16(null));
             }
 
             if ((operand2 >= short.MinValue) && (operand2 <= short.MaxValue))
@@ -462,6 +542,8 @@ public class TrivialTest
                 Assert.True(operand1 >= operand2.ToInt16(null));
                 Assert.False(operand1 < operand2.ToInt16(null));
                 Assert.False(operand1 <= operand2.ToInt16(null));
+                Assert.False(operand1 == operand2.ToInt16(null));
+                Assert.True(operand1 != operand2.ToInt16(null));
             }
 
             if ((operand2 >= byte.MinValue) && (operand2 <= byte.MaxValue))
@@ -470,6 +552,8 @@ public class TrivialTest
                 Assert.True(operand1 >= operand2.ToByte(null));
                 Assert.False(operand1 < operand2.ToByte(null));
                 Assert.False(operand1 <= operand2.ToByte(null));
+                Assert.False(operand1 == operand2.ToByte(null));
+                Assert.True(operand1 != operand2.ToByte(null));
             }
 
             if ((operand2 >= sbyte.MinValue) && (operand2 <= sbyte.MaxValue))
@@ -478,15 +562,13 @@ public class TrivialTest
                 Assert.True(operand1 >= (sbyte)operand2);
                 Assert.False(operand1 < (sbyte)operand2);
                 Assert.False(operand1 <= (sbyte)operand2);
+                Assert.False(operand1 == (sbyte)operand2);
+                Assert.True(operand1 != (sbyte)operand2);
             }
         }
 
         Assert.NotEqual(operand1, operand2);
         Assert.NotEqual(operand2, operand1);
-        Assert.False(operand1 == operand2);
-        Assert.False(operand2 == operand1);
-        Assert.True(operand1 != operand2);
-        Assert.True(operand2 != operand1);
 
         var set = new HashSet<BigDec>() { operand1, operand2 };
         Assert.Equal(2, set.Count);
