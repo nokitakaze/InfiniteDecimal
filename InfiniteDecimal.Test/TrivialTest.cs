@@ -269,6 +269,11 @@ public class TrivialTest
             0.0001m,
             0.00001m,
             0.00000000000001m,
+            sbyte.MaxValue,
+            byte.MaxValue,
+            ushort.MaxValue,
+            short.MaxValue,
+            3 * ushort.MaxValue,
         };
         rawValues = rawValues
             .Concat(rawValues.Select(t => -t))
@@ -351,11 +356,130 @@ public class TrivialTest
             throw new ArgumentOutOfRangeException(nameof(expectedEquality));
         }
 
+        CheckInequality_inner(operand1, operand2);
+    }
+
+    private void CheckInequality_inner(
+        BigDec operand1,
+        BigDec operand2
+    )
+    {
         Assert.True(operand1 > operand2);
         Assert.True(operand1 >= operand2);
-
         Assert.False(operand1 < operand2);
         Assert.False(operand1 <= operand2);
+
+        Assert.True(operand1 > (decimal)operand2);
+        Assert.True(operand1 >= (decimal)operand2);
+        Assert.True((decimal)operand1 > operand2);
+        Assert.True((decimal)operand1 >= operand2);
+        Assert.False(operand1 < (decimal)operand2);
+        Assert.False(operand1 <= (decimal)operand2);
+        Assert.False((decimal)operand1 < operand2);
+        Assert.False((decimal)operand1 <= operand2);
+
+        Assert.True(operand1 > (double)operand2);
+        Assert.True(operand1 >= (double)operand2);
+        Assert.True((double)operand1 > operand2);
+        Assert.True((double)operand1 >= operand2);
+        Assert.False(operand1 < (double)operand2);
+        Assert.False(operand1 <= (double)operand2);
+        Assert.False((double)operand1 < operand2);
+        Assert.False((double)operand1 <= operand2);
+
+        if (operand1.IsInteger)
+        {
+            Assert.True((BigInteger)operand1 > operand2);
+            Assert.True((BigInteger)operand1 >= operand2);
+            Assert.True((long)operand1 > operand2);
+            Assert.True((long)operand1 >= operand2);
+            Assert.True((int)operand1 > operand2);
+            Assert.True((int)operand1 >= operand2);
+            Assert.False((BigInteger)operand1 < operand2);
+            Assert.False((BigInteger)operand1 <= operand2);
+            Assert.False((long)operand1 < operand2);
+            Assert.False((long)operand1 <= operand2);
+            Assert.False((int)operand1 < operand2);
+            Assert.False((int)operand1 <= operand2);
+            if ((operand1 >= ushort.MinValue) && (operand1 <= ushort.MaxValue))
+            {
+                Assert.True(operand1.ToUInt16(null) > operand2);
+                Assert.True(operand1.ToUInt16(null) >= operand2);
+                Assert.False(operand1.ToUInt16(null) < operand2);
+                Assert.False(operand1.ToUInt16(null) <= operand2);
+            }
+
+            if ((operand1 >= short.MinValue) && (operand1 <= short.MaxValue))
+            {
+                Assert.True(operand1.ToInt16(null) > operand2);
+                Assert.True(operand1.ToInt16(null) >= operand2);
+                Assert.False(operand1.ToInt16(null) < operand2);
+                Assert.False(operand1.ToInt16(null) <= operand2);
+            }
+
+            if ((operand1 >= byte.MinValue) && (operand1 <= byte.MaxValue))
+            {
+                Assert.True(operand1.ToByte(null) > operand2);
+                Assert.True(operand1.ToByte(null) >= operand2);
+                Assert.False(operand1.ToByte(null) < operand2);
+                Assert.False(operand1.ToByte(null) <= operand2);
+            }
+
+            if ((operand1 >= sbyte.MinValue) && (operand1 <= sbyte.MaxValue))
+            {
+                Assert.True((sbyte)operand1 > operand2);
+                Assert.True((sbyte)operand1 >= operand2);
+                Assert.False((sbyte)operand1 < operand2);
+                Assert.False((sbyte)operand1 <= operand2);
+            }
+        }
+
+        if (operand2.IsInteger)
+        {
+            Assert.True(operand1 > (BigInteger)operand2);
+            Assert.True(operand1 >= (BigInteger)operand2);
+            Assert.True(operand1 > (long)operand2);
+            Assert.True(operand1 >= (long)operand2);
+            Assert.True(operand1 > (int)operand2);
+            Assert.True(operand1 >= (int)operand2);
+            Assert.False(operand1 < (BigInteger)operand2);
+            Assert.False(operand1 <= (BigInteger)operand2);
+            Assert.False(operand1 < (long)operand2);
+            Assert.False(operand1 <= (long)operand2);
+            Assert.False(operand1 < (int)operand2);
+            Assert.False(operand1 <= (int)operand2);
+            if ((operand2 >= ushort.MinValue) && (operand2 <= ushort.MaxValue))
+            {
+                Assert.True(operand1 > operand2.ToUInt16(null));
+                Assert.True(operand1 >= operand2.ToUInt16(null));
+                Assert.False(operand1 < operand2.ToUInt16(null));
+                Assert.False(operand1 <= operand2.ToUInt16(null));
+            }
+
+            if ((operand2 >= short.MinValue) && (operand2 <= short.MaxValue))
+            {
+                Assert.True(operand1 > operand2.ToInt16(null));
+                Assert.True(operand1 >= operand2.ToInt16(null));
+                Assert.False(operand1 < operand2.ToInt16(null));
+                Assert.False(operand1 <= operand2.ToInt16(null));
+            }
+
+            if ((operand2 >= byte.MinValue) && (operand2 <= byte.MaxValue))
+            {
+                Assert.True(operand1 > operand2.ToByte(null));
+                Assert.True(operand1 >= operand2.ToByte(null));
+                Assert.False(operand1 < operand2.ToByte(null));
+                Assert.False(operand1 <= operand2.ToByte(null));
+            }
+
+            if ((operand2 >= sbyte.MinValue) && (operand2 <= sbyte.MaxValue))
+            {
+                Assert.True(operand1 > (sbyte)operand2);
+                Assert.True(operand1 >= (sbyte)operand2);
+                Assert.False(operand1 < (sbyte)operand2);
+                Assert.False(operand1 <= (sbyte)operand2);
+            }
+        }
 
         Assert.NotEqual(operand1, operand2);
         Assert.NotEqual(operand2, operand1);

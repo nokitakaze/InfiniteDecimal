@@ -36,6 +36,7 @@ public partial class BigDec
     }
 
     protected BigInteger OffsetPower = BigInteger.One;
+    public bool IsInteger => (_offset == 0);
 
     public void NormalizeOffset()
     {

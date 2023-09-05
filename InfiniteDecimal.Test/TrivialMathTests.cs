@@ -88,7 +88,7 @@ public class TrivialMathTests
             var diffDouble = Math.Abs((float)(double)diff);
             Assert.InRange(diffDouble, 0d, 0.0001d);
 
-            // 1
+            // 2
             actual = bArg1 + (float)arg2;
             diff = expected - actual;
             diffDouble = Math.Abs((float)(double)diff);
