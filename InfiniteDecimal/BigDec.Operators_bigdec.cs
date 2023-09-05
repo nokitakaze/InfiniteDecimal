@@ -23,7 +23,7 @@ public partial class BigDec
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool operator <(BigDec a, BigDec b)
     {
-        return !(a >= b);
+        return (b > a);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
