@@ -1,0 +1,418 @@
+using System;
+using System.Numerics;
+using System.Runtime.CompilerServices;
+
+namespace InfiniteDecimal;
+
+public partial class BigDec
+{
+    public override bool Equals(object obj)
+    {
+        if (obj is not BigDec other)
+        {
+            return false;
+        }
+
+        return (this == other);
+    }
+
+    #region operator type casting
+
+    public static explicit operator BigInteger(BigDec item)
+    {
+        return item.Value / item.OffsetPower;
+    }
+
+    public static explicit operator int(BigDec item)
+    {
+        return (int)(BigInteger)item;
+    }
+
+    public static explicit operator long(BigDec item)
+    {
+        return (long)(BigInteger)item;
+    }
+
+    public static explicit operator ulong(BigDec item)
+    {
+        return (ulong)(BigInteger)item;
+    }
+
+    public static explicit operator decimal(BigDec item)
+    {
+        return decimal.Parse(item.ToStringDouble());
+    }
+
+    public static explicit operator double(BigDec item)
+    {
+        return double.Parse(item.ToStringDouble());
+    }
+
+    #endregion
+
+    #region operator ==
+
+    public static bool operator ==(BigDec? a, BigDec? b)
+    {
+        if ((a is null) && (b is null))
+        {
+            return true;
+        }
+
+        if ((a is null) || (b is null))
+        {
+            return false;
+        }
+
+        a.NormalizeOffset();
+        b.NormalizeOffset();
+        return (a._offset == b._offset) && (a.Value == b.Value);
+    }
+
+    /*
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool operator >=(BigDec a, BigDec b)
+    {
+        return !(b > a);
+    }
+    */
+
+    public static bool operator >(BigDec a, BigDec b)
+    {
+        if (a == b)
+        {
+            return false;
+        }
+
+        if (b == Zero)
+        {
+            return a.Value > 0;
+        }
+
+        if ((a.Value < 0) != (b.Value < 0))
+        {
+            return (a.Value >= 0);
+        }
+
+        return (a - b).Value > 0;
+    }
+
+    #endregion
+
+    #region operator +-
+
+    /// <summary>
+    /// Unary minus
+    /// </summary>
+    /// <param name="a"></param>
+    /// <returns></returns>
+    public static BigDec operator -(BigDec a)
+    {
+        // a.NormalizeOffset();
+        var newValue = new BigDec(a);
+        newValue.Value = -newValue.Value;
+
+        return newValue;
+    }
+
+    public static BigDec operator +(BigDec a, BigDec b)
+    {
+        var maxOffset = Math.Max(a._offset, b._offset);
+
+        BigInteger valueA = a.Value;
+        if (a._offset < maxOffset)
+        {
+            var p = BigInteger.Pow(BigInteger10, maxOffset - a._offset);
+            valueA *= p;
+        }
+
+        BigInteger valueB = b.Value;
+        if (b._offset < maxOffset)
+        {
+            var p = BigInteger.Pow(BigInteger10, maxOffset - b._offset);
+            valueB *= p;
+        }
+
+        var newValue = new BigDec(a, Math.Max(a.MaxPrecision, b.MaxPrecision))
+        {
+            Value = valueA + valueB,
+            Offset = maxOffset,
+        };
+        newValue.NormalizeOffset();
+
+        return newValue;
+    }
+
+    public static BigDec operator -(BigDec a, BigDec b)
+    {
+        return a + (-b);
+    }
+
+    public static BigDec operator +(BigDec a, BigInteger b)
+    {
+        var newValue = new BigDec(a);
+        newValue.Value += b * newValue.OffsetPower;
+        newValue.NormalizeOffset();
+
+        return newValue;
+    }
+
+    public static BigDec operator +(BigInteger b, BigDec a)
+    {
+        return a + b;
+    }
+
+    public static BigDec operator -(BigDec a, BigInteger b)
+    {
+        return a + (-b);
+    }
+
+    public static BigDec operator -(BigInteger b, BigDec a)
+    {
+        return b + (-a);
+    }
+
+    public static BigDec operator +(BigDec a, long b)
+    {
+        return a + new BigInteger(b);
+    }
+
+    public static BigDec operator +(long b, BigDec a)
+    {
+        return a + new BigInteger(b);
+    }
+
+    public static BigDec operator -(BigDec a, long b)
+    {
+        return a + new BigInteger(-b);
+    }
+
+    public static BigDec operator -(long b, BigDec a)
+    {
+        return -a + new BigInteger(b);
+    }
+
+    public static BigDec operator +(BigDec a, ulong b)
+    {
+        return a + new BigInteger(b);
+    }
+
+    public static BigDec operator +(ulong b, BigDec a)
+    {
+        return a + new BigInteger(b);
+    }
+
+    public static BigDec operator -(BigDec a, ulong b)
+    {
+        return a - new BigInteger(b);
+    }
+
+    public static BigDec operator -(ulong b, BigDec a)
+    {
+        return -a + new BigInteger(b);
+    }
+
+    public static BigDec operator +(BigDec a, decimal b)
+    {
+        return a + new BigDec(b);
+    }
+
+    public static BigDec operator +(decimal b, BigDec a)
+    {
+        return a + new BigDec(b);
+    }
+
+    public static BigDec operator -(BigDec a, decimal b)
+    {
+        return a + new BigDec(-b);
+    }
+
+    public static BigDec operator -(decimal b, BigDec a)
+    {
+        return new BigDec(b) - a;
+    }
+
+    public static BigDec operator +(BigDec a, double b)
+    {
+        return a + new BigDec(b);
+    }
+
+    public static BigDec operator +(double b, BigDec a)
+    {
+        return a + b;
+    }
+
+    public static BigDec operator -(BigDec a, double b)
+    {
+        return a + new BigDec(-b);
+    }
+
+    public static BigDec operator -(double b, BigDec a)
+    {
+        return new BigDec(b) - a;
+    }
+
+    #endregion
+
+    #region operator *
+
+    public static BigDec operator *(BigDec a, BigDec b)
+    {
+        var newValue = new BigDec(a, Math.Max(a.MaxPrecision, b.MaxPrecision));
+        newValue.Offset += b.Offset;
+        newValue.Value *= b.Value;
+        newValue.NormalizeOffset();
+
+        return newValue;
+    }
+
+    public static BigDec operator *(BigDec a, BigInteger b)
+    {
+        var newValue = new BigDec(a);
+        newValue.Value *= b;
+        newValue.NormalizeOffset();
+
+        return newValue;
+    }
+
+    public static BigDec operator *(BigInteger b, BigDec a)
+    {
+        return a * b;
+    }
+
+    public static BigDec operator *(BigDec a, long b)
+    {
+        return a * new BigInteger(b);
+    }
+
+    public static BigDec operator *(long b, BigDec a)
+    {
+        return a * new BigInteger(b);
+    }
+
+    public static BigDec operator *(BigDec a, ulong b)
+    {
+        return a * new BigInteger(b);
+    }
+
+    public static BigDec operator *(ulong b, BigDec a)
+    {
+        return a * new BigInteger(b);
+    }
+
+    public static BigDec operator *(decimal b, BigDec a)
+    {
+        return a * new BigDec(b);
+    }
+
+    public static BigDec operator *(double b, BigDec a)
+    {
+        return a * new BigDec(b);
+    }
+
+    public static BigDec operator *(BigDec a, double b)
+    {
+        return a * new BigDec(b);
+    }
+
+    #endregion
+
+    #region operator /
+
+    public static BigDec operator /(BigDec a, BigDec b)
+    {
+        if (a == Zero)
+        {
+            return Zero;
+        }
+
+        if (b == Zero)
+        {
+            throw new InfiniteDecimalException("Division by zero");
+        }
+
+        if (b == One)
+        {
+            return a.WithPrecision(Math.Max(a.MaxPrecision, b.MaxPrecision));
+        }
+
+        if (a == b)
+        {
+            return One;
+        }
+
+        var result = new BigDec(a, Math.Max(a.MaxPrecision, b.MaxPrecision));
+        if (result._offset < result.MaxPrecision)
+        {
+            var addExp = result.MaxPrecision - result._offset;
+            result.Value *= BigInteger.Pow(BigInteger10, addExp);
+            result.Offset = result.MaxPrecision;
+        }
+
+        result.Value /= b.Value;
+        var newOffset = result._offset - b._offset;
+        // codecov ignore start
+        if (newOffset < 0)
+        {
+            throw new InfiniteDecimalException("Precision from arguments didn't apply to result");
+        }
+        // codecov ignore end
+
+        result.Offset = newOffset;
+
+        result.NormalizeOffset();
+        return result;
+    }
+
+    public static BigDec operator /(BigDec a, BigInteger b)
+    {
+        return a / new BigDec(b);
+    }
+
+    public static BigDec operator /(BigInteger a, BigDec b)
+    {
+        return new BigDec(a) / b;
+    }
+
+    public static BigDec operator /(BigDec a, decimal b)
+    {
+        return a / new BigDec(b);
+    }
+
+    public static BigDec operator /(decimal a, BigDec b)
+    {
+        return new BigDec(a) / b;
+    }
+
+    public static BigDec operator /(BigDec a, long b)
+    {
+        return a / new BigDec(b);
+    }
+
+    public static BigDec operator /(long a, BigDec b)
+    {
+        return new BigDec(a) / b;
+    }
+
+    public static BigDec operator /(BigDec a, ulong b)
+    {
+        return a / new BigDec(b);
+    }
+
+    public static BigDec operator /(ulong a, BigDec b)
+    {
+        return new BigDec(a) / b;
+    }
+
+    public static BigDec operator /(BigDec a, double b)
+    {
+        return a / new BigDec(b);
+    }
+
+    public static BigDec operator /(double a, BigDec b)
+    {
+        return new BigDec(a) / b;
+    }
+
+    #endregion
+}

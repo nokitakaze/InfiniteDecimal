@@ -2,6 +2,10 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InfiniteDecimal", "InfiniteDecimal\InfiniteDecimal.csproj", "{749C8F25-5863-454A-A416-30CD41CF19DF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InfiniteDecimal.Test", "InfiniteDecimal.Test\InfiniteDecimal.Test.csproj", "{48EF9EEE-6061-466C-B65C-07B128372FBC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CodeGenerator", "CodeGenerator\CodeGenerator.csproj", "{B9D8C32A-467F-44D5-B405-8CBBE1F709A8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -12,5 +16,13 @@ Global
 		{749C8F25-5863-454A-A416-30CD41CF19DF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{749C8F25-5863-454A-A416-30CD41CF19DF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{749C8F25-5863-454A-A416-30CD41CF19DF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{48EF9EEE-6061-466C-B65C-07B128372FBC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{48EF9EEE-6061-466C-B65C-07B128372FBC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{48EF9EEE-6061-466C-B65C-07B128372FBC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{48EF9EEE-6061-466C-B65C-07B128372FBC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B9D8C32A-467F-44D5-B405-8CBBE1F709A8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B9D8C32A-467F-44D5-B405-8CBBE1F709A8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B9D8C32A-467F-44D5-B405-8CBBE1F709A8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B9D8C32A-467F-44D5-B405-8CBBE1F709A8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
