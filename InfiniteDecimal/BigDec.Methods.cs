@@ -239,6 +239,13 @@ public partial class BigDec
         var u = true;
         var result = z + preResult;
         var r = One.WithPrecision(MaxPrecision * 3) / BigInteger.Pow(BigInteger10, MaxPrecision * 2 - preResult);
+        // codecov ignore start
+        if (r <= Zero)
+        {
+            throw new InfiniteDecimalException($"Can't calculate r-component for precision '{MaxPrecision}'");
+        }
+        // codecov ignore end
+
         bool lastCycle = false;
         for (var i = 2; !lastCycle; i++)
         {
@@ -253,6 +260,13 @@ public partial class BigDec
 
             u = !u;
             result += tmp;
+
+            if (numenator.Offset > numenator.MaxPrecision + 10)
+            {
+                var diff = numenator.Offset - numenator.MaxPrecision;
+                numenator.Value /= BigInteger.Pow(BigInteger10, diff);
+                numenator.Offset -= diff;
+            }
         }
 
         if (invert)

@@ -9,14 +9,24 @@ public class SqrtPowTest
             0,
             1,
             2,
+            (decimal)Math.E,
+            (decimal)Math.PI,
             1.337m,
             15m,
             1234m,
             1.000_000_01m,
             0.000_000_01m,
+            911,
+            228,
         };
 
-        return values;
+        return values
+            .Concat(values.Select(t => t - 1))
+            .Concat(values.Select(t => t + 1))
+            .Distinct()
+            .Where(x => x >= 0)
+            .OrderBy(t => t)
+            .ToArray();
     }
 
     public static object[][] TestSqrtData()
@@ -30,6 +40,11 @@ public class SqrtPowTest
     [MemberData(nameof(TestSqrtData))]
     public void TestSqrt(decimal input)
     {
+        if (input < 0)
+        {
+            return;
+        }
+
         var powExpected = input * input;
         var powActual = (new BigDec(input)).Pow(2);
         Assert.True(powExpected == powActual);
@@ -53,7 +68,7 @@ public class SqrtPowTest
     [MemberData(nameof(TestSqrtData))]
     public void TestLn(decimal input)
     {
-        if (input == 0)
+        if (input <= 0)
         {
             return;
         }
