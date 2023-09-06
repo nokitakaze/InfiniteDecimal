@@ -64,28 +64,28 @@ public partial class BigDec
         var y = exp;
         if (y == 0)
         {
-            // любое число в степени 0 равно 1
+            // any number raised to the power of 0 equals 1
             return One;
         }
 
         var x = this;
         if (y < 0)
         {
-            y = -y; // делаем степень положительной
-            x = 1.0 / x; // и берем обратное число
+            y = -y; // make the exponent positive
+            x = 1.0 / x; // and take the reciprocal
         }
 
         BigDec result = One;
         while (y > 0)
         {
-            // проверка на нечетность степени
+            // check for odd exponent
             if ((y & 1) == 1)
             {
                 result *= x;
             }
 
-            x *= x; // увеличиваем основание
-            y >>= 1; // делим степень на 2
+            x *= x; // increase the base
+            y >>= 1; // divide the exponent by 2
         }
 
         return result;

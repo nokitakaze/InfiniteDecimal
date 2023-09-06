@@ -67,6 +67,12 @@ public partial class BigDec
         }
     }
 
+    /// <summary>
+    /// Represents a number in string format, which resembles the format of a floating-point number,
+    /// taking into account cultural settings
+    /// </summary>
+    /// <param name="cultureInfo"></param>
+    /// <returns></returns>
     public string ToStringDouble(CultureInfo? cultureInfo = null)
     {
         if (_offset == 0)
