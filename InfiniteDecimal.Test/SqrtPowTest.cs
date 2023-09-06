@@ -79,6 +79,10 @@ public class SqrtPowTest
 
         var diff = (actual - expected).Abs();
         Assert.True(diff < 0.000_000_1m);
+
+        var actualExp = actual.Exp();
+        diff = (actualExp - input).Abs();
+        Assert.True(diff < 0.000_000_1m);
     }
 
     [Fact]

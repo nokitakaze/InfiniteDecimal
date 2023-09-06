@@ -238,9 +238,10 @@ public partial class BigDec
         var numenator = z;
         var u = true;
         var result = z + preResult;
-        var r = One.WithPrecision(MaxPrecision * 3) / BigInteger.Pow(BigInteger10, MaxPrecision * 2 - preResult);
+        // Supported accuracy limit
+        var epsilon = One.WithPrecision(MaxPrecision * 3) / BigInteger.Pow(BigInteger10, MaxPrecision * 2 - preResult);
         // codecov ignore start
-        if (r <= Zero)
+        if (epsilon <= Zero)
         {
             throw new InfiniteDecimalException($"Can't calculate r-component for precision '{MaxPrecision}'");
         }
@@ -251,7 +252,7 @@ public partial class BigDec
         {
             numenator *= z;
             var tmp = numenator / i;
-            lastCycle = (tmp.Abs() < r);
+            lastCycle = (tmp.Abs() < epsilon);
 
             if (u)
             {
@@ -275,6 +276,36 @@ public partial class BigDec
         }
 
         return result.Round(this.MaxPrecision);
+    }
+
+    #endregion
+
+    #region Exp
+
+    public BigDec Exp()
+    {
+        // Initial value for the result
+        BigDec result = One;
+        // Initial term of the series (for i=0)
+        BigDec term = One;
+
+        // Supported accuracy limit
+        var epsilon = One.WithPrecision(MaxPrecision * 3) / BigInteger.Pow(BigInteger10, MaxPrecision * 2);
+        // codecov ignore start
+        if (epsilon <= Zero)
+        {
+            throw new InfiniteDecimalException($"Can't calculate r-component for precision '{MaxPrecision}'");
+        }
+        // codecov ignore end
+
+        var tmpL = this.WithPrecision(MaxPrecision * 3);
+        for (int i = 1; term.Abs() > epsilon; i++)
+        {
+            term *= tmpL / i;
+            result += term;
+        }
+
+        return result;
     }
 
     #endregion
