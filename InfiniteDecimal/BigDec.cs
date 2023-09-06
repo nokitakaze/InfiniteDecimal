@@ -132,10 +132,11 @@ public partial class BigDec
         if (value.StartsWith("-"))
         {
             sign = -1;
-            value = value.Substring(1);
+            value = value[1..];
         }
 
         var chunks = value.Split('.');
+        // ReSharper disable once ConvertIfStatementToSwitchStatement
         if (chunks.Length > 2)
         {
             throw new InfiniteDecimalException($"Value '{value}' malformed");

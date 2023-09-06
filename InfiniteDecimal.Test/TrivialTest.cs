@@ -62,6 +62,38 @@ public class TrivialTest
         }
     }
 
+    [Fact]
+    [SuppressMessage("ReSharper", "VariableCanBeNotNullable")]
+    public void TestEquality_null()
+    {
+        var a1 = new BigDec(1);
+        var b1 = new BigDec(1);
+
+        BigDec? c1a = new BigDec(1);
+        BigDec? d1a = new BigDec(1);
+
+        BigDec? c1b = null;
+        BigDec? d1b = null;
+
+        Assert.True(a1 == b1);
+        Assert.False(a1 != b1);
+
+        Assert.True(a1 == c1a);
+        Assert.True(c1a == a1);
+        Assert.True(c1a == d1a);
+        Assert.False(a1 != c1a);
+        Assert.False(c1a != a1);
+        Assert.False(c1a != d1a);
+
+        Assert.True(c1a != c1b);
+        Assert.True(c1b != c1a);
+        Assert.False(c1a == c1b);
+        Assert.False(c1b == c1a);
+
+        Assert.True(c1b == d1b);
+        Assert.False(c1b != d1b);
+    }
+
     #endregion
 
     #region Division
@@ -679,6 +711,57 @@ public class TrivialTest
         {
             var _ = BigDec.One / BigDec.Zero;
         });
+        Assert.Throws<InfiniteDecimalException>(() =>
+        {
+            var _ = BigDec.One / BigInteger.Zero;
+        });
+        Assert.Throws<InfiniteDecimalException>(() =>
+        {
+            var _ = BigDec.One / (decimal)0;
+        });
+        Assert.Throws<InfiniteDecimalException>(() =>
+        {
+            var _ = BigDec.One / (double)0;
+        });
+        Assert.Throws<InfiniteDecimalException>(() =>
+        {
+            var _ = BigDec.One / (float)0;
+        });
+
+        //
+        Assert.Throws<InfiniteDecimalException>(() =>
+        {
+            var _ = BigDec.One / (byte)0;
+        });
+        Assert.Throws<InfiniteDecimalException>(() =>
+        {
+            var _ = BigDec.One / (sbyte)0;
+        });
+        Assert.Throws<InfiniteDecimalException>(() =>
+        {
+            var _ = BigDec.One / (ushort)0;
+        });
+        Assert.Throws<InfiniteDecimalException>(() =>
+        {
+            var _ = BigDec.One / (short)0;
+        });
+        Assert.Throws<InfiniteDecimalException>(() =>
+        {
+            var _ = BigDec.One / (uint)0;
+        });
+        Assert.Throws<InfiniteDecimalException>(() =>
+        {
+            // ReSharper disable once RedundantCast
+            var _ = BigDec.One / (int)0;
+        });
+        Assert.Throws<InfiniteDecimalException>(() =>
+        {
+            var _ = BigDec.One / (ulong)0;
+        });
+        Assert.Throws<InfiniteDecimalException>(() =>
+        {
+            var _ = BigDec.One / (long)0;
+        });
     }
 
     [Fact]
@@ -1102,6 +1185,31 @@ public class TrivialTest
         }
     }
 
+    [Fact]
+    public void ParseUntrimmed()
+    {
+        //
+        const decimal value1 = 13.37m;
+        var expected = new BigDec(value1);
+        var actual1 = BigDec.Parse("13.370000");
+        Assert.True(expected == actual1);
+        Assert.False(expected != actual1);
+        Assert.Equal(expected, actual1);
+
+        //
+        const decimal value2 = 15m;
+        expected = new BigDec(value2);
+        actual1 = BigDec.Parse("15.00000");
+        Assert.True(expected == actual1);
+        Assert.False(expected != actual1);
+        Assert.Equal(expected, actual1);
+
+        var actual2 = BigDec.Parse("15.");
+        Assert.True(expected == actual2);
+        Assert.False(expected != actual2);
+        Assert.Equal(expected, actual2);
+    }
+
     #endregion
 
     #region Culture ToString
@@ -1254,6 +1362,51 @@ public class TrivialTest
         Assert.True(value != value01);
         Assert.False(value == value01);
         Assert.NotEqual(value01, value);
+    }
+
+    #endregion
+
+    #region
+
+    public static object[][] ParseDoubleData()
+    {
+        var decimals = new decimal[] { 0, 1, 3, 4, 7, 9 };
+        decimals = decimals
+            .Concat(decimals.Select(t => -t))
+            .Distinct()
+            .OrderBy(t => t)
+            .ToArray();
+
+        return decimals
+            .SelectMany(value1 => decimals.Select(value2 => new object[] { value1, value2 }))
+            .ToArray();
+    }
+
+    [Theory]
+    [MemberData(nameof(ParseDoubleData))]
+    public void ParseDouble(decimal value1, decimal value2)
+    {
+        var pow = 10m;
+        for (var i = 0; i < 16; i++)
+        {
+            pow /= 10m;
+
+            var v1Dec = value1 * pow;
+            var v2Dec = value2 * pow;
+
+            var v1Double = (double)v1Dec;
+            var v2Double = (double)v2Dec;
+
+            var expected = new BigDec(v1Dec + v2Dec);
+            var actualDouble = v1Double + v2Double;
+            var actual = new BigDec(actualDouble);
+            Assert.Equal(expected, actual);
+
+            expected = new BigDec(v1Dec - v2Dec);
+            actualDouble = v1Double - v2Double;
+            actual = new BigDec(actualDouble);
+            Assert.Equal(expected, actual);
+        }
     }
 
     #endregion

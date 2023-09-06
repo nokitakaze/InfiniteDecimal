@@ -179,7 +179,6 @@ public partial class BigDec
                 }
             }
 
-
             {
                 var mod1000 = bio.Value % 1000;
                 if (mod1000 == 0)
