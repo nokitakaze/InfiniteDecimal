@@ -59,9 +59,9 @@ public partial class BigDec
 
     #region Power
 
-    public BigDec Pow(BigInteger powered)
+    public BigDec Pow(BigInteger exp)
     {
-        var y = powered;
+        var y = exp;
         if (y == 0)
         {
             // любое число в степени 0 равно 1
@@ -91,7 +91,7 @@ public partial class BigDec
         return result;
     }
 
-    public BigDec Pow(BigDec powered)
+    public BigDec Pow(BigDec exp)
     {
         if (IsZero())
         {
@@ -104,20 +104,22 @@ public partial class BigDec
         }
 
         bool needReverse = false;
-        if (powered < 0)
+        if (exp < 0)
         {
-            powered = -powered;
+            exp = -exp;
             needReverse = true;
         }
 
-        var entier = powered.Floor();
-        var tail = powered - entier;
+        var entier = exp.Floor();
+        var tail = exp - entier;
 
         var result = Pow(entier);
 
         if (tail != Zero)
         {
-            throw new NotImplementedException();
+            var expBase = tail * this.Ln();
+            var tailPart = expBase.Exp();
+            result *= tailPart;
         }
 
         if (needReverse)
@@ -174,7 +176,7 @@ public partial class BigDec
         }
 
         var half = new BigDec(0.5m);
-        var r = One / BigInteger.Pow(BigInteger10, this.MaxPrecision);
+        var epsilon = One / BigInteger.Pow(BigInteger10, this.MaxPrecision);
         var current = this.WithPrecision(this.MaxPrecision * 2) * half;
         while (true)
         {
@@ -185,7 +187,7 @@ public partial class BigDec
 
             var a = current * current;
             var diff = (this - a).Abs();
-            if (diff <= r)
+            if (diff <= epsilon)
             {
                 return current.Round(this.MaxPrecision);
             }
@@ -239,7 +241,8 @@ public partial class BigDec
         var u = true;
         var result = z + preResult;
         // Supported accuracy limit
-        var epsilon = One.WithPrecision(MaxPrecision * 3) / BigInteger.Pow(BigInteger10, MaxPrecision * 2 - preResult);
+        var epsilon = One.WithPrecision(MaxPrecision * 3) /
+                      BigInteger.Pow(BigInteger10, Math.Max(MaxPrecision * 2 - preResult, 0));
         // codecov ignore start
         if (epsilon <= Zero)
         {

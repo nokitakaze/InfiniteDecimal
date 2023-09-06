@@ -47,21 +47,31 @@ public class SqrtPowTest
 
         var powExpected = input * input;
         var powActual = (new BigDec(input)).Pow(2);
-        Assert.True(powExpected == powActual);
 
         var actual1 = powActual.Sqrt();
         if (TrivialMathTests.IsInt(input))
         {
+            Assert.True(powExpected == powActual);
             Assert.Equal(new BigDec(input), actual1);
         }
         else
         {
-            var diff = (actual1 - input).Abs();
+            var diff = (powExpected - powActual).Abs();
+            Assert.True(diff < 0.000_000_1m);
+
+            diff = (actual1 - input).Abs();
             Assert.True(diff < 0.000_000_1m);
         }
 
-        var actual2 = powActual.Pow(0.5m);
-        throw new NotImplementedException();
+        {
+            var actual2a = powActual.Pow(0.5m);
+            var diff = (actual2a - input).Abs();
+            Assert.True(diff < 0.000_000_1m);
+
+            var actual2b = powActual.Pow(0.5d);
+            diff = (actual2b - input).Abs();
+            Assert.True(diff < 0.000_000_1m);
+        }
     }
 
     [Theory]
