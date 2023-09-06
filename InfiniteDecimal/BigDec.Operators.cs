@@ -167,7 +167,7 @@ public partial class BigDec
 
     public static BigDec operator *(BigDec a, BigDec b)
     {
-        var newValue = new BigDec(a, Math.Max(a.MaxPrecision, b.MaxPrecision));
+        var newValue = a.WithPrecision(Math.Max(a.MaxPrecision, b.MaxPrecision));
         newValue.Offset += b.Offset;
         newValue.Value *= b.Value;
         newValue.NormalizeOffset();
@@ -211,11 +211,12 @@ public partial class BigDec
         }
 
         var result = new BigDec(a, Math.Max(a.MaxPrecision, b.MaxPrecision));
-        if (result._offset < result.MaxPrecision)
+        if (result._offset < result.MaxPrecision * 2)
         {
-            var addExp = result.MaxPrecision - result._offset;
+            var awaitedPrecision = result.MaxPrecision * 10;
+            var addExp = awaitedPrecision - result._offset;
             result.Value *= BigInteger.Pow(BigInteger10, addExp);
-            result.Offset = result.MaxPrecision;
+            result.Offset = awaitedPrecision;
         }
 
         result.Value /= b.Value;
@@ -229,8 +230,7 @@ public partial class BigDec
 
         result.Offset = newOffset;
 
-        result.NormalizeOffset();
-        return result;
+        return result.Round(result.MaxPrecision);
     }
 
     #endregion

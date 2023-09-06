@@ -156,19 +156,26 @@ public partial class BigDec
         }
 
         {
+            var bigInteger10 = new BigInteger(10);
+
             var tail = BigInteger.Zero;
             for (var i = 0; i < chunks1.Length; i++)
             {
-                tail *= BigInteger10;
+                tail *= bigInteger10;
                 var c1 = chunks1.Substring(i, 1);
                 tail += int.Parse(c1);
             }
 
             // ReSharper disable once UseObjectOrCollectionInitializer
             var valBI = new BigDec(tail);
-            valBI.Offset = chunks1.Length;
+            valBI._offset = chunks1.Length;
+            valBI.OffsetPower = BigInteger.Pow(bigInteger10, valBI._offset);
             valBI.Value += valBI.OffsetPower * BigInteger.Parse(chunks[0]);
             valBI.Value *= sign;
+            if (valBI._offset > valBI.MaxPrecision)
+            {
+                valBI = valBI.WithPrecision(valBI._offset);
+            }
 
             return valBI;
         }

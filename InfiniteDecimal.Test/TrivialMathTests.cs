@@ -31,7 +31,7 @@ public class TrivialMathTests
             .ToArray();
     }
 
-    private static bool IsInt(decimal value)
+    public static bool IsInt(decimal value)
     {
         if (value < 0)
         {
@@ -42,7 +42,7 @@ public class TrivialMathTests
         return diff == 0;
     }
 
-    private static bool IsInt(decimal value1, decimal value2)
+    public static bool IsInt(decimal value1, decimal value2)
     {
         return IsInt(value1) && IsInt(value2);
     }

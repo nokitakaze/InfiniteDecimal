@@ -187,6 +187,49 @@ public class TrivialTest
         Assert.False(expected != actual);
     }
 
+    public static object[][] CheckDivisionsData()
+    {
+        var values = new decimal[]
+        {
+            1.0000000001m,
+            1.123_456m,
+            0.893_784_5m,
+            1.787_569m,
+        };
+
+        return values
+            .SelectMany(value1 => values
+                .Where(x => x != value1)
+                .Select(value2 => new object[] { value1, value2 }))
+            .ToArray();
+    }
+
+    [Theory]
+    [MemberData(nameof(CheckDivisionsData))]
+    public void CheckDivisions(decimal value1, decimal value2)
+    {
+        var precisions = new int[] { 18, 36 };
+        foreach (var precision1 in precisions)
+        {
+            foreach (var precision2 in precisions)
+            {
+                CheckDivisions_Inner(value1, value2, precision1, precision2);
+            }
+        }
+    }
+
+    private void CheckDivisions_Inner(decimal value1, decimal value2, int precision1, int precision2)
+    {
+        var v1 = new BigDec(value1).WithPrecision(precision1);
+        var v2 = new BigDec(value2).WithPrecision(precision2);
+
+        var expected = value1 / value2;
+        var actual = v1 / v2;
+
+        var diff = (actual - expected).Abs();
+        Assert.True(diff <= 0.000_000_000_01m);
+    }
+
     #endregion
 
     [Fact]
@@ -1407,6 +1450,24 @@ public class TrivialTest
             actual = new BigDec(actualDouble);
             Assert.Equal(expected, actual);
         }
+    }
+
+    #endregion
+
+    #region constants
+
+    [Fact]
+    public void Check_Constant_E()
+    {
+        var diff = (BigDec.E - Math.E).Abs();
+        Assert.True(diff <= 0.000_000_001m);
+    }
+
+    [Fact]
+    public void Check_Constant_PI()
+    {
+        var diff = (BigDec.PI - Math.PI).Abs();
+        Assert.True(diff <= 0.000_000_001m);
     }
 
     #endregion
