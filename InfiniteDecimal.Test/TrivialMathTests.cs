@@ -244,4 +244,1359 @@ public class TrivialMathTests
     }
 
     #endregion
+
+    #region Check shorts
+
+    public static object[][] CheckShortsData()
+    {
+        var values = new decimal[]
+        {
+            -0.003m,
+            -1m,
+            0m,
+            1m,
+            14.88m,
+            10_000m,
+            1_234_567_890_123_456m,
+        };
+
+        var modifiers = new long[]
+        {
+            byte.MinValue,
+            byte.MaxValue,
+            sbyte.MinValue,
+            sbyte.MaxValue,
+            ushort.MinValue,
+            ushort.MaxValue,
+            short.MinValue,
+            short.MaxValue,
+            uint.MinValue,
+            uint.MaxValue,
+            int.MinValue,
+            int.MaxValue,
+        };
+
+        modifiers = modifiers
+            .Concat(modifiers.Select(t => -t))
+            .Distinct()
+            .OrderBy(t => t)
+            .ToArray();
+
+        return values
+            .SelectMany(value => modifiers.Select(modifier => new object[] { value, modifier }))
+            .ToArray();
+    }
+
+    [Theory]
+    [MemberData(nameof(CheckShortsData))]
+    public void CheckShorts(decimal value, long modifier)
+    {
+        #region byte
+
+        if (modifier is >= byte.MinValue and <= byte.MaxValue)
+        {
+            var typed = (byte)modifier;
+            var bValue = new BigDec(value);
+            {
+                var expected = value + modifier;
+                var actual = bValue + typed;
+                Assert.True(expected == actual);
+                Assert.True(actual == expected);
+                Assert.False(expected != actual);
+                Assert.False(actual != expected);
+                Assert.True(expected >= actual);
+                Assert.True(actual >= expected);
+                Assert.True(expected <= actual);
+                Assert.True(actual <= expected);
+                Assert.False(expected > actual);
+                Assert.False(expected < actual);
+                Assert.False(actual > expected);
+                Assert.False(actual < expected);
+
+                actual = typed + bValue;
+                Assert.True(expected == actual);
+                Assert.True(actual == expected);
+                Assert.False(expected != actual);
+                Assert.False(actual != expected);
+                Assert.True(expected >= actual);
+                Assert.True(actual >= expected);
+                Assert.True(expected <= actual);
+                Assert.True(actual <= expected);
+                Assert.False(expected > actual);
+                Assert.False(expected < actual);
+                Assert.False(actual > expected);
+                Assert.False(actual < expected);
+            }
+
+            {
+                var expected = value - modifier;
+                var actual = bValue - typed;
+                Assert.True(expected == actual);
+                Assert.True(actual == expected);
+                Assert.False(expected != actual);
+                Assert.False(actual != expected);
+                Assert.True(expected >= actual);
+                Assert.True(actual >= expected);
+                Assert.True(expected <= actual);
+                Assert.True(actual <= expected);
+                Assert.False(expected > actual);
+                Assert.False(expected < actual);
+                Assert.False(actual > expected);
+                Assert.False(actual < expected);
+
+                expected = modifier - value;
+                actual = typed - bValue;
+                Assert.True(expected == actual);
+                Assert.True(actual == expected);
+                Assert.False(expected != actual);
+                Assert.False(actual != expected);
+                Assert.True(expected >= actual);
+                Assert.True(actual >= expected);
+                Assert.True(expected <= actual);
+                Assert.True(actual <= expected);
+                Assert.False(expected > actual);
+                Assert.False(expected < actual);
+                Assert.False(actual > expected);
+                Assert.False(actual < expected);
+            }
+
+            {
+                var expected = value * modifier;
+                var actual = bValue * typed;
+                Assert.True(expected == actual);
+                Assert.True(actual == expected);
+                Assert.False(expected != actual);
+                Assert.False(actual != expected);
+                Assert.True(expected >= actual);
+                Assert.True(actual >= expected);
+                Assert.True(expected <= actual);
+                Assert.True(actual <= expected);
+                Assert.False(expected > actual);
+                Assert.False(expected < actual);
+                Assert.False(actual > expected);
+                Assert.False(actual < expected);
+
+                actual = typed * bValue;
+                Assert.True(expected == actual);
+                Assert.True(actual == expected);
+                Assert.False(expected != actual);
+                Assert.False(actual != expected);
+                Assert.True(expected >= actual);
+                Assert.True(actual >= expected);
+                Assert.True(expected <= actual);
+                Assert.True(actual <= expected);
+                Assert.False(expected > actual);
+                Assert.False(expected < actual);
+                Assert.False(actual > expected);
+                Assert.False(actual < expected);
+            }
+
+            if (modifier != 0)
+            {
+                var expected = value / modifier;
+                var actual = bValue / typed;
+                var diff = (expected - actual).Abs();
+                Assert.True(diff <= 0.000_000_1d);
+            }
+
+            if (value != 0)
+            {
+                var expected = modifier / value;
+                var actual = typed / bValue;
+                var diff = (expected - actual).Abs();
+                Assert.True(diff <= 0.000_000_1d);
+            }
+        }
+
+        #endregion
+
+        #region sbyte
+
+        if (modifier is >= sbyte.MinValue and <= sbyte.MaxValue)
+        {
+            var typed = (sbyte)modifier;
+            var bValue = new BigDec(value);
+            {
+                var expected = value + modifier;
+                var actual = bValue + typed;
+                Assert.True(expected == actual);
+                Assert.True(actual == expected);
+                Assert.False(expected != actual);
+                Assert.False(actual != expected);
+                Assert.True(expected >= actual);
+                Assert.True(actual >= expected);
+                Assert.True(expected <= actual);
+                Assert.True(actual <= expected);
+                Assert.False(expected > actual);
+                Assert.False(expected < actual);
+                Assert.False(actual > expected);
+                Assert.False(actual < expected);
+
+                actual = typed + bValue;
+                Assert.True(expected == actual);
+                Assert.True(actual == expected);
+                Assert.False(expected != actual);
+                Assert.False(actual != expected);
+                Assert.True(expected >= actual);
+                Assert.True(actual >= expected);
+                Assert.True(expected <= actual);
+                Assert.True(actual <= expected);
+                Assert.False(expected > actual);
+                Assert.False(expected < actual);
+                Assert.False(actual > expected);
+                Assert.False(actual < expected);
+            }
+
+            {
+                var expected = value - modifier;
+                var actual = bValue - typed;
+                Assert.True(expected == actual);
+                Assert.True(actual == expected);
+                Assert.False(expected != actual);
+                Assert.False(actual != expected);
+                Assert.True(expected >= actual);
+                Assert.True(actual >= expected);
+                Assert.True(expected <= actual);
+                Assert.True(actual <= expected);
+                Assert.False(expected > actual);
+                Assert.False(expected < actual);
+                Assert.False(actual > expected);
+                Assert.False(actual < expected);
+
+                expected = modifier - value;
+                actual = typed - bValue;
+                Assert.True(expected == actual);
+                Assert.True(actual == expected);
+                Assert.False(expected != actual);
+                Assert.False(actual != expected);
+                Assert.True(expected >= actual);
+                Assert.True(actual >= expected);
+                Assert.True(expected <= actual);
+                Assert.True(actual <= expected);
+                Assert.False(expected > actual);
+                Assert.False(expected < actual);
+                Assert.False(actual > expected);
+                Assert.False(actual < expected);
+            }
+
+            {
+                var expected = value * modifier;
+                var actual = bValue * typed;
+                Assert.True(expected == actual);
+                Assert.True(actual == expected);
+                Assert.False(expected != actual);
+                Assert.False(actual != expected);
+                Assert.True(expected >= actual);
+                Assert.True(actual >= expected);
+                Assert.True(expected <= actual);
+                Assert.True(actual <= expected);
+                Assert.False(expected > actual);
+                Assert.False(expected < actual);
+                Assert.False(actual > expected);
+                Assert.False(actual < expected);
+
+                actual = typed * bValue;
+                Assert.True(expected == actual);
+                Assert.True(actual == expected);
+                Assert.False(expected != actual);
+                Assert.False(actual != expected);
+                Assert.True(expected >= actual);
+                Assert.True(actual >= expected);
+                Assert.True(expected <= actual);
+                Assert.True(actual <= expected);
+                Assert.False(expected > actual);
+                Assert.False(expected < actual);
+                Assert.False(actual > expected);
+                Assert.False(actual < expected);
+            }
+
+            if (modifier != 0)
+            {
+                var expected = value / modifier;
+                var actual = bValue / typed;
+                var diff = (expected - actual).Abs();
+                Assert.True(diff <= 0.000_000_1d);
+            }
+
+            if (value != 0)
+            {
+                var expected = modifier / value;
+                var actual = typed / bValue;
+                var diff = (expected - actual).Abs();
+                Assert.True(diff <= 0.000_000_1d);
+            }
+        }
+
+        #endregion
+
+        #region ushort
+
+        if (modifier is >= ushort.MinValue and <= ushort.MaxValue)
+        {
+            var typed = (ushort)modifier;
+            var bValue = new BigDec(value);
+            {
+                var expected = value + modifier;
+                var actual = bValue + typed;
+                Assert.True(expected == actual);
+                Assert.True(actual == expected);
+                Assert.False(expected != actual);
+                Assert.False(actual != expected);
+                Assert.True(expected >= actual);
+                Assert.True(actual >= expected);
+                Assert.True(expected <= actual);
+                Assert.True(actual <= expected);
+                Assert.False(expected > actual);
+                Assert.False(expected < actual);
+                Assert.False(actual > expected);
+                Assert.False(actual < expected);
+
+                actual = typed + bValue;
+                Assert.True(expected == actual);
+                Assert.True(actual == expected);
+                Assert.False(expected != actual);
+                Assert.False(actual != expected);
+                Assert.True(expected >= actual);
+                Assert.True(actual >= expected);
+                Assert.True(expected <= actual);
+                Assert.True(actual <= expected);
+                Assert.False(expected > actual);
+                Assert.False(expected < actual);
+                Assert.False(actual > expected);
+                Assert.False(actual < expected);
+            }
+
+            {
+                var expected = value - modifier;
+                var actual = bValue - typed;
+                Assert.True(expected == actual);
+                Assert.True(actual == expected);
+                Assert.False(expected != actual);
+                Assert.False(actual != expected);
+                Assert.True(expected >= actual);
+                Assert.True(actual >= expected);
+                Assert.True(expected <= actual);
+                Assert.True(actual <= expected);
+                Assert.False(expected > actual);
+                Assert.False(expected < actual);
+                Assert.False(actual > expected);
+                Assert.False(actual < expected);
+
+                expected = modifier - value;
+                actual = typed - bValue;
+                Assert.True(expected == actual);
+                Assert.True(actual == expected);
+                Assert.False(expected != actual);
+                Assert.False(actual != expected);
+                Assert.True(expected >= actual);
+                Assert.True(actual >= expected);
+                Assert.True(expected <= actual);
+                Assert.True(actual <= expected);
+                Assert.False(expected > actual);
+                Assert.False(expected < actual);
+                Assert.False(actual > expected);
+                Assert.False(actual < expected);
+            }
+
+            {
+                var expected = value * modifier;
+                var actual = bValue * typed;
+                Assert.True(expected == actual);
+                Assert.True(actual == expected);
+                Assert.False(expected != actual);
+                Assert.False(actual != expected);
+                Assert.True(expected >= actual);
+                Assert.True(actual >= expected);
+                Assert.True(expected <= actual);
+                Assert.True(actual <= expected);
+                Assert.False(expected > actual);
+                Assert.False(expected < actual);
+                Assert.False(actual > expected);
+                Assert.False(actual < expected);
+
+                actual = typed * bValue;
+                Assert.True(expected == actual);
+                Assert.True(actual == expected);
+                Assert.False(expected != actual);
+                Assert.False(actual != expected);
+                Assert.True(expected >= actual);
+                Assert.True(actual >= expected);
+                Assert.True(expected <= actual);
+                Assert.True(actual <= expected);
+                Assert.False(expected > actual);
+                Assert.False(expected < actual);
+                Assert.False(actual > expected);
+                Assert.False(actual < expected);
+            }
+
+            if (modifier != 0)
+            {
+                var expected = value / modifier;
+                var actual = bValue / typed;
+                var diff = (expected - actual).Abs();
+                Assert.True(diff <= 0.000_000_1d);
+            }
+
+            if (value != 0)
+            {
+                var expected = modifier / value;
+                var actual = typed / bValue;
+                var diff = (expected - actual).Abs();
+                Assert.True(diff <= 0.000_000_1d);
+            }
+        }
+
+        #endregion
+
+        #region short
+
+        if (modifier is >= short.MinValue and <= short.MaxValue)
+        {
+            var typed = (short)modifier;
+            var bValue = new BigDec(value);
+            {
+                var expected = value + modifier;
+                var actual = bValue + typed;
+                Assert.True(expected == actual);
+                Assert.True(actual == expected);
+                Assert.False(expected != actual);
+                Assert.False(actual != expected);
+                Assert.True(expected >= actual);
+                Assert.True(actual >= expected);
+                Assert.True(expected <= actual);
+                Assert.True(actual <= expected);
+                Assert.False(expected > actual);
+                Assert.False(expected < actual);
+                Assert.False(actual > expected);
+                Assert.False(actual < expected);
+
+                actual = typed + bValue;
+                Assert.True(expected == actual);
+                Assert.True(actual == expected);
+                Assert.False(expected != actual);
+                Assert.False(actual != expected);
+                Assert.True(expected >= actual);
+                Assert.True(actual >= expected);
+                Assert.True(expected <= actual);
+                Assert.True(actual <= expected);
+                Assert.False(expected > actual);
+                Assert.False(expected < actual);
+                Assert.False(actual > expected);
+                Assert.False(actual < expected);
+            }
+
+            {
+                var expected = value - modifier;
+                var actual = bValue - typed;
+                Assert.True(expected == actual);
+                Assert.True(actual == expected);
+                Assert.False(expected != actual);
+                Assert.False(actual != expected);
+                Assert.True(expected >= actual);
+                Assert.True(actual >= expected);
+                Assert.True(expected <= actual);
+                Assert.True(actual <= expected);
+                Assert.False(expected > actual);
+                Assert.False(expected < actual);
+                Assert.False(actual > expected);
+                Assert.False(actual < expected);
+
+                expected = modifier - value;
+                actual = typed - bValue;
+                Assert.True(expected == actual);
+                Assert.True(actual == expected);
+                Assert.False(expected != actual);
+                Assert.False(actual != expected);
+                Assert.True(expected >= actual);
+                Assert.True(actual >= expected);
+                Assert.True(expected <= actual);
+                Assert.True(actual <= expected);
+                Assert.False(expected > actual);
+                Assert.False(expected < actual);
+                Assert.False(actual > expected);
+                Assert.False(actual < expected);
+            }
+
+            {
+                var expected = value * modifier;
+                var actual = bValue * typed;
+                Assert.True(expected == actual);
+                Assert.True(actual == expected);
+                Assert.False(expected != actual);
+                Assert.False(actual != expected);
+                Assert.True(expected >= actual);
+                Assert.True(actual >= expected);
+                Assert.True(expected <= actual);
+                Assert.True(actual <= expected);
+                Assert.False(expected > actual);
+                Assert.False(expected < actual);
+                Assert.False(actual > expected);
+                Assert.False(actual < expected);
+
+                actual = typed * bValue;
+                Assert.True(expected == actual);
+                Assert.True(actual == expected);
+                Assert.False(expected != actual);
+                Assert.False(actual != expected);
+                Assert.True(expected >= actual);
+                Assert.True(actual >= expected);
+                Assert.True(expected <= actual);
+                Assert.True(actual <= expected);
+                Assert.False(expected > actual);
+                Assert.False(expected < actual);
+                Assert.False(actual > expected);
+                Assert.False(actual < expected);
+            }
+
+            if (modifier != 0)
+            {
+                var expected = value / modifier;
+                var actual = bValue / typed;
+                var diff = (expected - actual).Abs();
+                Assert.True(diff <= 0.000_000_1d);
+            }
+
+            if (value != 0)
+            {
+                var expected = modifier / value;
+                var actual = typed / bValue;
+                var diff = (expected - actual).Abs();
+                Assert.True(diff <= 0.000_000_1d);
+            }
+        }
+
+        #endregion
+
+        #region uint
+
+        if (modifier is >= uint.MinValue and <= uint.MaxValue)
+        {
+            var typed = (uint)modifier;
+            var bValue = new BigDec(value);
+            {
+                var expected = value + modifier;
+                var actual = bValue + typed;
+                Assert.True(expected == actual);
+                Assert.True(actual == expected);
+                Assert.False(expected != actual);
+                Assert.False(actual != expected);
+                Assert.True(expected >= actual);
+                Assert.True(actual >= expected);
+                Assert.True(expected <= actual);
+                Assert.True(actual <= expected);
+                Assert.False(expected > actual);
+                Assert.False(expected < actual);
+                Assert.False(actual > expected);
+                Assert.False(actual < expected);
+
+                actual = typed + bValue;
+                Assert.True(expected == actual);
+                Assert.True(actual == expected);
+                Assert.False(expected != actual);
+                Assert.False(actual != expected);
+                Assert.True(expected >= actual);
+                Assert.True(actual >= expected);
+                Assert.True(expected <= actual);
+                Assert.True(actual <= expected);
+                Assert.False(expected > actual);
+                Assert.False(expected < actual);
+                Assert.False(actual > expected);
+                Assert.False(actual < expected);
+            }
+
+            {
+                var expected = value - modifier;
+                var actual = bValue - typed;
+                Assert.True(expected == actual);
+                Assert.True(actual == expected);
+                Assert.False(expected != actual);
+                Assert.False(actual != expected);
+                Assert.True(expected >= actual);
+                Assert.True(actual >= expected);
+                Assert.True(expected <= actual);
+                Assert.True(actual <= expected);
+                Assert.False(expected > actual);
+                Assert.False(expected < actual);
+                Assert.False(actual > expected);
+                Assert.False(actual < expected);
+
+                expected = modifier - value;
+                actual = typed - bValue;
+                Assert.True(expected == actual);
+                Assert.True(actual == expected);
+                Assert.False(expected != actual);
+                Assert.False(actual != expected);
+                Assert.True(expected >= actual);
+                Assert.True(actual >= expected);
+                Assert.True(expected <= actual);
+                Assert.True(actual <= expected);
+                Assert.False(expected > actual);
+                Assert.False(expected < actual);
+                Assert.False(actual > expected);
+                Assert.False(actual < expected);
+            }
+
+            {
+                var expected = value * modifier;
+                var actual = bValue * typed;
+                Assert.True(expected == actual);
+                Assert.True(actual == expected);
+                Assert.False(expected != actual);
+                Assert.False(actual != expected);
+                Assert.True(expected >= actual);
+                Assert.True(actual >= expected);
+                Assert.True(expected <= actual);
+                Assert.True(actual <= expected);
+                Assert.False(expected > actual);
+                Assert.False(expected < actual);
+                Assert.False(actual > expected);
+                Assert.False(actual < expected);
+
+                actual = typed * bValue;
+                Assert.True(expected == actual);
+                Assert.True(actual == expected);
+                Assert.False(expected != actual);
+                Assert.False(actual != expected);
+                Assert.True(expected >= actual);
+                Assert.True(actual >= expected);
+                Assert.True(expected <= actual);
+                Assert.True(actual <= expected);
+                Assert.False(expected > actual);
+                Assert.False(expected < actual);
+                Assert.False(actual > expected);
+                Assert.False(actual < expected);
+            }
+
+            if (modifier != 0)
+            {
+                var expected = value / modifier;
+                var actual = bValue / typed;
+                var diff = (expected - actual).Abs();
+                Assert.True(diff <= 0.000_000_1d);
+            }
+
+            if (value != 0)
+            {
+                var expected = modifier / value;
+                var actual = typed / bValue;
+                var diff = (expected - actual).Abs();
+                Assert.True(diff <= 0.000_000_1d);
+            }
+        }
+
+        #endregion
+
+        #region int
+
+        if (modifier is >= int.MinValue and <= int.MaxValue)
+        {
+            var typed = (int)modifier;
+            var bValue = new BigDec(value);
+            {
+                var expected = value + modifier;
+                var actual = bValue + typed;
+                Assert.True(expected == actual);
+                Assert.True(actual == expected);
+                Assert.False(expected != actual);
+                Assert.False(actual != expected);
+                Assert.True(expected >= actual);
+                Assert.True(actual >= expected);
+                Assert.True(expected <= actual);
+                Assert.True(actual <= expected);
+                Assert.False(expected > actual);
+                Assert.False(expected < actual);
+                Assert.False(actual > expected);
+                Assert.False(actual < expected);
+
+                actual = typed + bValue;
+                Assert.True(expected == actual);
+                Assert.True(actual == expected);
+                Assert.False(expected != actual);
+                Assert.False(actual != expected);
+                Assert.True(expected >= actual);
+                Assert.True(actual >= expected);
+                Assert.True(expected <= actual);
+                Assert.True(actual <= expected);
+                Assert.False(expected > actual);
+                Assert.False(expected < actual);
+                Assert.False(actual > expected);
+                Assert.False(actual < expected);
+            }
+
+            {
+                var expected = value - modifier;
+                var actual = bValue - typed;
+                Assert.True(expected == actual);
+                Assert.True(actual == expected);
+                Assert.False(expected != actual);
+                Assert.False(actual != expected);
+                Assert.True(expected >= actual);
+                Assert.True(actual >= expected);
+                Assert.True(expected <= actual);
+                Assert.True(actual <= expected);
+                Assert.False(expected > actual);
+                Assert.False(expected < actual);
+                Assert.False(actual > expected);
+                Assert.False(actual < expected);
+
+                expected = modifier - value;
+                actual = typed - bValue;
+                Assert.True(expected == actual);
+                Assert.True(actual == expected);
+                Assert.False(expected != actual);
+                Assert.False(actual != expected);
+                Assert.True(expected >= actual);
+                Assert.True(actual >= expected);
+                Assert.True(expected <= actual);
+                Assert.True(actual <= expected);
+                Assert.False(expected > actual);
+                Assert.False(expected < actual);
+                Assert.False(actual > expected);
+                Assert.False(actual < expected);
+            }
+
+            {
+                var expected = value * modifier;
+                var actual = bValue * typed;
+                Assert.True(expected == actual);
+                Assert.True(actual == expected);
+                Assert.False(expected != actual);
+                Assert.False(actual != expected);
+                Assert.True(expected >= actual);
+                Assert.True(actual >= expected);
+                Assert.True(expected <= actual);
+                Assert.True(actual <= expected);
+                Assert.False(expected > actual);
+                Assert.False(expected < actual);
+                Assert.False(actual > expected);
+                Assert.False(actual < expected);
+
+                actual = typed * bValue;
+                Assert.True(expected == actual);
+                Assert.True(actual == expected);
+                Assert.False(expected != actual);
+                Assert.False(actual != expected);
+                Assert.True(expected >= actual);
+                Assert.True(actual >= expected);
+                Assert.True(expected <= actual);
+                Assert.True(actual <= expected);
+                Assert.False(expected > actual);
+                Assert.False(expected < actual);
+                Assert.False(actual > expected);
+                Assert.False(actual < expected);
+            }
+
+            if (modifier != 0)
+            {
+                var expected = value / modifier;
+                var actual = bValue / typed;
+                var diff = (expected - actual).Abs();
+                Assert.True(diff <= 0.000_000_1d);
+            }
+
+            if (value != 0)
+            {
+                var expected = modifier / value;
+                var actual = typed / bValue;
+                var diff = (expected - actual).Abs();
+                Assert.True(diff <= 0.000_000_1d);
+            }
+        }
+
+        #endregion
+
+        #region ulong
+
+        if (modifier >= 0)
+        {
+            var typed = (ulong)modifier;
+            var bValue = new BigDec(value);
+            {
+                var expected = value + modifier;
+                var actual = bValue + typed;
+                Assert.True(expected == actual);
+                Assert.True(actual == expected);
+                Assert.False(expected != actual);
+                Assert.False(actual != expected);
+                Assert.True(expected >= actual);
+                Assert.True(actual >= expected);
+                Assert.True(expected <= actual);
+                Assert.True(actual <= expected);
+                Assert.False(expected > actual);
+                Assert.False(expected < actual);
+                Assert.False(actual > expected);
+                Assert.False(actual < expected);
+
+                actual = typed + bValue;
+                Assert.True(expected == actual);
+                Assert.True(actual == expected);
+                Assert.False(expected != actual);
+                Assert.False(actual != expected);
+                Assert.True(expected >= actual);
+                Assert.True(actual >= expected);
+                Assert.True(expected <= actual);
+                Assert.True(actual <= expected);
+                Assert.False(expected > actual);
+                Assert.False(expected < actual);
+                Assert.False(actual > expected);
+                Assert.False(actual < expected);
+            }
+
+            {
+                var expected = value - modifier;
+                var actual = bValue - typed;
+                Assert.True(expected == actual);
+                Assert.True(actual == expected);
+                Assert.False(expected != actual);
+                Assert.False(actual != expected);
+                Assert.True(expected >= actual);
+                Assert.True(actual >= expected);
+                Assert.True(expected <= actual);
+                Assert.True(actual <= expected);
+                Assert.False(expected > actual);
+                Assert.False(expected < actual);
+                Assert.False(actual > expected);
+                Assert.False(actual < expected);
+
+                expected = modifier - value;
+                actual = typed - bValue;
+                Assert.True(expected == actual);
+                Assert.True(actual == expected);
+                Assert.False(expected != actual);
+                Assert.False(actual != expected);
+                Assert.True(expected >= actual);
+                Assert.True(actual >= expected);
+                Assert.True(expected <= actual);
+                Assert.True(actual <= expected);
+                Assert.False(expected > actual);
+                Assert.False(expected < actual);
+                Assert.False(actual > expected);
+                Assert.False(actual < expected);
+            }
+
+            {
+                var expected = value * modifier;
+                var actual = bValue * typed;
+                Assert.True(expected == actual);
+                Assert.True(actual == expected);
+                Assert.False(expected != actual);
+                Assert.False(actual != expected);
+                Assert.True(expected >= actual);
+                Assert.True(actual >= expected);
+                Assert.True(expected <= actual);
+                Assert.True(actual <= expected);
+                Assert.False(expected > actual);
+                Assert.False(expected < actual);
+                Assert.False(actual > expected);
+                Assert.False(actual < expected);
+
+                actual = typed * bValue;
+                Assert.True(expected == actual);
+                Assert.True(actual == expected);
+                Assert.False(expected != actual);
+                Assert.False(actual != expected);
+                Assert.True(expected >= actual);
+                Assert.True(actual >= expected);
+                Assert.True(expected <= actual);
+                Assert.True(actual <= expected);
+                Assert.False(expected > actual);
+                Assert.False(expected < actual);
+                Assert.False(actual > expected);
+                Assert.False(actual < expected);
+            }
+
+            if (modifier != 0)
+            {
+                var expected = value / modifier;
+                var actual = bValue / typed;
+                var diff = (expected - actual).Abs();
+                Assert.True(diff <= 0.000_000_1d);
+            }
+
+            if (value != 0)
+            {
+                var expected = modifier / value;
+                var actual = typed / bValue;
+                var diff = (expected - actual).Abs();
+                Assert.True(diff <= 0.000_000_1d);
+            }
+        }
+
+        #endregion
+
+        #region long
+
+        {
+            // ReSharper disable once RedundantCast
+            var typed = (long)modifier;
+            var bValue = new BigDec(value);
+            {
+                var expected = value + modifier;
+                var actual = bValue + typed;
+                Assert.True(expected == actual);
+                Assert.True(actual == expected);
+                Assert.False(expected != actual);
+                Assert.False(actual != expected);
+                Assert.True(expected >= actual);
+                Assert.True(actual >= expected);
+                Assert.True(expected <= actual);
+                Assert.True(actual <= expected);
+                Assert.False(expected > actual);
+                Assert.False(expected < actual);
+                Assert.False(actual > expected);
+                Assert.False(actual < expected);
+
+                actual = typed + bValue;
+                Assert.True(expected == actual);
+                Assert.True(actual == expected);
+                Assert.False(expected != actual);
+                Assert.False(actual != expected);
+                Assert.True(expected >= actual);
+                Assert.True(actual >= expected);
+                Assert.True(expected <= actual);
+                Assert.True(actual <= expected);
+                Assert.False(expected > actual);
+                Assert.False(expected < actual);
+                Assert.False(actual > expected);
+                Assert.False(actual < expected);
+            }
+
+            {
+                var expected = value - modifier;
+                var actual = bValue - typed;
+                Assert.True(expected == actual);
+                Assert.True(actual == expected);
+                Assert.False(expected != actual);
+                Assert.False(actual != expected);
+                Assert.True(expected >= actual);
+                Assert.True(actual >= expected);
+                Assert.True(expected <= actual);
+                Assert.True(actual <= expected);
+                Assert.False(expected > actual);
+                Assert.False(expected < actual);
+                Assert.False(actual > expected);
+                Assert.False(actual < expected);
+
+                expected = modifier - value;
+                actual = typed - bValue;
+                Assert.True(expected == actual);
+                Assert.True(actual == expected);
+                Assert.False(expected != actual);
+                Assert.False(actual != expected);
+                Assert.True(expected >= actual);
+                Assert.True(actual >= expected);
+                Assert.True(expected <= actual);
+                Assert.True(actual <= expected);
+                Assert.False(expected > actual);
+                Assert.False(expected < actual);
+                Assert.False(actual > expected);
+                Assert.False(actual < expected);
+            }
+
+            {
+                var expected = value * modifier;
+                var actual = bValue * typed;
+                Assert.True(expected == actual);
+                Assert.True(actual == expected);
+                Assert.False(expected != actual);
+                Assert.False(actual != expected);
+                Assert.True(expected >= actual);
+                Assert.True(actual >= expected);
+                Assert.True(expected <= actual);
+                Assert.True(actual <= expected);
+                Assert.False(expected > actual);
+                Assert.False(expected < actual);
+                Assert.False(actual > expected);
+                Assert.False(actual < expected);
+
+                actual = typed * bValue;
+                Assert.True(expected == actual);
+                Assert.True(actual == expected);
+                Assert.False(expected != actual);
+                Assert.False(actual != expected);
+                Assert.True(expected >= actual);
+                Assert.True(actual >= expected);
+                Assert.True(expected <= actual);
+                Assert.True(actual <= expected);
+                Assert.False(expected > actual);
+                Assert.False(expected < actual);
+                Assert.False(actual > expected);
+                Assert.False(actual < expected);
+            }
+
+            if (modifier != 0)
+            {
+                var expected = value / modifier;
+                var actual = bValue / typed;
+                var diff = (expected - actual).Abs();
+                Assert.True(diff <= 0.000_000_1d);
+            }
+
+            if (value != 0)
+            {
+                var expected = modifier / value;
+                var actual = typed / bValue;
+                var diff = (expected - actual).Abs();
+                Assert.True(diff <= 0.000_000_1d);
+            }
+        }
+
+        #endregion
+
+        #region BigInteger
+
+        if (IsInt(modifier))
+        {
+            var typed = new BigInteger(modifier);
+            var bValue = new BigDec(value);
+            {
+                var expected = value + modifier;
+                var actual = bValue + typed;
+                Assert.True(expected == actual);
+                Assert.True(actual == expected);
+                Assert.False(expected != actual);
+                Assert.False(actual != expected);
+                Assert.True(expected >= actual);
+                Assert.True(actual >= expected);
+                Assert.True(expected <= actual);
+                Assert.True(actual <= expected);
+                Assert.False(expected > actual);
+                Assert.False(expected < actual);
+                Assert.False(actual > expected);
+                Assert.False(actual < expected);
+
+                actual = typed + bValue;
+                Assert.True(expected == actual);
+                Assert.True(actual == expected);
+                Assert.False(expected != actual);
+                Assert.False(actual != expected);
+                Assert.True(expected >= actual);
+                Assert.True(actual >= expected);
+                Assert.True(expected <= actual);
+                Assert.True(actual <= expected);
+                Assert.False(expected > actual);
+                Assert.False(expected < actual);
+                Assert.False(actual > expected);
+                Assert.False(actual < expected);
+            }
+
+            {
+                var expected = value - modifier;
+                var actual = bValue - typed;
+                Assert.True(expected == actual);
+                Assert.True(actual == expected);
+                Assert.False(expected != actual);
+                Assert.False(actual != expected);
+                Assert.True(expected >= actual);
+                Assert.True(actual >= expected);
+                Assert.True(expected <= actual);
+                Assert.True(actual <= expected);
+                Assert.False(expected > actual);
+                Assert.False(expected < actual);
+                Assert.False(actual > expected);
+                Assert.False(actual < expected);
+
+                expected = modifier - value;
+                actual = typed - bValue;
+                Assert.True(expected == actual);
+                Assert.True(actual == expected);
+                Assert.False(expected != actual);
+                Assert.False(actual != expected);
+                Assert.True(expected >= actual);
+                Assert.True(actual >= expected);
+                Assert.True(expected <= actual);
+                Assert.True(actual <= expected);
+                Assert.False(expected > actual);
+                Assert.False(expected < actual);
+                Assert.False(actual > expected);
+                Assert.False(actual < expected);
+            }
+
+            {
+                var expected = value * modifier;
+                var actual = bValue * typed;
+                Assert.True(expected == actual);
+                Assert.True(actual == expected);
+                Assert.False(expected != actual);
+                Assert.False(actual != expected);
+                Assert.True(expected >= actual);
+                Assert.True(actual >= expected);
+                Assert.True(expected <= actual);
+                Assert.True(actual <= expected);
+                Assert.False(expected > actual);
+                Assert.False(expected < actual);
+                Assert.False(actual > expected);
+                Assert.False(actual < expected);
+
+                actual = typed * bValue;
+                Assert.True(expected == actual);
+                Assert.True(actual == expected);
+                Assert.False(expected != actual);
+                Assert.False(actual != expected);
+                Assert.True(expected >= actual);
+                Assert.True(actual >= expected);
+                Assert.True(expected <= actual);
+                Assert.True(actual <= expected);
+                Assert.False(expected > actual);
+                Assert.False(expected < actual);
+                Assert.False(actual > expected);
+                Assert.False(actual < expected);
+            }
+
+            if (modifier != 0)
+            {
+                var expected = value / modifier;
+                var actual = bValue / typed;
+                var diff = (expected - actual).Abs();
+                Assert.True(diff <= 0.000_000_1d);
+            }
+
+            if (value != 0)
+            {
+                var expected = modifier / value;
+                var actual = typed / bValue;
+                var diff = (expected - actual).Abs();
+                Assert.True(diff <= 0.000_000_1d);
+            }
+        }
+
+        #endregion
+
+        #region decimal
+
+        {
+            var typed = (decimal)modifier;
+            var bValue = new BigDec(value);
+            {
+                var expected = value + modifier;
+                var actual = bValue + typed;
+                Assert.True(expected == actual);
+                Assert.True(actual == expected);
+                Assert.False(expected != actual);
+                Assert.False(actual != expected);
+                Assert.True(expected >= actual);
+                Assert.True(actual >= expected);
+                Assert.True(expected <= actual);
+                Assert.True(actual <= expected);
+                Assert.False(expected > actual);
+                Assert.False(expected < actual);
+                Assert.False(actual > expected);
+                Assert.False(actual < expected);
+
+                actual = typed + bValue;
+                Assert.True(expected == actual);
+                Assert.True(actual == expected);
+                Assert.False(expected != actual);
+                Assert.False(actual != expected);
+                Assert.True(expected >= actual);
+                Assert.True(actual >= expected);
+                Assert.True(expected <= actual);
+                Assert.True(actual <= expected);
+                Assert.False(expected > actual);
+                Assert.False(expected < actual);
+                Assert.False(actual > expected);
+                Assert.False(actual < expected);
+            }
+
+            {
+                var expected = value - modifier;
+                var actual = bValue - typed;
+                Assert.True(expected == actual);
+                Assert.True(actual == expected);
+                Assert.False(expected != actual);
+                Assert.False(actual != expected);
+                Assert.True(expected >= actual);
+                Assert.True(actual >= expected);
+                Assert.True(expected <= actual);
+                Assert.True(actual <= expected);
+                Assert.False(expected > actual);
+                Assert.False(expected < actual);
+                Assert.False(actual > expected);
+                Assert.False(actual < expected);
+
+                expected = modifier - value;
+                actual = typed - bValue;
+                Assert.True(expected == actual);
+                Assert.True(actual == expected);
+                Assert.False(expected != actual);
+                Assert.False(actual != expected);
+                Assert.True(expected >= actual);
+                Assert.True(actual >= expected);
+                Assert.True(expected <= actual);
+                Assert.True(actual <= expected);
+                Assert.False(expected > actual);
+                Assert.False(expected < actual);
+                Assert.False(actual > expected);
+                Assert.False(actual < expected);
+            }
+
+            {
+                var expected = value * modifier;
+                var actual = bValue * typed;
+                Assert.True(expected == actual);
+                Assert.True(actual == expected);
+                Assert.False(expected != actual);
+                Assert.False(actual != expected);
+                Assert.True(expected >= actual);
+                Assert.True(actual >= expected);
+                Assert.True(expected <= actual);
+                Assert.True(actual <= expected);
+                Assert.False(expected > actual);
+                Assert.False(expected < actual);
+                Assert.False(actual > expected);
+                Assert.False(actual < expected);
+
+                actual = typed * bValue;
+                Assert.True(expected == actual);
+                Assert.True(actual == expected);
+                Assert.False(expected != actual);
+                Assert.False(actual != expected);
+                Assert.True(expected >= actual);
+                Assert.True(actual >= expected);
+                Assert.True(expected <= actual);
+                Assert.True(actual <= expected);
+                Assert.False(expected > actual);
+                Assert.False(expected < actual);
+                Assert.False(actual > expected);
+                Assert.False(actual < expected);
+            }
+
+            if (modifier != 0)
+            {
+                var expected = value / modifier;
+                var actual = bValue / typed;
+                var diff = (expected - actual).Abs();
+                Assert.True(diff <= 0.000_000_1d);
+            }
+
+            if (value != 0)
+            {
+                var expected = modifier / value;
+                var actual = typed / bValue;
+                var diff = (expected - actual).Abs();
+                Assert.True(diff <= 0.000_000_1d);
+            }
+        }
+
+        #endregion
+
+        #region double
+
+        {
+            var typed = (double)modifier;
+            var bValue = new BigDec(value);
+            {
+                var expected = value + modifier;
+                var actual = bValue + typed;
+                var diff = (expected - actual).Abs();
+                Assert.True(diff <= 0.000_000_1d);
+
+                actual = typed + bValue;
+                diff = (expected - actual).Abs();
+                Assert.True(diff <= 0.000_000_1d);
+            }
+
+            {
+                var expected = value - modifier;
+                var actual = bValue - typed;
+                var diff = (expected - actual).Abs();
+                Assert.True(diff <= 0.000_000_1d);
+
+                expected = modifier - value;
+                actual = typed - bValue;
+                diff = (expected - actual).Abs();
+                Assert.True(diff <= 0.000_000_1d);
+            }
+
+            {
+                var expected = value * modifier;
+                var actual = bValue * typed;
+                var diff = (expected - actual).Abs();
+                Assert.True(diff <= 0.000_000_1d);
+
+                actual = typed * bValue;
+                diff = (expected - actual).Abs();
+                Assert.True(diff <= 0.000_000_1d);
+            }
+
+            if (modifier != 0)
+            {
+                var expected = value / modifier;
+                var actual = bValue / typed;
+                var diff = (expected - actual).Abs();
+                Assert.True(diff <= 0.000_000_1d);
+            }
+
+            if (value != 0)
+            {
+                var expected = modifier / value;
+                var actual = typed / bValue;
+                var diff = (expected - actual).Abs();
+                Assert.True(diff <= 0.000_000_1d);
+            }
+        }
+
+        #endregion
+
+        #region float
+
+        if (modifier is >= short.MinValue and <= short.MaxValue)
+        {
+            var typed = (float)modifier;
+            var bValue = new BigDec(value);
+            {
+                var expected = value + modifier;
+                var actual = bValue + typed;
+                var diff = (expected - actual).Abs();
+                Assert.True(diff <= 0.000_1d);
+
+                actual = typed + bValue;
+                diff = (expected - actual).Abs();
+                Assert.True(diff <= 0.000_1d);
+            }
+
+            {
+                var expected = value - modifier;
+                var actual = bValue - typed;
+                var diff = (expected - actual).Abs();
+                Assert.True(diff <= 0.000_1d);
+
+                expected = modifier - value;
+                actual = typed - bValue;
+                diff = (expected - actual).Abs();
+                Assert.True(diff <= 0.000_1d);
+            }
+
+            {
+                var expected = value * modifier;
+                var actual = bValue * typed;
+                var diff = (expected - actual).Abs();
+                Assert.True(diff <= 0.000_1d);
+
+                actual = typed * bValue;
+                diff = (expected - actual).Abs();
+                Assert.True(diff <= 0.000_1d);
+            }
+
+            if (modifier != 0)
+            {
+                var expected = value / modifier;
+                var actual = bValue / typed;
+                var diff = (expected - actual).Abs();
+                Assert.True(diff <= 0.000_1d);
+            }
+
+            if (value != 0)
+            {
+                var expected = modifier / value;
+                var actual = typed / bValue;
+                var diff = (expected - actual).Abs();
+                Assert.True(diff <= 0.000_1d);
+            }
+        }
+
+        #endregion
+    }
+
+    #endregion
 }
