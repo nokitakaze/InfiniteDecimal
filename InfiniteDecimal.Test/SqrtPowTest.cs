@@ -207,15 +207,14 @@ public class SqrtPowTest
         }
         else
         {
+            var rangeMin = new BigDec(expected) - 0.000_000_1m;
+            var rangeMax = new BigDec(expected) + 0.000_000_1m;
+            
             var actual1 = valueBI.Pow(exponentBI);
-            // var diff = (expected - actual1).Abs();
-            // Assert.True(diff < 0.000_000_1m);
-            Assert.InRange(actual1, new BigDec(expected) - 0.000_000_1m, new BigDec(expected) + 0.000_000_1m);
+            Assert.InRange(actual1, rangeMin, rangeMax);
 
             var actual2 = valueBI.Pow(exponent);
-            // diff = (expected - actual2).Abs();
-            // Assert.True(diff < 0.000_000_1m);
-            Assert.InRange(actual2, new BigDec(expected) - 0.000_000_1m, new BigDec(expected) + 0.000_000_1m);
+            Assert.InRange(actual2, rangeMin, rangeMax);
         }
     }
 
