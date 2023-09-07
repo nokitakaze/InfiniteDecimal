@@ -199,7 +199,14 @@ public partial class BigDec
         }
 
         var half = new BigDec(0.5m);
-        var epsilon = One / BigInteger.Pow(BigInteger10, this.MaxPrecision);
+        var epsilon = One.WithPrecision(this.MaxPrecision) / BigInteger.Pow(BigInteger10, this.MaxPrecision);
+        // codecov ignore start
+        if (epsilon <= Zero)
+        {
+            throw new InfiniteDecimalException($"Can't calculate r-component for precision '{MaxPrecision}'");
+        }
+        // codecov ignore end
+
         var current = this.WithPrecision(this.MaxPrecision * 2) * half;
         while (true)
         {

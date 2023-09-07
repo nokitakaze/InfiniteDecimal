@@ -44,7 +44,6 @@ public partial class BigDec
     static BigDec()
     {
         {
-            // E_Sqr = E * E;
             var powDec = new Dictionary<int, BigInteger>();
             var last = BigInteger.One;
             for (var i = 1; i <= 2000; i++)
@@ -55,6 +54,13 @@ public partial class BigDec
 
             BigInt10Powers = powDec;
         }
+        /*
+        {
+            E_Sqrt = E.Sqrt().WithPrecision(E.MaxPrecision);
+            E_Root4 = E_Sqrt.Sqrt().WithPrecision(E.MaxPrecision);
+            E_Root8 = E_Root4.Sqrt().WithPrecision(E.MaxPrecision);
+        }
+        */
     }
 
     public void NormalizeOffset()
