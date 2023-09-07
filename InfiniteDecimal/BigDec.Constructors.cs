@@ -78,6 +78,11 @@ public partial class BigDec
 
     public BigDec(double value)
     {
+        if (!double.IsFinite(value))
+        {
+            throw new InfiniteDecimalException($"value '{value}' is not finite");
+        }
+
         if (value == 0)
         {
             Value = Zero.Value;

@@ -173,6 +173,11 @@ public class SqrtPowTest
     public void TestPow(decimal value, decimal exponent)
     {
         var expected = Math.Pow((double)value, (double)exponent);
+        if (!double.IsFinite(expected))
+        {
+            return;
+        }
+
         var valueBI = new BigDec(value);
         var exponentBI = new BigDec(exponent);
 
@@ -203,6 +208,13 @@ public class SqrtPowTest
             diff = (expected - actual2).Abs();
             Assert.True(diff < 0.000_000_1m);
         }
+    }
+
+    [Fact]
+    public void TestPow_Zero_Zero()
+    {
+        var expected = BigDec.Zero.Pow(BigDec.Zero);
+        Assert.Equal(BigDec.One, expected);
     }
 
     #endregion

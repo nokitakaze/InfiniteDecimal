@@ -41,7 +41,16 @@ public partial class BigDec
 
         var leftPow = BigInteger.Pow(BigInteger10, Offset - decimalNumber);
         var tail = this.Value % leftPow;
-        var u = (new BigDec(tail) / leftPow) >= 0.5m;
+
+        var leftPow1 = leftPow;
+        var tail1 = tail;
+        while (tail1 > (BigInteger.One << 10))
+        {
+            tail1 >>= 8;
+            leftPow1 >>= 8;
+        }
+
+        var u = ((double)tail1 / (double)leftPow1) >= 0.5d;
 
         var result = new BigDec(this);
         result.Value -= tail;
@@ -96,6 +105,14 @@ public partial class BigDec
     {
         if (IsZero())
         {
+            // ReSharper disable once ConvertIfStatementToReturnStatement
+            if (exp.IsZero())
+            {
+                // 0 ^ 0 = 1
+                // https://www.youtube.com/watch?v=OJ55XetZKF0
+                return One;
+            }
+
             return this;
         }
 
@@ -226,13 +243,11 @@ public partial class BigDec
             z /= E;
         }
 
-        //* вернуть
         if ((2 - z).Abs() < 0.001m)
         {
             result += One;
             z /= E;
         }
-        // */
 
         var powDic = new Dictionary<int, BigInteger>();
         // Supported accuracy limit

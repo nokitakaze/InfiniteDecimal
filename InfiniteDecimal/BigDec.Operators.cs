@@ -210,7 +210,9 @@ public partial class BigDec
             return One;
         }
 
-        var result = new BigDec(a, Math.Max(a.MaxPrecision, b.MaxPrecision));
+        var desiredPrecision = Math.Max(a.MaxPrecision, b.MaxPrecision);
+        var realLocalPrecision = Math.Max(desiredPrecision, Math.Max(a.Offset, b.Offset));
+        var result = new BigDec(a, realLocalPrecision);
         if (result._offset < result.MaxPrecision * 2)
         {
             var awaitedPrecision = result.MaxPrecision * 10;
@@ -230,7 +232,7 @@ public partial class BigDec
 
         result.Offset = newOffset;
 
-        return result.Round(result.MaxPrecision);
+        return result.Round(desiredPrecision);
     }
 
     #endregion
