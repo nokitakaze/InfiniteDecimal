@@ -216,34 +216,35 @@ public partial class BigDec
             return Zero;
         }
 
-        bool invert;
-        BigDec z;
-        if (this <= 0.01m)
-        {
-            z = One / this;
-            invert = true;
-        }
-        else
-        {
-            z = this.WithPrecision(this.MaxPrecision * 10);
-            invert = false;
-        }
+        bool invert = (this <= 0.01m);
+        var z = invert ? One / this : this.WithPrecision(this.MaxPrecision * 10);
 
-        int preResult = 0;
+        var result = BigDec.Zero;
         while (z >= 2)
         {
-            preResult++;
+            result += One;
             z /= E;
         }
 
-        z -= One;
+        //* вернуть
+        if ((2 - z).Abs() < 0.001m)
+        {
+            result += One;
+            z /= E;
+        }
+        // */
 
-        var numenator = z;
-        var u = true;
-        var result = z + preResult;
+        var powDic = new Dictionary<int, BigInteger>();
         // Supported accuracy limit
-        var epsilon = One.WithPrecision(MaxPrecision * 3) /
-                      BigInteger.Pow(BigInteger10, Math.Max(MaxPrecision * 2 - preResult, 0));
+        BigDec epsilon;
+        {
+            // ReSharper disable once RedundantCast
+            int t = (int)Math.Max(MaxPrecision * 2 - (int)result, 0);
+            var t1 = BigInteger.Pow(BigInteger10, t);
+            powDic[t] = t1;
+            epsilon = One.WithPrecision(t + 1) / t1;
+        }
+
         // codecov ignore start
         if (epsilon <= Zero)
         {
@@ -251,29 +252,37 @@ public partial class BigDec
         }
         // codecov ignore end
 
+        z -= One;
+        var numenator = z;
+        result += numenator;
+
         bool lastCycle = false;
-        var powDic = new Dictionary<int, BigInteger>();
-        for (var i = 2; (!lastCycle || (i < 30)) && (i < 10_000); i++)
+        for (var i = 2; (!lastCycle || (i < 30)) && (i < 10_000) && !numenator.IsZero(); i++)
         {
             numenator *= z;
             var tmp = numenator / i;
             lastCycle = (tmp.Abs() < epsilon);
 
-            if (u)
+            if ((i & 1) == 0)
             {
-                tmp = -tmp;
+                result -= tmp;
             }
-
-            u = !u;
-            result += tmp;
+            else
+            {
+                result += tmp;
+            }
 
             if (numenator.Offset > numenator.MaxPrecision + 10)
             {
                 var diff = numenator.Offset - numenator.MaxPrecision;
                 BigInteger localDenumenator;
-                if (powDic.TryGetValue(diff, out var t))
+                if (BigInt10Powers.TryGetValue(diff, out var t1))
                 {
-                    localDenumenator = t;
+                    localDenumenator = t1;
+                }
+                else if (powDic.TryGetValue(diff, out var t2))
+                {
+                    localDenumenator = t2;
                 }
                 else
                 {
@@ -306,7 +315,7 @@ public partial class BigDec
         BigDec term = One;
 
         // Supported accuracy limit
-        var epsilon = One.WithPrecision(MaxPrecision * 3) / BigInteger.Pow(BigInteger10, MaxPrecision * 2);
+        var epsilon = One.WithPrecision(MaxPrecision * 2 + 1) / BigInteger.Pow(BigInteger10, MaxPrecision * 2);
         // codecov ignore start
         if (epsilon <= Zero)
         {

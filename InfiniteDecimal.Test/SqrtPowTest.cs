@@ -27,8 +27,7 @@ public class SqrtPowTest
         var modifiedE = xModifiers
             .Select(x => (decimal)Math.E * x)
             .SelectMany(v => pModifier.SelectMany(p => new decimal[] { v + p, v - p, v + 2 * p, v - 2 * p, }))
-            .Distinct()
-            .OrderBy(t => t)
+            .SelectMany(v => new decimal[] { v, 1m / v })
             .ToArray();
 
         return values
@@ -99,13 +98,28 @@ public class SqrtPowTest
 
         var expectedDouble = Math.Log((double)input);
         var expected = new BigDec(expectedDouble);
-        var actual = new BigDec(input).Ln();
+        var actual = new BigDec(input).Ln().WithPrecision(20);
 
         var diff = (actual - expected).Abs();
         Assert.True(diff < 0.000_000_1m);
 
         var actualExp = actual.Exp();
         diff = (actualExp - input).Abs();
+        Assert.True(diff < 0.000_000_1m);
+    }
+
+    [Fact]
+    public void TestLn_Euler()
+    {
+        var expected = BigDec.One;
+        var actual = new BigDec(BigDec.E).Ln().WithPrecision(20);
+
+        var diff = (actual - expected).Abs();
+        var epsilon = BigDec.Parse("0.00000000000000000001");
+        Assert.True(diff < epsilon);
+
+        var actualExp = actual.Exp();
+        diff = (actualExp - BigDec.E).Abs();
         Assert.True(diff < 0.000_000_1m);
     }
 

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Numerics;
 
@@ -37,6 +38,24 @@ public partial class BigDec
 
     protected BigInteger OffsetPower = BigInteger.One;
     public bool IsInteger => (_offset == 0);
+
+    public static readonly IReadOnlyDictionary<int, BigInteger> BigInt10Powers;
+
+    static BigDec()
+    {
+        {
+            // E_Sqr = E * E;
+            var powDec = new Dictionary<int, BigInteger>();
+            var last = BigInteger.One;
+            for (var i = 1; i <= 2000; i++)
+            {
+                last *= BigInteger10;
+                powDec[i] = last;
+            }
+
+            BigInt10Powers = powDec;
+        }
+    }
 
     public void NormalizeOffset()
     {
