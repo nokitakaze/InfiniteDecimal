@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 
@@ -251,7 +252,8 @@ public partial class BigDec
         // codecov ignore end
 
         bool lastCycle = false;
-        for (var i = 2; !lastCycle; i++)
+        var powDic = new Dictionary<int, BigInteger>();
+        for (var i = 2; (!lastCycle || (i < 30)) && (i < 10_000); i++)
         {
             numenator *= z;
             var tmp = numenator / i;
@@ -268,7 +270,18 @@ public partial class BigDec
             if (numenator.Offset > numenator.MaxPrecision + 10)
             {
                 var diff = numenator.Offset - numenator.MaxPrecision;
-                numenator.Value /= BigInteger.Pow(BigInteger10, diff);
+                BigInteger localDenumenator;
+                if (powDic.TryGetValue(diff, out var t))
+                {
+                    localDenumenator = t;
+                }
+                else
+                {
+                    localDenumenator = BigInteger.Pow(BigInteger10, diff);
+                    powDic[diff] = localDenumenator;
+                }
+
+                numenator.Value /= localDenumenator;
                 numenator.Offset -= diff;
             }
         }

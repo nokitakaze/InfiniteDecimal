@@ -1,6 +1,4 @@
-﻿using System.Security.Principal;
-
-namespace InfiniteDecimal.Test;
+﻿namespace InfiniteDecimal.Test;
 
 public class SqrtPowTest
 {
@@ -11,11 +9,7 @@ public class SqrtPowTest
             0,
             1,
             2,
-            (decimal)Math.E,
             (decimal)Math.PI,
-            (decimal)Math.E * 2,
-            (decimal)Math.E / 2,
-            (decimal)Math.E * 3,
             (decimal)Math.Pow(Math.E, 2),
             (decimal)Math.Pow(Math.E, 1.5d),
             (decimal)Math.Sqrt(Math.E),
@@ -28,7 +22,17 @@ public class SqrtPowTest
             228,
         };
 
+        var xModifiers = new decimal[] { 0.5m, 1m, 1.5m, 2m, 3m, };
+        var pModifier = new decimal[] { 1m, 0.1m, 0.001m, 0.000_01m, 0.000_000_1m, };
+        var modifiedE = xModifiers
+            .Select(x => (decimal)Math.E * x)
+            .SelectMany(v => pModifier.SelectMany(p => new decimal[] { v + p, v - p, v + 2 * p, v - 2 * p, }))
+            .Distinct()
+            .OrderBy(t => t)
+            .ToArray();
+
         return values
+            .Concat(modifiedE)
             .Concat(values.Select(t => t - 1))
             .Concat(values.Select(t => t + 1))
             .Distinct()
