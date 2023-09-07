@@ -50,7 +50,7 @@ public partial class BigDec
             leftPow1 >>= 8;
         }
 
-        var u = ((double)tail1 / (double)leftPow1) >= 0.5d;
+        var u = !tail1.IsZero && ((leftPow1 / tail1) >= 2);
 
         var result = new BigDec(this);
         result.Value -= tail;
@@ -96,9 +96,14 @@ public partial class BigDec
 
             x *= x; // increase the base
             y >>= 1; // divide the exponent by 2
+
+            if (x.Offset > x.MaxPrecision * 10)
+            {
+                x = x.Round(x.MaxPrecision);
+            }
         }
 
-        return result;
+        return result.Round(x.MaxPrecision);
     }
 
     public BigDec Pow(BigDec exp)

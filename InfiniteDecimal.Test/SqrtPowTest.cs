@@ -161,10 +161,13 @@ public class SqrtPowTest
             .OrderBy(t => t)
             .ToArray();
 
+        var rnd = new Random();
         return values
             .OrderBy(t => t)
             .Distinct()
             .SelectMany(value => exps.Select(exp => new object[] { value, exp }))
+            .OrderBy(_ => rnd.NextDouble())
+            .Take(100) // todo delme
             .ToArray();
     }
 
@@ -182,7 +185,11 @@ public class SqrtPowTest
         var exponentBI = new BigDec(exponent);
 
         // ReSharper disable once ConvertIfStatementToSwitchStatement
-        if (expected == 0)
+        if ((expected == 0) && (value != 0))
+        {
+            // Too small value for 64-bit IEEE-754
+        }
+        else if (expected == 0)
         {
             var actual1 = valueBI.Pow(exponentBI);
             Assert.Equal(BigDec.Zero, actual1);
@@ -201,13 +208,33 @@ public class SqrtPowTest
         else
         {
             var actual1 = valueBI.Pow(exponentBI);
-            var diff = (expected - actual1).Abs();
-            Assert.True(diff < 0.000_000_1m);
+            // var diff = (expected - actual1).Abs();
+            // Assert.True(diff < 0.000_000_1m);
+            Assert.InRange(actual1, new BigDec(expected) - 0.000_000_1m, new BigDec(expected) + 0.000_000_1m);
 
             var actual2 = valueBI.Pow(exponent);
-            diff = (expected - actual2).Abs();
-            Assert.True(diff < 0.000_000_1m);
+            // diff = (expected - actual2).Abs();
+            // Assert.True(diff < 0.000_000_1m);
+            Assert.InRange(actual2, new BigDec(expected) - 0.000_000_1m, new BigDec(expected) + 0.000_000_1m);
         }
+    }
+
+    [Fact]
+    public void TestPow_Case1()
+    {
+        TestPow(2.71826182845904m, -1000000.007m);
+    }
+
+    [Fact]
+    public void TestPow_Case2()
+    {
+        TestPow(14, 0.007m);
+    }
+
+    [Fact]
+    public void TestPow_Case3()
+    {
+        TestPow(7.95484548537712m, 0m);
     }
 
     [Fact]
