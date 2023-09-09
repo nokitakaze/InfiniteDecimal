@@ -126,14 +126,14 @@ public partial class BigDec
         BigInteger valueA = a.Value;
         if (a._offset < maxOffset)
         {
-            var p = BigInteger.Pow(BigInteger10, maxOffset - a._offset);
+            var p = GetPow10BigInt(maxOffset - a._offset);
             valueA *= p;
         }
 
         BigInteger valueB = b.Value;
         if (b._offset < maxOffset)
         {
-            var p = BigInteger.Pow(BigInteger10, maxOffset - b._offset);
+            var p = GetPow10BigInt(maxOffset - b._offset);
             valueB *= p;
         }
 
@@ -217,7 +217,7 @@ public partial class BigDec
         {
             var awaitedPrecision = result.MaxPrecision * 10;
             var addExp = awaitedPrecision - result._offset;
-            result.Value *= BigInteger.Pow(BigInteger10, addExp);
+            result.Value *= GetPow10BigInt(addExp);
             result.Offset = awaitedPrecision;
         }
 

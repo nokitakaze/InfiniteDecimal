@@ -33,13 +33,13 @@ public partial class BigDec
 
     public BigDec Round(int decimalNumber)
     {
-        // var pow = BigInteger.Pow(BigInteger10, maxPrecision);
+        // var pow = GetPow10BigInt(maxPrecision);
         if (Offset <= decimalNumber)
         {
             return this.WithPrecision(decimalNumber);
         }
 
-        var leftPow = BigInteger.Pow(BigInteger10, Offset - decimalNumber);
+        var leftPow = GetPow10BigInt(Offset - decimalNumber);
         var tail = this.Value % leftPow;
 
         var leftPow1 = leftPow;
@@ -199,7 +199,7 @@ public partial class BigDec
         }
 
         var half = new BigDec(0.5m);
-        var epsilon = One.WithPrecision(this.MaxPrecision) / BigInteger.Pow(BigInteger10, this.MaxPrecision);
+        var epsilon = One.WithPrecision(this.MaxPrecision) / GetPow10BigInt(this.MaxPrecision);
         // codecov ignore start
         if (epsilon <= Zero)
         {
@@ -267,7 +267,7 @@ public partial class BigDec
         {
             // ReSharper disable once RedundantCast
             int t = (int)Math.Max(MaxPrecision * 2 - (int)result, 0);
-            var t1 = BigInteger.Pow(BigInteger10, t);
+            var t1 = GetPow10BigInt(t);
             powDic[t] = t1;
             epsilon = One.WithPrecision(t + 1) / t1;
         }
@@ -342,7 +342,7 @@ public partial class BigDec
         BigDec term = One;
 
         // Supported accuracy limit
-        var epsilon = One.WithPrecision(MaxPrecision * 2 + 1) / BigInteger.Pow(BigInteger10, MaxPrecision * 2);
+        var epsilon = One.WithPrecision(MaxPrecision * 2 + 1) / GetPow10BigInt(MaxPrecision * 2);
         // codecov ignore start
         if (epsilon <= Zero)
         {

@@ -107,7 +107,7 @@ public partial class BigDec
 
         if (u)
         {
-            OffsetPower = BigInteger.Pow(BigInteger10, _offset);
+            OffsetPower = GetPow10BigInt(_offset);
         }
     }
 
@@ -224,7 +224,7 @@ public partial class BigDec
             // ReSharper disable once UseObjectOrCollectionInitializer
             var valBI = new BigDec(tail);
             valBI._offset = chunks1.Length;
-            valBI.OffsetPower = BigInteger.Pow(bigInteger10, valBI._offset);
+            valBI.OffsetPower = GetPow10BigInt(valBI._offset);
             valBI.Value += valBI.OffsetPower * BigInteger.Parse(chunks[0]);
             valBI.Value *= sign;
             if (valBI._offset > valBI.MaxPrecision)

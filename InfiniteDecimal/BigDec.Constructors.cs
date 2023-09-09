@@ -53,7 +53,7 @@ public partial class BigDec
 
         var tailResult = BigInteger.Zero;
         const int OffsetStep = 9;
-        var modifier = BigInteger.Pow(BigInteger10, OffsetStep);
+        var modifier = GetPow10BigInt(OffsetStep);
         const decimal modifierDecimal = 1000_000_000m;
         while (decTail > 0)
         {
