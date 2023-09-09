@@ -246,23 +246,28 @@ public partial class BigDec
         var z = invert ? One / this : this.WithPrecision(this.MaxPrecision * 10);
 
         var result = BigDec.Zero;
-        while (z >= 2)
+        while (z > E)
         {
             result += One;
             z /= E;
         }
 
+        /*
         if ((2 - z).Abs() < 0.001m)
         {
             result += One;
             z /= E;
         }
+        */
 
+        while ((1m - z).Abs() > 0.05)
         {
             var (exp, multiplier) = FoundExpPrecision(z);
             result -= exp;
             z *= multiplier;
         }
+
+        z = z.Round(this.MaxPrecision * 10);
 
         var powDic = new Dictionary<int, BigInteger>();
         // Supported accuracy limit
@@ -287,7 +292,7 @@ public partial class BigDec
         result += numenator;
 
         bool lastCycle = false;
-        for (var i = 2; (!lastCycle || (i < 30)) && (i < 10_000) && !numenator.IsZero; i++)
+        for (var i = 2; (!lastCycle || (i < 10)) && (i < 10_000) && !numenator.IsZero; i++)
         {
             numenator *= z;
             var tmp = numenator / i;

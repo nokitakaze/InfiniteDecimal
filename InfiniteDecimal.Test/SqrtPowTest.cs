@@ -2,7 +2,7 @@
 
 public class SqrtPowTest
 {
-    public static decimal[] GetTestDecimal()
+    public static decimal[] GetTestDecimal(bool getShort = false)
     {
         var values = new decimal[]
         {
@@ -22,7 +22,10 @@ public class SqrtPowTest
             228,
         };
 
-        var xModifiers = new decimal[] { 0.5m, 1m, 1.5m, 2m, 3m, };
+        var xModifiers = getShort
+            ? new decimal[] { 0.5m, 1m, 2m, }
+            : new decimal[] { 0.5m, 1m, 1.5m, 2m, 3m, };
+
         var pModifier = new decimal[] { 1m, 0.1m, 0.001m, 0.000_01m, 0.000_000_1m, };
         var modifiedE = xModifiers
             .Select(x => (decimal)Math.E * x)
@@ -32,8 +35,8 @@ public class SqrtPowTest
 
         return values
             .Concat(modifiedE)
-            .Concat(values.Select(t => t - 1))
-            .Concat(values.Select(t => t + 1))
+            .Concat(getShort ? Array.Empty<decimal>() : values.Select(t => t - 1))
+            .Concat(getShort ? Array.Empty<decimal>() : values.Select(t => t + 1))
             .Distinct()
             .Where(x => x >= 0)
             .OrderBy(t => t)
@@ -61,18 +64,18 @@ public class SqrtPowTest
         var powExpected = input * input;
         var powActual = (new BigDec(input)).Pow(2);
 
-        var actual1 = powActual.Sqrt();
+        var sqrtActual = powActual.Sqrt();
         if (TrivialMathTests.IsInt(input))
         {
             Assert.True(powExpected == powActual);
-            Assert.Equal(new BigDec(input), actual1);
+            Assert.Equal(new BigDec(input), sqrtActual);
         }
         else
         {
             var diff = (powExpected - powActual).Abs();
             Assert.True(diff < 0.000_000_1m);
 
-            diff = (actual1 - input).Abs();
+            diff = (sqrtActual - input).Abs();
             Assert.True(diff < 0.000_000_1m);
         }
 
@@ -147,13 +150,10 @@ public class SqrtPowTest
 
     public static object[][] TestPowData()
     {
-        var values = GetTestDecimal();
-        decimal[] exps = Enumerable
-            .Range(0, 11)
-            .Select(t => t * 0.5m)
-            .Concat(new[] { 1488m, 0.000001m, 1_000_000m, })
+        var values = GetTestDecimal(true);
+        decimal[] exps = new[] { 0, 1.5m, 2m, (decimal)Math.E, (decimal)Math.PI, 1337m, 0.000001m, 1_000_000m, }
             .SelectMany(t => new decimal[]
-                { t, t + 0.000001m, t + 0.001m, t - 0.000001m, t - 0.001m, t + 0.007m, t + 0.001_002_003m })
+                { t, t + 0.000001m, t + 0.007m, t - 0.000001m, t - 0.007m, })
             .ToArray();
         exps = exps
             .Concat(exps.Select(exp => -exp))
@@ -166,8 +166,8 @@ public class SqrtPowTest
             .OrderBy(t => t)
             .Distinct()
             .SelectMany(value => exps.Select(exp => new object[] { value, exp }))
-            .OrderBy(_ => rnd.NextDouble())
-            .Take(100) // todo delme
+            // .OrderBy(_ => rnd.NextDouble())
+            // .Take(100) // todo delme
             .ToArray();
     }
 

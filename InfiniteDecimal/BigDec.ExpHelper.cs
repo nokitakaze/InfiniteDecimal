@@ -140,13 +140,24 @@ public partial class BigDec
 
     private static (decimal exp, BigDec multiplier) FoundExpPrecision(BigDec input)
     {
+        if (input < 1 / E)
+        {
+            return ExpModifiers.Last();
+        }
+
+        if (input > E)
+        {
+            return ExpModifiers[0];
+        }
+
         (decimal exp, BigDec multiplier) picked = ExpModifiers[0];
         double abs = double.PositiveInfinity;
 
+        var inputRounded = input.Round(8);
         foreach (var item in ExpModifiers)
         {
-            var r = item.multiplier * input;
-            var newAbs = Math.Abs(1d - (double) r);
+            var r = item.multiplier * inputRounded;
+            var newAbs = Math.Abs(1d - (double)r);
             // ReSharper disable once InvertIf
             if (newAbs < abs)
             {
