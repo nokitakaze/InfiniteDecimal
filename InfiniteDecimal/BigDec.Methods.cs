@@ -24,10 +24,7 @@ public partial class BigDec
         return Value / OffsetPower;
     }
 
-    public bool IsZero()
-    {
-        return this.Value == BigInteger.Zero;
-    }
+    public bool IsZero => this.Value == BigInteger.Zero;
 
     #region
 
@@ -50,7 +47,7 @@ public partial class BigDec
             leftPow1 >>= 8;
         }
 
-        var u = !tail1.IsZero && ((leftPow1 / tail1) >= 2);
+        var u = !tail1.IsZero && ((leftPow1 / tail1) <= 1);
 
         var result = new BigDec(this);
         result.Value -= tail;
@@ -108,10 +105,10 @@ public partial class BigDec
 
     public BigDec Pow(BigDec exp)
     {
-        if (IsZero())
+        if (IsZero)
         {
             // ReSharper disable once ConvertIfStatementToReturnStatement
-            if (exp.IsZero())
+            if (exp.IsZero)
             {
                 // 0 ^ 0 = 1
                 // https://www.youtube.com/watch?v=OJ55XetZKF0
@@ -261,6 +258,12 @@ public partial class BigDec
             z /= E;
         }
 
+        {
+            var (exp, multiplier) = FoundExpPrecision(z);
+            result -= exp;
+            z *= multiplier;
+        }
+
         var powDic = new Dictionary<int, BigInteger>();
         // Supported accuracy limit
         BigDec epsilon;
@@ -284,7 +287,7 @@ public partial class BigDec
         result += numenator;
 
         bool lastCycle = false;
-        for (var i = 2; (!lastCycle || (i < 30)) && (i < 10_000) && !numenator.IsZero(); i++)
+        for (var i = 2; (!lastCycle || (i < 30)) && (i < 10_000) && !numenator.IsZero; i++)
         {
             numenator *= z;
             var tmp = numenator / i;

@@ -66,11 +66,11 @@ public class TrivialTest
     [SuppressMessage("ReSharper", "VariableCanBeNotNullable")]
     public void TestEquality_null()
     {
-        var a1 = new BigDec(1);
-        var b1 = new BigDec(1);
+        var a1 = BigDec.One;
+        var b1 = BigDec.One;
 
-        BigDec? c1a = new BigDec(1);
-        BigDec? d1a = new BigDec(1);
+        BigDec? c1a = BigDec.One;
+        BigDec? d1a = BigDec.One;
 
         BigDec? c1b = null;
         BigDec? d1b = null;
@@ -232,11 +232,43 @@ public class TrivialTest
 
     #endregion
 
-    [Fact]
-    public void CheckLongTail()
+    public static ICollection<object[]> CheckLongTailData()
     {
-        var bi10 = new BigInteger(10);
+        var result = new List<object[]>();
 
+        for (var exp1 = -30; exp1 <= 30; exp1++)
+        {
+            if (exp1 < 0)
+            {
+                var operand1 = BigDec.One / BigInteger.Pow(BigDec.BigInteger10, -exp1);
+                if (operand1.IsZero)
+                {
+                    continue;
+                }
+            }
+
+            for (var exp2 = -30; exp2 <= 30; exp2++)
+            {
+                if (exp2 < 0)
+                {
+                    var operand2 = BigDec.One / BigInteger.Pow(BigDec.BigInteger10, -exp2);
+                    if (operand2.IsZero)
+                    {
+                        continue;
+                    }
+                }
+
+                result.Add(new object[] { exp1, exp2 });
+            }
+        }
+
+        return result;
+    }
+
+    [Theory]
+    [MemberData(nameof(CheckLongTailData))]
+    public void CheckLongTail(int exp1, int exp2)
+    {
         var valueField = typeof(BigDec)
             .GetField("Value", BindingFlags.NonPublic | BindingFlags.Instance);
         if (valueField is null)
@@ -251,62 +283,49 @@ public class TrivialTest
             throw new Exception();
         }
 
-        for (var exp1 = -30; exp1 <= 30; exp1++)
+        BigDec operand1 = BigDec.One;
+        if (exp1 >= 0)
         {
-            BigDec operand1 = new BigDec(1);
-            if (exp1 >= 0)
-            {
-                operand1 *= BigInteger.Pow(bi10, exp1);
-            }
-            else
-            {
-                operand1 /= BigInteger.Pow(bi10, -exp1);
-                if (operand1 == BigDec.Zero)
-                {
-                    continue;
-                }
-            }
-
-            for (var exp2 = -30; exp2 <= 30; exp2++)
-            {
-                BigDec operand2 = new BigDec(1);
-                if (exp2 >= 0)
-                {
-                    operand2 *= BigInteger.Pow(bi10, exp2);
-                }
-                else
-                {
-                    operand2 /= BigInteger.Pow(bi10, -exp2);
-                    if (operand2 == BigDec.Zero)
-                    {
-                        continue;
-                    }
-                }
-
-                var result = operand1 / operand2;
-                var expected = exp1 - exp2;
-                if (-expected > result.MaxPrecision)
-                {
-                    Assert.Equal(BigDec.Zero, result);
-                    continue;
-                }
-
-                var actual = 0;
-
-                var _value = (BigInteger)valueField.GetValue(result)!;
-                while (_value >= 10)
-                {
-                    result /= 10;
-                    _value = (BigInteger)valueField.GetValue(result)!;
-                    actual++;
-                }
-
-                Assert.Equal(BigInteger.One, _value);
-                actual -= (int)offsetField.GetValue(result)!;
-
-                Assert.Equal(expected, actual);
-            }
+            operand1 *= BigInteger.Pow(BigDec.BigInteger10, exp1);
         }
+        else
+        {
+            operand1 /= BigInteger.Pow(BigDec.BigInteger10, -exp1);
+        }
+
+        BigDec operand2 = BigDec.One;
+        if (exp2 >= 0)
+        {
+            operand2 *= BigInteger.Pow(BigDec.BigInteger10, exp2);
+        }
+        else
+        {
+            operand2 /= BigInteger.Pow(BigDec.BigInteger10, -exp2);
+        }
+
+        var result = operand1 / operand2;
+        var expected = exp1 - exp2;
+        if (-expected > result.MaxPrecision)
+        {
+            result = result.Round(result.MaxPrecision);
+            Assert.Equal(BigDec.Zero, result);
+            return;
+        }
+
+        var actual = 0;
+
+        var _value = (BigInteger)valueField.GetValue(result)!;
+        while (_value >= 10)
+        {
+            result /= 10;
+            _value = (BigInteger)valueField.GetValue(result)!;
+            actual++;
+        }
+
+        Assert.Equal(BigInteger.One, _value);
+        actual -= (int)offsetField.GetValue(result)!;
+
+        Assert.Equal(expected, actual);
     }
 
     [Fact]

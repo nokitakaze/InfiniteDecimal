@@ -25,26 +25,10 @@ public partial class BigDec
         {
             for (var count2 = -MaxCount; count2 <= MaxCount; count2++)
             {
-                /*
-                if (Math.Abs(count2) % 2 == 0)
-                {
-                    continue;
-                }// */
-
                 for (var count3 = -MaxCount; count3 <= MaxCount; count3++)
                 {
-                    /* if (Math.Abs(count3) % 2 == 0)
-                    {
-                        continue;
-                    } */
-
                     for (var count4 = -MaxCount; count4 <= MaxCount; count4++)
                     {
-                        /* if (Math.Abs(count4) % 2 == 0)
-                        {
-                            continue;
-                        } */
-
                         for (var count5 = -MaxCount; count5 <= MaxCount; count5++)
                         {
                             for (var count6 = -MaxCount; count6 <= MaxCount; count6++)
@@ -152,5 +136,25 @@ public partial class BigDec
         }
 
         return expModifiers.ToArray();
+    }
+
+    private static (decimal exp, BigDec multiplier) FoundExpPrecision(BigDec input)
+    {
+        (decimal exp, BigDec multiplier) picked = ExpModifiers[0];
+        double abs = double.PositiveInfinity;
+
+        foreach (var item in ExpModifiers)
+        {
+            var r = item.multiplier * input;
+            var newAbs = Math.Abs(1d - (double) r);
+            // ReSharper disable once InvertIf
+            if (newAbs < abs)
+            {
+                abs = newAbs;
+                picked = item;
+            }
+        }
+
+        return picked;
     }
 }

@@ -8,7 +8,7 @@ namespace InfiniteDecimal;
 public partial class BigDec
 {
     public const int MaxDefaultPrecision = 18;
-    protected static readonly BigInteger BigInteger10 = new BigInteger(10);
+    public static readonly BigInteger BigInteger10 = new BigInteger(10);
     public readonly int MaxPrecision = MaxDefaultPrecision;
     public static readonly BigDec One = new BigDec(1);
     public static readonly BigDec Zero = new BigDec(0);
@@ -147,6 +147,12 @@ public partial class BigDec
             var mode = (int)(_value % BigInteger10);
             vTailString = mode + vTailString;
             _value /= BigInteger10;
+        }
+
+        vTailString = vTailString.TrimEnd('0');
+        if (vTailString == string.Empty)
+        {
+            return $"{sign}{vEntier}";
         }
 
         string separator = ".";

@@ -209,7 +209,7 @@ public class SqrtPowTest
         {
             var rangeMin = new BigDec(expected) - 0.000_000_1m;
             var rangeMax = new BigDec(expected) + 0.000_000_1m;
-            
+
             var actual1 = valueBI.Pow(exponentBI);
             Assert.InRange(actual1, rangeMin, rangeMax);
 
