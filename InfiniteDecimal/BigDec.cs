@@ -63,6 +63,7 @@ public partial class BigDec
             E_Root32 = E_Root16.Sqrt().WithPrecision(E.MaxPrecision);
         }
         // */
+        ExpModifiers = GenerateExpModifiers();
     }
 
     public static BigInteger GetPow10BigInt(int exp)
