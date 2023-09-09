@@ -2,19 +2,31 @@
 
 public class InnerConstantTest
 {
-    private static readonly BigDec Epsilon = BigDec.One.WithPrecision(998) / BigDec.BigInt10Powers[998];
+    private static readonly BigDec Epsilon = BigDec.One.WithPrecision(997) / BigDec.BigInt10Powers[997];
 
-    public static object[][] TestEData()
+    public static ICollection<object[]> TestEData()
     {
-        return new object[][]
+        var constants = new BigDec[]
         {
-            new object[] { BigDec.E_Root8, 2, BigDec.E_Root4 },
-            new object[] { BigDec.E_Root8, 4, BigDec.E_Sqrt },
-            new object[] { BigDec.E_Root8, 8, BigDec.E },
-            new object[] { BigDec.E_Root4, 2, BigDec.E_Sqrt },
-            new object[] { BigDec.E_Root4, 4, BigDec.E },
-            new object[] { BigDec.E_Sqrt, 2, BigDec.E },
+            BigDec.E_Root32,
+            BigDec.E_Root16,
+            BigDec.E_Root8,
+            BigDec.E_Root4,
+            BigDec.E_Sqrt,
+            BigDec.E,
         };
+
+        var result = new List<object[]>();
+        for (var i = 1; i < constants.Length; i++)
+        {
+            for (var j = 0; j < i; j++)
+            {
+                var exp = Math.Pow(2, i - j);
+                result.Add(new object[] { constants[j], exp, constants[i] });
+            }
+        }
+
+        return result;
     }
 
     [Theory]

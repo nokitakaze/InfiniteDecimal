@@ -8,13 +8,13 @@ namespace InfiniteDecimal;
 public partial class BigDec
 {
     public const int MaxDefaultPrecision = 18;
+    protected static readonly BigInteger BigInteger10 = new BigInteger(10);
     public readonly int MaxPrecision = MaxDefaultPrecision;
     public static readonly BigDec One = new BigDec(1);
     public static readonly BigDec Zero = new BigDec(0);
 
     protected BigInteger Value = BigInteger.Zero;
     protected int _offset;
-    protected static readonly BigInteger BigInteger10 = new BigInteger(10);
 
     protected int Offset
     {
@@ -32,7 +32,7 @@ public partial class BigDec
             }
 
             _offset = value;
-            OffsetPower = BigInteger.Pow(BigInteger10, _offset);
+            OffsetPower = GetPow10BigInt(_offset);
         }
     }
 
@@ -59,8 +59,27 @@ public partial class BigDec
             E_Sqrt = E.Sqrt().WithPrecision(E.MaxPrecision);
             E_Root4 = E_Sqrt.Sqrt().WithPrecision(E.MaxPrecision);
             E_Root8 = E_Root4.Sqrt().WithPrecision(E.MaxPrecision);
+            E_Root16 = E_Root8.Sqrt().WithPrecision(E.MaxPrecision);
+            E_Root32 = E_Root16.Sqrt().WithPrecision(E.MaxPrecision);
         }
-        */
+        // */
+    }
+
+    public static BigInteger GetPow10BigInt(int exp)
+    {
+        // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
+        if ((BigInt10Powers is not null) && BigInt10Powers.TryGetValue(exp, out var t))
+        {
+            return t;
+        }
+        else if (!BigInteger10.IsZero)
+        {
+            return BigInteger.Pow(BigInteger10, exp);
+        }
+        else
+        {
+            return BigInteger.Pow(new BigInteger(10), exp);
+        }
     }
 
     public void NormalizeOffset()
@@ -103,6 +122,11 @@ public partial class BigDec
         if (_offset == 0)
         {
             return Value.ToString();
+        }
+
+        if (OffsetPower.IsZero)
+        {
+            throw new InfiniteDecimalException($"Inconsistent state in BidDec. Offset '{_offset}' malformed");
         }
 
         var sign = string.Empty;
