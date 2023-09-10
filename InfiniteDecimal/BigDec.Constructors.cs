@@ -133,7 +133,7 @@ public partial class BigDec
 
             if (valueStringify.Contains("E"))
             {
-                var rParse3 = new Regex("E\\-(\\d+)$");
+                var rParse3 = new Regex("^(.+?)E\\-(\\d+)$");
                 m = rParse3.Match(valueStringify);
                 // codecov ignore start
                 if (!m.Success)
@@ -142,9 +142,8 @@ public partial class BigDec
                 }
                 // codecov ignore end
 
-                addExp = int.Parse(m.Groups[1].Value);
-                value *= Math.Pow(10d, addExp);
-                valueStringify = value.ToString("G17");
+                addExp = int.Parse(m.Groups[2].Value);
+                valueStringify = m.Groups[1].Value;
                 valueStringifyLength = valueStringify.Length;
             }
         }

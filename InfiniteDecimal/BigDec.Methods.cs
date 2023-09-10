@@ -133,12 +133,44 @@ public partial class BigDec
         var entier = exp.Floor();
         var tail = exp - entier;
 
-        var result = Pow(entier);
+        BigDec result;
+        // ReSharper disable once ConvertIfStatementToConditionalTernaryExpression
+        if (!needReverse)
+        {
+            result = Pow(entier);
+        }
+        else
+        {
+            result = this.WithPrecision(10_000).Pow(entier);
+        }
 
         if (tail != Zero)
         {
-            var expBase = tail * this.Ln();
-            var tailPart = expBase.Exp();
+            BigDec tailPart;
+            if (tail == 0.5m)
+            {
+                tailPart = Sqrt().WithPrecision(MaxPrecision);
+            }
+            else if (tail == 0.5m / 2)
+            {
+                tailPart = Sqrt().Sqrt().WithPrecision(MaxPrecision);
+            }
+            else if (tail == 0.5m / 4)
+            {
+                tailPart = Sqrt().Sqrt().Sqrt().WithPrecision(MaxPrecision);
+            }
+            else if (tail == 0.5m / 8)
+            {
+                tailPart = Sqrt().Sqrt().Sqrt().Sqrt().WithPrecision(MaxPrecision);
+            }
+            else
+            {
+                // Calculation via Taylor series.
+                // a^b = e^(b * ln(a))
+                var expBase = tail * this.Ln();
+                tailPart = expBase.Exp();
+            }
+
             result *= tailPart;
         }
 
@@ -147,7 +179,7 @@ public partial class BigDec
             result = One / result;
         }
 
-        return result;
+        return result.WithPrecision(this.MaxPrecision);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

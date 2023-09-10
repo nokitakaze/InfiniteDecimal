@@ -1,4 +1,6 @@
-﻿namespace InfiniteDecimal.Test;
+﻿using System.Diagnostics;
+
+namespace InfiniteDecimal.Test;
 
 public class SqrtPowTest
 {
@@ -181,6 +183,16 @@ public class SqrtPowTest
             return;
         }
 
+        {
+            var v1 = new BigDec(expected + 0.000_000_1d);
+            var v2 = new BigDec(expected - 0.000_000_1d);
+            var diff = v1 - v2;
+            if (diff >= 0.000_000_201m)
+            {
+                // Debugger.Break();
+            }
+        }
+
         var valueBI = new BigDec(value);
         var exponentBI = new BigDec(exponent);
 
@@ -207,6 +219,13 @@ public class SqrtPowTest
         }
         else
         {
+            var lg10 = Math.Log10(expected);
+            if (lg10 >= 10)
+            {
+                // This case can't be checked with double precision
+                return;
+            }
+
             var rangeMin = new BigDec(expected) - 0.000_000_1m;
             var rangeMax = new BigDec(expected) + 0.000_000_1m;
 
