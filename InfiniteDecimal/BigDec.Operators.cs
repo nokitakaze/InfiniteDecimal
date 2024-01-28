@@ -200,17 +200,18 @@ public partial class BigDec
             throw new InfiniteDecimalException("Division by zero");
         }
 
+        var desiredPrecision = Math.Max(a.MaxPrecision, b.MaxPrecision);
+
         if (b == One)
         {
-            return a.WithPrecision(Math.Max(a.MaxPrecision, b.MaxPrecision));
+            return a.WithPrecision(desiredPrecision);
         }
 
         if (a == b)
         {
-            return One;
+            return One.WithPrecision(desiredPrecision);
         }
 
-        var desiredPrecision = Math.Max(a.MaxPrecision, b.MaxPrecision);
         var realLocalPrecision = Math.Max(desiredPrecision, Math.Max(a.Offset, b.Offset));
         var result = new BigDec(a, realLocalPrecision);
         if (result._offset < result.MaxPrecision * 2)

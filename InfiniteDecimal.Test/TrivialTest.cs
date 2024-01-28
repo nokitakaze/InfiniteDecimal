@@ -230,6 +230,104 @@ public class TrivialTest
         Assert.True(diff <= 0.000_000_000_01m);
     }
 
+    [Fact]
+    public void InfiniteReducing()
+    {
+        var composites = new (decimal operandA, decimal operandB)[]
+        {
+            (1, 3),
+            (1, 17),
+            (7, 44),
+        };
+
+        var stepSize = BigInteger.Pow(10, 3);
+
+        foreach (var (operandA, operandB) in composites)
+        {
+            var operandA1 = new BigDec(operandA);
+            var operandB1 = new BigDec(operandB);
+
+            var operandA2 = operandA1.WithPrecision(50);
+            var operandB2 = operandB1.WithPrecision(50);
+            var actual = operandA2 / operandB2;
+
+            for (var i = 3; i < 36; i += 3)
+            {
+                operandA2 /= stepSize;
+                operandB2 /= stepSize;
+
+                var expected = operandA2 / operandB2;
+                var diff = actual - expected;
+                Assert.True(diff <= 0.000_000_000_01m);
+            }
+        }
+    }
+
+    #region Additional division cases
+
+    public static object[][] AdditionalDivisionCases_TheoryData()
+    {
+        var denominator_tail = BigDec.One / BigInteger.Pow(BigDec.BigInteger10, 18);
+        var denominators = new string[]
+        {
+            "207161.63281935526273129",
+            "1",
+            "2.5",
+            "10",
+            "0.1",
+            "0.001",
+        };
+
+        return denominators
+            .Select(denominator =>
+            {
+                var t = BigDec.Parse(denominator);
+                return new BigDec[] { t, t + denominator_tail };
+            })
+            .SelectMany(ar => ar.Cast<object>().Select(t => new object[] { t }))
+            .ToArray();
+    }
+
+    [Theory]
+    [MemberData(nameof(AdditionalDivisionCases_TheoryData))]
+    public void AdditionalDivisionCases_Theory(BigDec denominator)
+    {
+        var denominatorDouble = (double)denominator;
+        var correctionCoef = BigInteger.One;
+        var expected0 = BigDec.One / denominator;
+        for (var i = 0; i < 36; i++)
+        {
+            var nominator = BigDec.One.WithPrecision(18 + i) / correctionCoef;
+            var nominatorDouble = Math.Pow(0.1d, i);
+            Assert.True(nominator > BigDec.Zero);
+
+            var division = nominator / denominator;
+            Assert.True(division > BigDec.Zero);
+
+            if (i < 10)
+            {
+                var expectedValue = nominatorDouble / denominatorDouble;
+                var actualDouble = (double)division;
+
+                Assert.InRange(actualDouble, expectedValue * 0.999d, expectedValue * 1.001d);
+            }
+
+            {
+                var divisionCorrected = division * correctionCoef;
+                Assert.InRange(divisionCorrected, expected0 * 0.999_999_999m, expected0 * 1.000_000_001m);
+                var rCoef = (divisionCorrected > expected0)
+                    ? divisionCorrected.WithPrecision(1000 + i) / expected0
+                    : expected0 / divisionCorrected.WithPrecision(1000 + i);
+                rCoef -= 1;
+                Assert.InRange(rCoef, BigDec.Zero, new BigDec(0.000_000_000_001m));
+            }
+
+            correctionCoef *= BigDec.BigInteger10;
+        }
+    }
+
+    #endregion
+
     #endregion
 
     public static ICollection<object[]> CheckLongTailData()
