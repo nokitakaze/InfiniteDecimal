@@ -130,6 +130,7 @@ public partial class BigDec
             needReverse = true;
         }
 
+        var desiredPrecision = Math.Max(exp.MaxPrecision, this.MaxPrecision);
         var entier = exp.Floor();
         var tail = exp - entier;
 
@@ -141,6 +142,7 @@ public partial class BigDec
         }
         else
         {
+            // todo fix magic number
             result = this.WithPrecision(10_000).Pow(entier);
         }
 
@@ -149,25 +151,25 @@ public partial class BigDec
             BigDec tailPart;
             if (tail == 0.5m)
             {
-                tailPart = Sqrt().WithPrecision(MaxPrecision);
+                tailPart = Sqrt().WithPrecision(desiredPrecision);
             }
             else if (tail == 0.5m / 2)
             {
-                tailPart = Sqrt().Sqrt().WithPrecision(MaxPrecision);
+                tailPart = Sqrt().Sqrt().WithPrecision(desiredPrecision);
             }
             else if (tail == 0.5m / 4)
             {
-                tailPart = Sqrt().Sqrt().Sqrt().WithPrecision(MaxPrecision);
+                tailPart = Sqrt().Sqrt().Sqrt().WithPrecision(desiredPrecision);
             }
             else if (tail == 0.5m / 8)
             {
-                tailPart = Sqrt().Sqrt().Sqrt().Sqrt().WithPrecision(MaxPrecision);
+                tailPart = Sqrt().Sqrt().Sqrt().Sqrt().WithPrecision(desiredPrecision);
             }
             else
             {
                 // Calculation via Taylor series.
                 // a^b = e^(b * ln(a))
-                var expBase = tail * this.Ln();
+                var expBase = tail * this.WithPrecision(desiredPrecision).Ln();
                 tailPart = expBase.Exp();
             }
 
