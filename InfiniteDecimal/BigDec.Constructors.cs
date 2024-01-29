@@ -226,4 +226,18 @@ public partial class BigDec
     {
         return new BigDec(this);
     }
+
+    /// <summary>
+    /// Calculates the power of 0.1
+    /// </summary>
+    /// <param name="power">The power to raise 0.1 to</param>
+    /// <param name="maxPrecision">The maximum precision to use.</param>
+    /// <returns>The result of raising 0.1 to the specified power.</returns>
+    public static BigDec FracPowerOfTen(int power, int maxPrecision = MaxDefaultPrecision)
+    {
+        var result = One.WithPrecision(Math.Max(power, maxPrecision));
+        result.Offset = power;
+
+        return result;
+    }
 }

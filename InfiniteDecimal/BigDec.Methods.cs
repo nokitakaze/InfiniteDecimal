@@ -7,6 +7,11 @@ namespace InfiniteDecimal;
 
 public partial class BigDec
 {
+    /// <summary>
+    /// Precision buffer used for inner calculations
+    /// </summary>
+    public const int PrecisionBuffer = 5;
+
     public BigDec Abs()
     {
         if (this.Value >= 0)
@@ -286,14 +291,7 @@ public partial class BigDec
             z /= E;
         }
 
-        /*
-        if ((2 - z).Abs() < 0.001m)
-        {
-            result += One;
-            z /= E;
-        }
-        */
-
+        // maximize the approximation of the value z to 1
         while ((1m - z).Abs() > 0.05)
         {
             var (exp, multiplier) = FoundExpPrecision(z);
@@ -301,17 +299,17 @@ public partial class BigDec
             z *= multiplier;
         }
 
-        z = z.Round(this.MaxPrecision * 10);
+        z = z.Round(this.MaxPrecision + PrecisionBuffer);
 
         var powDic = new Dictionary<int, BigInteger>();
         // Supported accuracy limit
         BigDec epsilon;
         {
             // ReSharper disable once RedundantCast
-            int t = (int)Math.Max(MaxPrecision * 2 - (int)result, 0);
+            int t = (int)Math.Max(MaxPrecision * 2 - (int)result, PrecisionBuffer);
             var t1 = GetPow10BigInt(t);
             powDic[t] = t1;
-            epsilon = One.WithPrecision(t + 1) / t1;
+            epsilon = FracPowerOfTen(t + 1);
         }
 
         // codecov ignore start
@@ -341,7 +339,7 @@ public partial class BigDec
                 result += tmp;
             }
 
-            if (numenator.Offset > numenator.MaxPrecision + 10)
+            if (numenator.Offset > numenator.MaxPrecision + (PrecisionBuffer + 10))
             {
                 var diff = numenator.Offset - numenator.MaxPrecision;
                 BigInteger localDenumenator;

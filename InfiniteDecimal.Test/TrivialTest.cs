@@ -1588,4 +1588,24 @@ public class TrivialTest
     }
 
     #endregion
+
+    #region Fractional power of ten
+
+    [Fact]
+    public void FracPowerOfTenTest()
+    {
+        var m_0_1 = new BigDec(0.1m);
+
+        foreach (var power in new int[] { 0, 1, 2, 10, 1000, 10_000 })
+        {
+            var expected = BigDec.One.WithPrecision(power + 1) / BigInteger.Pow(BigDec.BigInteger10, power);
+            var actual1 = m_0_1.WithPrecision(power + 1).Pow(power);
+            Assert.Equal(expected, actual1);
+
+            var actual2 = BigDec.FracPowerOfTen(power);
+            Assert.Equal(expected, actual2);
+        }
+    }
+
+    #endregion
 }

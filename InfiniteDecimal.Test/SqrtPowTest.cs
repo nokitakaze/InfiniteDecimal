@@ -896,7 +896,7 @@ public class SqrtPowTest
             ("10761542334203.10218083536585173320739849878696666199861580431185700839478222191229638654108732853672",
                 "30.007"),
         };
-        // var r = new Regex(@"^\((\-?[0-9.]+)");
+
         return composites
             .Select(item =>
             {
@@ -927,14 +927,14 @@ public class SqrtPowTest
     {
         var lg10 = GetLg10Ceiling(input);
         var localPrecision = (PickedPrecision - 2) - lg10;
-        var epsilon = (new BigDec(0.1m)).WithPrecision(localPrecision).Pow(localPrecision);
+        var epsilon = BigDec.FracPowerOfTen(localPrecision);
 
         {
-            var actualLn = input.WithPrecision(PickedPrecision * 2).Ln();
+            var actualLn = input.WithPrecision(PickedPrecision + 2).Ln();
             Assert.InRange(actualLn, expectedLn - epsilon, expectedLn + epsilon);
         }
         {
-            var actualExp = expectedLn.WithPrecision(PickedPrecision * 2).Exp();
+            var actualExp = expectedLn.WithPrecision(PickedPrecision + 2).Exp();
             Assert.InRange(actualExp, input - epsilon, input + epsilon);
         }
     }
@@ -987,7 +987,7 @@ public class SqrtPowTest
 
     [Theory]
     [MemberData(nameof(TestPowData))]
-    public void TestPow(decimal value, decimal exponent)
+    public void TestPowThroughDouble(decimal value, decimal exponent)
     {
         var expected = Math.Pow((double)value, (double)exponent);
         if (!double.IsFinite(expected))
@@ -1118,8 +1118,8 @@ public class SqrtPowTest
         var lg10 = GetLg10Ceiling(actual);
 
         Assert.True(lg10 < 18);
-        var localPrec = (PickedPrecision - 2) - lg10;
-        var epsilon = (new BigDec(0.1m)).WithPrecision(localPrec).Pow(localPrec);
+        var localPrecision = (PickedPrecision - 2) - lg10;
+        var epsilon = BigDec.FracPowerOfTen(localPrecision);
         Assert.InRange(actual, expected - epsilon, expected + epsilon);
     }
 
@@ -1128,19 +1128,19 @@ public class SqrtPowTest
     [Fact]
     public void TestPow_Case1()
     {
-        TestPow(2.71826182845904m, -1000000.007m);
+        TestPowThroughDouble(2.71826182845904m, -1000000.007m);
     }
 
     [Fact]
     public void TestPow_Case2()
     {
-        TestPow(14, 0.007m);
+        TestPowThroughDouble(14, 0.007m);
     }
 
     [Fact]
     public void TestPow_Case3()
     {
-        TestPow(7.95484548537712m, 0m);
+        TestPowThroughDouble(7.95484548537712m, 0m);
     }
 
     [Fact]
