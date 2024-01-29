@@ -204,11 +204,26 @@ public partial class BigDec
         NormalizeOffset();
     }
 
-    // TODO public BigDec(flaot value)
+    // TODO public BigDec(float value)
 
+    /// <summary>
+    /// Returns a new instance of the BigDec class with the specified precision.
+    /// </summary>
+    /// <param name="newPrecision">The precision of the new BigDec instance.</param>
+    /// <returns>A new instance of the BigDec class with the specified precision.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public BigDec WithPrecision(int newPrecision)
     {
         return new BigDec(this, newPrecision);
+    }
+
+    /// <summary>
+    /// Creates a copy of the current BigDec object
+    /// </summary>
+    /// <returns>A new BigDec object that is a copy of the current instance.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public BigDec Copy()
+    {
+        return new BigDec(this);
     }
 }
