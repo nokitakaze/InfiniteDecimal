@@ -41,7 +41,7 @@ public partial class BigDec
             return this.WithPrecision(decimalNumber);
         }
 
-        var leftPow = GetPow10BigInt(Offset - decimalNumber);
+        var leftPow = Pow10BigInt(Offset - decimalNumber);
         var tail = this.Value % leftPow;
 
         var leftPow1 = leftPow;
@@ -226,16 +226,16 @@ public partial class BigDec
 
         if (this == Zero)
         {
-            return Zero;
+            return Zero.WithPrecision(this.MaxPrecision);
         }
 
         if (this == One)
         {
-            return One;
+            return One.WithPrecision(this.MaxPrecision);
         }
 
         var half = new BigDec(0.5m);
-        var epsilon = One.WithPrecision(this.MaxPrecision) / GetPow10BigInt(this.MaxPrecision);
+        var epsilon = One.WithPrecision(this.MaxPrecision) / Pow10BigInt(this.MaxPrecision);
         // codecov ignore start
         if (epsilon <= Zero)
         {
@@ -243,7 +243,7 @@ public partial class BigDec
         }
         // codecov ignore end
 
-        var current = this.WithPrecision(this.MaxPrecision * 2) * half;
+        var current = this.WithPrecision(this.MaxPrecision + PrecisionBuffer) * half;
         while (true)
         {
             for (var i = 0; i < 30; i++)
@@ -307,9 +307,9 @@ public partial class BigDec
         {
             // ReSharper disable once RedundantCast
             int t = (int)Math.Max(MaxPrecision * 2 - (int)result, PrecisionBuffer);
-            var t1 = GetPow10BigInt(t);
+            var t1 = Pow10BigInt(t);
             powDic[t] = t1;
-            epsilon = FracPowerOfTen(t + 1);
+            epsilon = PowFracOfTen(t + 1);
         }
 
         // codecov ignore start
@@ -382,7 +382,7 @@ public partial class BigDec
         BigDec term = One;
 
         // Supported accuracy limit
-        var epsilon = One.WithPrecision(MaxPrecision * 2 + 1) / GetPow10BigInt(MaxPrecision * 2);
+        var epsilon = One.WithPrecision(MaxPrecision * 2 + 1) / Pow10BigInt(MaxPrecision * 2);
         // codecov ignore start
         if (epsilon <= Zero)
         {

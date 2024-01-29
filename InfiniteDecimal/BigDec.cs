@@ -32,7 +32,7 @@ public partial class BigDec
             }
 
             _offset = value;
-            OffsetPower = GetPow10BigInt(_offset);
+            OffsetPower = Pow10BigInt(_offset);
         }
     }
 
@@ -66,7 +66,12 @@ public partial class BigDec
         ExpModifiers = GenerateExpModifiers();
     }
 
-    public static BigInteger GetPow10BigInt(int exp)
+    /// <summary>
+    /// Calculate the power of 10 raised to the given exponent
+    /// </summary>
+    /// <param name="exp">The exponent</param>
+    /// <returns>The result of 10 raised to the power of <paramref name="exp"/>.</returns>
+    public static BigInteger Pow10BigInt(int exp)
     {
         // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
         if ((BigInt10Powers is not null) && BigInt10Powers.TryGetValue(exp, out var t))
@@ -81,6 +86,20 @@ public partial class BigDec
         {
             return BigInteger.Pow(new BigInteger(10), exp);
         }
+    }
+
+    /// <summary>
+    /// Calculates the power of 0.1
+    /// </summary>
+    /// <param name="power">The power to raise 0.1 to</param>
+    /// <param name="maxPrecision">The maximum precision to use.</param>
+    /// <returns>The result of raising 0.1 to the specified power.</returns>
+    public static BigDec PowFracOfTen(int power, int maxPrecision = MaxDefaultPrecision)
+    {
+        var result = One.WithPrecision(Math.Max(power, maxPrecision));
+        result.Offset = power;
+
+        return result;
     }
 
     public void NormalizeOffset()
@@ -108,7 +127,7 @@ public partial class BigDec
 
         if (u)
         {
-            OffsetPower = GetPow10BigInt(_offset);
+            OffsetPower = Pow10BigInt(_offset);
         }
     }
 
@@ -231,7 +250,7 @@ public partial class BigDec
             // ReSharper disable once UseObjectOrCollectionInitializer
             var valBI = new BigDec(tail);
             valBI._offset = chunks1.Length;
-            valBI.OffsetPower = GetPow10BigInt(valBI._offset);
+            valBI.OffsetPower = Pow10BigInt(valBI._offset);
             valBI.Value += valBI.OffsetPower * BigInteger.Parse(chunks[0]);
             valBI.Value *= sign;
             if (valBI._offset > valBI.MaxPrecision)

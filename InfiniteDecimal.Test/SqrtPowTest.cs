@@ -60,7 +60,7 @@ public class SqrtPowTest
 
     [Theory]
     [MemberData(nameof(TestSqrtData))]
-    public void TestSqrtThroughDouble(decimal input)
+    public void TestPowSqrtThroughDecimal(decimal input)
     {
         if (input < 0)
         {
@@ -927,7 +927,7 @@ public class SqrtPowTest
     {
         var lg10 = GetLg10Ceiling(input);
         var localPrecision = (PickedPrecision - 2) - lg10;
-        var epsilon = BigDec.FracPowerOfTen(localPrecision);
+        var epsilon = BigDec.PowFracOfTen(localPrecision);
 
         {
             var actualLn = input.WithPrecision(PickedPrecision + 2).Ln();
@@ -1119,7 +1119,7 @@ public class SqrtPowTest
 
         Assert.True(lg10 < 18);
         var localPrecision = (PickedPrecision - 2) - lg10;
-        var epsilon = BigDec.FracPowerOfTen(localPrecision);
+        var epsilon = BigDec.PowFracOfTen(localPrecision);
         Assert.InRange(actual, expected - epsilon, expected + epsilon);
     }
 

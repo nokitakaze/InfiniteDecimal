@@ -1602,7 +1602,7 @@ public class TrivialTest
             var actual1 = m_0_1.WithPrecision(power + 1).Pow(power);
             Assert.Equal(expected, actual1);
 
-            var actual2 = BigDec.FracPowerOfTen(power);
+            var actual2 = BigDec.PowFracOfTen(power);
             Assert.Equal(expected, actual2);
         }
     }

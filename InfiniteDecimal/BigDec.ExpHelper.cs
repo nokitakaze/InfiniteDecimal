@@ -42,9 +42,9 @@ public partial class BigDec
 
                                 var fullCount = Math.Abs(count1) + Math.Abs(count2) + Math.Abs(count3) +
                                                 Math.Abs(count4) + Math.Abs(count5) + Math.Abs(count6);
-                                if (metaCounts.ContainsKey(exp))
+                                if (metaCounts.TryGetValue(exp, out var count))
                                 {
-                                    if (fullCount >= metaCounts[exp].count)
+                                    if (fullCount >= count.count)
                                     {
                                         continue;
                                     }
