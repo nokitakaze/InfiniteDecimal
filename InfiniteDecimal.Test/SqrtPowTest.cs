@@ -2,9 +2,9 @@
 
 public class SqrtPowTest
 {
-    public static decimal[] GetTestDecimal(bool getShort = false)
+    public static decimal[] GetTestDecimal(bool shortType = false)
     {
-        var values = new decimal[]
+        var values = new List<decimal>()
         {
             0,
             1,
@@ -12,17 +12,23 @@ public class SqrtPowTest
             (decimal)Math.PI,
             (decimal)Math.Pow(Math.E, 2),
             (decimal)Math.Pow(Math.E, 1.5d),
-            (decimal)Math.Sqrt(Math.E),
             1.337m,
-            15m,
             1234m,
             1.000_000_01m,
             0.000_000_01m,
-            911,
-            228,
         };
+        if (!shortType)
+        {
+            values.AddRange(new decimal[]
+            {
+                (decimal)Math.Sqrt(Math.E),
+                15m,
+                911,
+                228,
+            });
+        }
 
-        var xModifiers = getShort
+        var xModifiers = shortType
             ? new decimal[] { 0.5m, 1m, 2m, }
             : new decimal[] { 0.5m, 1m, 1.5m, 2m, 3m, };
 
@@ -35,8 +41,8 @@ public class SqrtPowTest
 
         return values
             .Concat(modifiedE)
-            .Concat(getShort ? Array.Empty<decimal>() : values.Select(t => t - 1))
-            .Concat(getShort ? Array.Empty<decimal>() : values.Select(t => t + 1))
+            .Concat(shortType ? Array.Empty<decimal>() : values.Select(t => t - 1))
+            .Concat(shortType ? Array.Empty<decimal>() : values.Select(t => t + 1))
             .Distinct()
             .Where(x => x >= 0)
             .OrderBy(t => t)
@@ -54,7 +60,7 @@ public class SqrtPowTest
 
     [Theory]
     [MemberData(nameof(TestSqrtData))]
-    public void TestSqrt(decimal input)
+    public void TestSqrtThroughDouble(decimal input)
     {
         if (input < 0)
         {
@@ -92,7 +98,7 @@ public class SqrtPowTest
 
     [Theory]
     [MemberData(nameof(TestSqrtData))]
-    public void TestLn(decimal input)
+    public void TestLnThroughDouble(decimal input)
     {
         if (input <= 0)
         {
@@ -200,7 +206,7 @@ public class SqrtPowTest
                 "13.81551055796527410410794822810618524593994226510572118953330093913876899123078154808279275434711347"),
             ("1000000.007",
                 "13.81551056496427407960794884243951797868994562650595158136675172147138172461026528216551348359512454"),
-////////////////////// reverse
+            ////////////////////// reverse
             ("0.00000000000009292348335811760027214213343881539824520650543736040562918677357594992984982435026884986073172095116",
                 "-30.007"),
             ("0.00000000000009357613611221884574666043956609791236372826613505017110509715550730449289603356374519768856705185767",
@@ -901,26 +907,34 @@ public class SqrtPowTest
             .ToArray();
     }
 
+    private const int PickedPrecision = 50;
+
+    private static int GetLg10Ceiling(BigDec input)
+    {
+        int lg10;
+        var t = input.Abs().Round(0);
+        for (lg10 = 1; t >= 10; lg10++)
+        {
+            t /= BigDec.BigInteger10;
+        }
+
+        return lg10;
+    }
+
     [Theory]
     [MemberData(nameof(TestLnPickedData))]
     public void TestLnPicked(BigDec input, BigDec expectedLn)
     {
-        int lg10;
-        {
-            var t = input.Abs().Round(0);
-            for (lg10 = 1; t >= 10; lg10++)
-            {
-                t /= BigDec.BigInteger10;
-            }
-        }
-        var epsilon = (new BigDec(0.1m)).WithPrecision((50 - 2) - lg10).Pow((50 - 2) - lg10);
+        var lg10 = GetLg10Ceiling(input);
+        var localPrecision = (PickedPrecision - 2) - lg10;
+        var epsilon = (new BigDec(0.1m)).WithPrecision(localPrecision).Pow(localPrecision);
 
         {
-            var actualLn = input.WithPrecision(100).Ln();
+            var actualLn = input.WithPrecision(PickedPrecision * 2).Ln();
             Assert.InRange(actualLn, expectedLn - epsilon, expectedLn + epsilon);
         }
         {
-            var actualExp = expectedLn.WithPrecision(100).Exp();
+            var actualExp = expectedLn.WithPrecision(PickedPrecision * 2).Exp();
             Assert.InRange(actualExp, input - epsilon, input + epsilon);
         }
     }
@@ -964,13 +978,10 @@ public class SqrtPowTest
             .OrderBy(t => t)
             .ToArray();
 
-        var rnd = new Random();
         return values
             .OrderBy(t => t)
             .Distinct()
             .SelectMany(value => exps.Select(exp => new object[] { value, exp }))
-            // .OrderBy(_ => rnd.NextDouble())
-            // .Take(100) // todo delme
             .ToArray();
     }
 
@@ -1046,29 +1057,44 @@ public class SqrtPowTest
 
     public static object[][] TestPowPickedData()
     {
-        // todo Вернуть всё
         var composites = new[]
         {
-            // (1234, "2.71128182845904", "240672582.72431439556608270539906824687907964587655"),
-            (1234, "0.71128182845904", "158.05065468421362028196421842965533997507128251444"),
-            /*
-            (1234, "2.71828082845904", "252966337.6971038142844835303627077417943097974216"),
-            (1234, "2.71828182845904", "252968138.32200315752237633998356475294851758780566"),
-            (1234, "2.71828282845904", "252969938.95971942358743614852039382801141674923586"),
-            (1234, "2.72528182845904", "265891853.07992759071851851627214694934411041497453"),
-            (1234, "3.13459265358979", "4897943708.4603880738090691471697822925843202995722"),
-            (1234, "3.14159165358979", "5148134732.0523923460841296167114332725393160380813"),
-            (1234, "3.14159265358979", "5148171376.6892562705904851569196166678861647384581"),
-            (1234, "3.14159365358979", "5148208021.5869582424246255447903615530972187988141"),
-            (1234, "3.14859265358979", "5411182753.689440355944578918490925500560752639741"),
-            (911, "2.71828182845904", "110867696.7138477331853885947187209125245628949726"),
-            (911, "2.72528182845904", "116284452.85369689498413857052841623473888221567587"),
-            (911, "3.13459265358979", "1891840692.2614654701102645585351475078748950948575"),
-            (911, "3.14159165358979", "1984258419.4410482392026764233989911156519784511379"),
-            (911, "3.14159265358979", "1984271941.3012393653034028801819263122229068974054"),
-            (911, "3.14159365358979", "1984285463.2535761016920603517101401120280116272803"),
-            (911, "3.14859265358979", "2081219181.4781105097381283919092144694801210989958"),
-            */
+            (1234, "2.71128182845904",
+                "240672582.7243143955660827053990682468790796458765518397902180169903333216369065798587903982833279877"),
+            (1234, "0.71128182845904",
+                "158.050654684213620281964218429655339975071282514435562749526527552893123807692486425133375460893267"),
+            (1234, "2.71828082845904",
+                "252966337.6971038142844835303627077417943097974215975692280507741512229112502862512644315035963065971"),
+            (1234, "2.71828182845904",
+                "252968138.3220031575223763399835647529485175878056590543726503285322740089840420271470239450339347846"),
+            (1234, "2.71828282845904",
+                "252969938.9597194235874361485203938280114167492358643152922377444789264363406627268258207813614739357"),
+            (1234, "2.72528182845904",
+                "265891853.0799275907185185162721469493441104149745317703731093848029034341135430259542740066975555176"),
+            (1234, "3.13459265358979",
+                "4897943708.460388073809069147169782292584320299572287681394398234729409319225192789745956535619772042"),
+            (1234, "3.14159165358979",
+                "5148134732.052392346084129616711433272539316038081380179968444955144812655008345205464601854251409863"),
+            (1234, "3.14159265358979",
+                "5148171376.689256270590485156919616667886164738458053824241855025127332099990379131308418560763003203"),
+            (1234, "3.14159365358979",
+                "5148208021.586958242424625544790361553097218798814157691525495120809736617707236229422182896593658323"),
+            (1234, "3.14859265358979",
+                "5411182753.689440355944578918490925500560752639741015597877579512197057922707396626496827975217903052"),
+            (911, "2.71828182845904",
+                "110867696.7138477331853885947187209125245628949725938945430285937483974719573432555097243069281578248"),
+            (911, "2.72528182845904",
+                "116284452.8536968949841385705284162347388822156758712860803705742491119796827466982670471512401469927"),
+            (911, "3.13459265358979",
+                "1891840692.261465470110264558535147507874895094857483541865315464299878614153076464975383795309383506"),
+            (911, "3.14159165358979",
+                "1984258419.441048239202676423398991115651978451137966668333815536334847122691842146904225304020176564"),
+            (911, "3.14159265358979",
+                "1984271941.30123936530340288018192631222290689740536962475721245903313128206979586268985315744669438"),
+            (911, "3.14159365358979",
+                "1984285463.253576101692060351710140112028011627280358744214043960015173486067149035948755885819106179"),
+            (911, "3.14859265358979",
+                "2081219181.478110509738128391909214469480121098995847610324776991206267666214375218249429954403413924"),
         };
 
         return composites
@@ -1088,18 +1114,12 @@ public class SqrtPowTest
     [MemberData(nameof(TestPowPickedData))]
     public void TestPowPicked(decimal value, BigDec exponent, BigDec expected)
     {
-        var actual = new BigDec(value).Pow(exponent.WithPrecision(50));
-        int lg10;
-        {
-            var actual1 = actual.Round(0);
-            for (lg10 = 1; actual1 >= 10; lg10++)
-            {
-                actual1 /= BigDec.BigInteger10;
-            }
-        }
+        var actual = new BigDec(value).Pow(exponent.WithPrecision(PickedPrecision));
+        var lg10 = GetLg10Ceiling(actual);
 
         Assert.True(lg10 < 18);
-        var epsilon = (new BigDec(0.1m)).Pow(18 - lg10);
+        var localPrec = (PickedPrecision - 2) - lg10;
+        var epsilon = (new BigDec(0.1m)).WithPrecision(localPrec).Pow(localPrec);
         Assert.InRange(actual, expected - epsilon, expected + epsilon);
     }
 
