@@ -117,7 +117,7 @@ public partial class BigDec
             {
                 // 0 ^ 0 = 1
                 // https://www.youtube.com/watch?v=OJ55XetZKF0
-                return One;
+                return One.WithPrecision(this.MaxPrecision);
             }
 
             return this;
@@ -151,7 +151,7 @@ public partial class BigDec
             result = this.WithPrecision(10_000).Pow(entier);
         }
 
-        if (tail != Zero)
+        if (!tail.IsZero)
         {
             BigDec tailPart;
             if (tail == 0.5m)
@@ -186,7 +186,7 @@ public partial class BigDec
             result = One / result;
         }
 
-        return result.WithPrecision(this.MaxPrecision);
+        return result.Round(desiredPrecision);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -381,8 +381,8 @@ public partial class BigDec
         // Initial term of the series (for i=0)
         BigDec term = One;
 
-        // Supported accuracy limit
-        var epsilon = One.WithPrecision(MaxPrecision * 2 + 1) / Pow10BigInt(MaxPrecision * 2);
+        // Set accuracy limit to 0.001 of the precision
+        var epsilon = PowFracOfTen(MaxPrecision + 3);
         // codecov ignore start
         if (epsilon <= Zero)
         {
@@ -390,14 +390,35 @@ public partial class BigDec
         }
         // codecov ignore end
 
-        var tmpL = this.WithPrecision(MaxPrecision * 3);
-        for (int i = 1; term.Abs() > epsilon; i++)
+        var innerTmpLPrecision = MaxPrecision + (PrecisionBuffer + 4);
+
+        BigDec tmpL;
+        BigDec endedMultiplier;
+        if (this >= 2)
+        {
+            var t = this.Floor() - 1;
+            endedMultiplier = BigDec.E.Pow(t);
+            tmpL = (this - t).Round(innerTmpLPrecision);
+        }
+        else if (this < Zero)
+        {
+            var t = 2 + (-this).Floor();
+            endedMultiplier = BigDec.One / BigDec.E.WithPrecision(2 * MaxPrecision + 2 * PrecisionBuffer).Pow(t);
+            tmpL = (this + t).Round(innerTmpLPrecision);
+        }
+        else
+        {
+            tmpL = this.Round(innerTmpLPrecision);
+            endedMultiplier = One;
+        }
+
+        for (int i = 1; term.Abs() >= epsilon; i++)
         {
             term *= tmpL / i;
             result += term;
         }
 
-        return result;
+        return (result * endedMultiplier).Round(MaxPrecision);
     }
 
     #endregion
