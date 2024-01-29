@@ -374,6 +374,12 @@ public partial class BigDec
 
     #region Exp
 
+    /// <summary>
+    /// Calculates the exponential function of the current instance with Taylor series
+    /// </summary>
+    /// <returns>
+    /// The result of raising the mathematical constant e to the power of the current <see cref="BigDec"/> value.
+    /// </returns>
     public BigDec Exp()
     {
         // Initial value for the result
@@ -390,7 +396,7 @@ public partial class BigDec
         }
         // codecov ignore end
 
-        var innerTmpLPrecision = MaxPrecision + (PrecisionBuffer + 4);
+        var innerTmpLPrecision = MaxPrecision + PrecisionBuffer;
 
         BigDec tmpL;
         BigDec endedMultiplier;
@@ -402,8 +408,8 @@ public partial class BigDec
         }
         else if (this < Zero)
         {
-            var t = 2 + (-this).Floor();
-            endedMultiplier = BigDec.One / BigDec.E.WithPrecision(2 * MaxPrecision + 2 * PrecisionBuffer).Pow(t);
+            var t = (-this).Floor() + 2;
+            endedMultiplier = BigDec.One / BigDec.E.WithPrecision(innerTmpLPrecision).Pow(t);
             tmpL = (this + t).Round(innerTmpLPrecision);
         }
         else
