@@ -120,12 +120,23 @@ public partial class BigDec
                 return One.WithPrecision(this.MaxPrecision);
             }
 
+            if (exp < Zero)
+            {
+                throw new InfiniteDecimalException(
+                    "Operation cannot be performed: Raising zero to a negative power is undefined as it results in division by zero");
+            }
+
             return this;
         }
 
         if (this == One)
         {
             return this;
+        }
+
+        if (exp == -One)
+        {
+            return One / this;
         }
 
         bool needReverse = false;
@@ -138,6 +149,24 @@ public partial class BigDec
         var desiredPrecision = Math.Max(exp.MaxPrecision, this.MaxPrecision);
         var entier = exp.Floor();
         var tail = exp - entier;
+
+        if (tail.IsZero)
+        {
+            var t = Pow((BigInteger)exp);
+            if (needReverse)
+            {
+                // TODO too big exponent
+                // var localPrecision = desiredPrecision + PrecisionBuffer * (int)(BigInteger)exp;
+                t = One / t.WithPrecision(desiredPrecision);
+            }
+
+            return t.Round(desiredPrecision);
+        }
+
+        if (this < Zero)
+        {
+            throw new NotImplementedException("Raising negative numbers to a fractional power is not implemented");
+        }
 
         BigDec result;
         // ReSharper disable once ConvertIfStatementToConditionalTernaryExpression

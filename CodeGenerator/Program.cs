@@ -2,8 +2,19 @@
 
 internal static class Program
 {
-    private static Task Main()
+    private static Task Main(string[] argv)
     {
-        return BigDecConstructor.Generate();
+        int mode = 0;
+        if (argv.Length > 0)
+        {
+            mode = int.Parse(argv[0]);
+        }
+
+        return mode switch
+        {
+            0 => BigDecConstructor.Generate(),
+            1 => PowDecPrecision.CalculatePowDec(),
+            _ => throw new Exception($"Mode '{mode}' is not found")
+        };
     }
 }

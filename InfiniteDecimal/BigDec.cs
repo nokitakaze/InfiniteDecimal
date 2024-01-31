@@ -96,6 +96,11 @@ public partial class BigDec
     /// <returns>The result of raising 0.1 to the specified power.</returns>
     public static BigDec PowFracOfTen(int power, int maxPrecision = MaxDefaultPrecision)
     {
+        if (power <= 0)
+        {
+            return new BigDec(BigInteger.Pow(BigInteger10, -power));
+        }
+
         var result = One.WithPrecision(Math.Max(power, maxPrecision));
         result.Offset = power;
 
