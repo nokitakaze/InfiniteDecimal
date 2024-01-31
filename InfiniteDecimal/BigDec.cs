@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Numerics;
+using System.Text.RegularExpressions;
 
 namespace InfiniteDecimal;
 
@@ -203,6 +204,8 @@ public partial class BigDec
         return ToStringDouble();
     }
 
+    private static Regex? ExponentNotation;
+
     public static BigDec Parse(string value)
     {
         if (value == "0")
@@ -213,6 +216,19 @@ public partial class BigDec
         value = value
             .Replace(" ", string.Empty)
             .Replace("_", string.Empty);
+
+        {
+            ExponentNotation ??= new Regex("^([+-]?[0-9]+(?:\\.[0-9]*?)?)e([+-][0-9]+)$");
+            var m = ExponentNotation.Match(value);
+            if (m.Success)
+            {
+                var body = Parse(m.Groups[1].Value);
+                var exp = int.Parse(m.Groups[2].Value);
+                var frac = PowFracOfTen(-exp);
+
+                return body.WithPrecision(frac.Offset + body.MaxPrecision) * frac;
+            }
+        }
 
         var sign = 1;
         if (value.StartsWith("-"))

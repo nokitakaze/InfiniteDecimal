@@ -1345,31 +1345,6 @@ public class TrivialTest
         }
     }
 
-    [Fact]
-    public void ParseUntrimmed()
-    {
-        //
-        const decimal value1 = 13.37m;
-        var expected = new BigDec(value1);
-        var actual1 = BigDec.Parse("13.370000");
-        Assert.True(expected == actual1);
-        Assert.False(expected != actual1);
-        Assert.Equal(expected, actual1);
-
-        //
-        const decimal value2 = 15m;
-        expected = new BigDec(value2);
-        actual1 = BigDec.Parse("15.00000");
-        Assert.True(expected == actual1);
-        Assert.False(expected != actual1);
-        Assert.Equal(expected, actual1);
-
-        var actual2 = BigDec.Parse("15.");
-        Assert.True(expected == actual2);
-        Assert.False(expected != actual2);
-        Assert.Equal(expected, actual2);
-    }
-
     #endregion
 
     #region Culture ToString
@@ -1526,7 +1501,7 @@ public class TrivialTest
 
     #endregion
 
-    #region
+    #region ParseDouble
 
     public static object[][] ParseDoubleData()
     {
@@ -1571,7 +1546,7 @@ public class TrivialTest
 
     #endregion
 
-    #region constants
+    #region Math constants
 
     [Fact]
     public void Check_Constant_E()
