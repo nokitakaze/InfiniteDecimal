@@ -53,6 +53,10 @@ public class ParseTests
             ("0.0e-0", BigDec.Zero),
             ("+0.0e-0", BigDec.Zero),
             ("-0.0e-0", BigDec.Zero),
+            ("-13.e+0", new BigDec(-13)),
+            ("-13.e-0", new BigDec(-13)),
+            ("13.e+1", new BigDec(130)),
+            ("13.37e+1", new BigDec(1337) / 10),
         };
 
         var rnd = new Random();

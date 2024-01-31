@@ -204,7 +204,12 @@ public partial class BigDec
         return ToStringDouble();
     }
 
-    private static Regex? ExponentNotation;
+    /// <summary>
+    /// Regular expression for matching exponential notation strings.
+    /// The regex matches strings in the format: [+/-][digits].[digits]e[+/-][digits]
+    /// For example: 1.23e+10
+    /// </summary>
+    private static Regex? ExponentialNotationRegex;
 
     public static BigDec Parse(string value)
     {
@@ -218,8 +223,8 @@ public partial class BigDec
             .Replace("_", string.Empty);
 
         {
-            ExponentNotation ??= new Regex("^([+-]?[0-9]+(?:\\.[0-9]*?)?)e([+-][0-9]+)$");
-            var m = ExponentNotation.Match(value);
+            ExponentialNotationRegex ??= new Regex("^([+-]?[0-9]+(?:\\.[0-9]*?)?)e([+-][0-9]+)$");
+            var m = ExponentialNotationRegex.Match(value);
             if (m.Success)
             {
                 var body = Parse(m.Groups[1].Value);
