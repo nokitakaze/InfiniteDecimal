@@ -146,18 +146,33 @@ public partial class BigDec
             needReverse = true;
         }
 
+        int powAdditionalPrecision = 4;
+        if (this.Offset > 0)
+        {
+            var v = BigInteger.Log10(BigInteger.Abs(this.Value));
+            var bufferPrecision = 3 * (int)Math.Ceiling(this.Offset - v);
+            powAdditionalPrecision += Math.Max(bufferPrecision, 0);
+        }
+
         var desiredPrecision = Math.Max(exp.MaxPrecision, this.MaxPrecision);
+        var desiredPrecisionWithBuf = desiredPrecision + powAdditionalPrecision;
         var entier = exp.Floor();
         var tail = exp - entier;
 
         if (tail.IsZero)
         {
-            var t = Pow((BigInteger)exp);
+            var powPrecision = Math.Max(desiredPrecisionWithBuf, this.Offset * (int)(BigInteger)exp);
+            var t = this.WithPrecision(powPrecision).Pow((BigInteger)exp);
+            if (t.IsZero)
+            {
+                throw new InfiniteDecimalException("Pow: Can't calculate proper inner operand");
+            }
+
             if (needReverse)
             {
                 // TODO too big exponent
                 // var localPrecision = desiredPrecision + PrecisionBuffer * (int)(BigInteger)exp;
-                t = One / t.WithPrecision(desiredPrecision);
+                t = One / t.WithPrecision(desiredPrecisionWithBuf);
             }
 
             return t.Round(desiredPrecision);
@@ -185,25 +200,25 @@ public partial class BigDec
             BigDec tailPart;
             if (tail == 0.5m)
             {
-                tailPart = Sqrt().WithPrecision(desiredPrecision);
+                tailPart = Sqrt().WithPrecision(desiredPrecisionWithBuf);
             }
             else if (tail == 0.5m / 2)
             {
-                tailPart = Sqrt().Sqrt().WithPrecision(desiredPrecision);
+                tailPart = Sqrt().Sqrt().WithPrecision(desiredPrecisionWithBuf);
             }
             else if (tail == 0.5m / 4)
             {
-                tailPart = Sqrt().Sqrt().Sqrt().WithPrecision(desiredPrecision);
+                tailPart = Sqrt().Sqrt().Sqrt().WithPrecision(desiredPrecisionWithBuf);
             }
             else if (tail == 0.5m / 8)
             {
-                tailPart = Sqrt().Sqrt().Sqrt().Sqrt().WithPrecision(desiredPrecision);
+                tailPart = Sqrt().Sqrt().Sqrt().Sqrt().WithPrecision(desiredPrecisionWithBuf);
             }
             else
             {
                 // Calculation via Taylor series.
                 // a^b = e^(b * ln(a))
-                var expBase = tail * this.WithPrecision(desiredPrecision).Ln();
+                var expBase = tail * this.WithPrecision(desiredPrecisionWithBuf).Ln();
                 tailPart = expBase.Exp();
             }
 

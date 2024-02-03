@@ -2159,29 +2159,14 @@ public class SqrtPowTest
     [MemberData(nameof(TestPowPickedData))]
     public void TestPowPicked(BigDec value, BigDec exponent, BigDec expected)
     {
-        //*
+        /*
         if ((exponent.Abs() != 1337) || (value < 0.97) || (value > 1.03))
         {
-            // todo delme
             _testOutputHelper.WriteLine("debug skipped");
             return;
         }
         // */
 
-        /*
-        var actual = value
-            .WithPrecision(PickedPrecision + BigDec.PrecisionBuffer)
-            .Pow(exponent.WithPrecision(PickedPrecision + BigDec.PrecisionBuffer))
-            .Round(PickedPrecision);
-        {
-             var actualNoBuf = value
-                .WithPrecision(PickedPrecision)
-                .Pow(exponent.WithPrecision(PickedPrecision));
-            actual = actualNoBuf;
-            var diff = (actualNoBuf - actual).Abs();
-            _testOutputHelper.WriteLine(diff.ToString());
-        }
-        // */
         var actual = value
             .WithPrecision(PickedPrecision)
             .Pow(exponent.WithPrecision(PickedPrecision));
@@ -2213,6 +2198,24 @@ public class SqrtPowTest
     public void TestPow_Case3()
     {
         TestPowThroughDouble(7.95484548537712m, 0m);
+    }
+
+    [Fact]
+    public void TestPow_Case4()
+    {
+        var based = new BigDec(0.0001m).WithPrecision(50 + 10);
+        var actual = based.Pow(new BigDec(-0.99m).WithPrecision(50));
+
+        var expected = BigDec.Parse(
+            "9120.108393559097421209594079187233350932385875569610921476036185177169548799909950015361077745653988");
+        var epsilon = BigDec.PowFracOfTen(48);
+        Assert.InRange(actual, expected - epsilon, expected + epsilon);
+    }
+
+    [Fact]
+    public void TestPow_Case5()
+    {
+        TestPowThroughDouble(-0.0001m, 1);
     }
 
     [Fact]
