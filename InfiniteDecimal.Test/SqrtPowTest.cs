@@ -974,6 +974,25 @@ public class SqrtPowTest
 
     #endregion
 
+    [Fact]
+    public void TestSqrt_Zero_Negative()
+    {
+        foreach (var value in new decimal[] { -3, -2.5m, -1, -0.5m, })
+        {
+            Assert.Throws<InfiniteDecimalException>(() => { new BigDec(value).Sqrt(); });
+        }
+    }
+
+    [Fact]
+    public void TestSqrt_GreatPrecision()
+    {
+        var value = new BigDec(2).WithPrecision(10_000);
+        var actual = value.Sqrt();
+        var revert = actual * actual;
+        var epsilon = BigDec.PowFracOfTen(100);
+        Assert.InRange(revert, value - epsilon, value + epsilon);
+    }
+
     #endregion
 
     #region Exceptions

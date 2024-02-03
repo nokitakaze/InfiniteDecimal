@@ -279,7 +279,7 @@ public partial class BigDec
         }
 
         var half = new BigDec(0.5m);
-        var epsilon = One.WithPrecision(this.MaxPrecision) / Pow10BigInt(this.MaxPrecision);
+        var epsilon = PowFracOfTen(this.MaxPrecision);
         // codecov ignore start
         if (epsilon <= Zero)
         {
@@ -290,7 +290,7 @@ public partial class BigDec
         var current = this.WithPrecision(this.MaxPrecision + PrecisionBuffer) * half;
         while (true)
         {
-            for (var i = 0; i < 30; i++)
+            for (var i = 0; i < 5; i++)
             {
                 current = (current + this / current) * half;
             }
