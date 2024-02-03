@@ -312,6 +312,7 @@ public class TrivialMathTests
                 Assert.False(expected < actual);
                 Assert.False(actual > expected);
                 Assert.False(actual < expected);
+                Assert.Equal(0, actual.CompareTo(expected));
 
                 actual = typed + bValue;
                 Assert.True(expected == actual);
@@ -326,6 +327,7 @@ public class TrivialMathTests
                 Assert.False(expected < actual);
                 Assert.False(actual > expected);
                 Assert.False(actual < expected);
+                Assert.Equal(0, actual.CompareTo(expected));
             }
 
             {
@@ -343,6 +345,7 @@ public class TrivialMathTests
                 Assert.False(expected < actual);
                 Assert.False(actual > expected);
                 Assert.False(actual < expected);
+                Assert.Equal(0, actual.CompareTo(expected));
 
                 expected = modifier - value;
                 actual = typed - bValue;
@@ -358,6 +361,7 @@ public class TrivialMathTests
                 Assert.False(expected < actual);
                 Assert.False(actual > expected);
                 Assert.False(actual < expected);
+                Assert.Equal(0, actual.CompareTo(expected));
             }
 
             {
@@ -375,6 +379,7 @@ public class TrivialMathTests
                 Assert.False(expected < actual);
                 Assert.False(actual > expected);
                 Assert.False(actual < expected);
+                Assert.Equal(0, actual.CompareTo(expected));
 
                 actual = typed * bValue;
                 Assert.True(expected == actual);
@@ -389,6 +394,7 @@ public class TrivialMathTests
                 Assert.False(expected < actual);
                 Assert.False(actual > expected);
                 Assert.False(actual < expected);
+                Assert.Equal(0, actual.CompareTo(expected));
             }
 
             if (modifier != 0)
@@ -431,6 +437,7 @@ public class TrivialMathTests
                 Assert.False(expected < actual);
                 Assert.False(actual > expected);
                 Assert.False(actual < expected);
+                Assert.Equal(0, actual.CompareTo(expected));
 
                 actual = typed + bValue;
                 Assert.True(expected == actual);
@@ -445,6 +452,7 @@ public class TrivialMathTests
                 Assert.False(expected < actual);
                 Assert.False(actual > expected);
                 Assert.False(actual < expected);
+                Assert.Equal(0, actual.CompareTo(expected));
             }
 
             {
@@ -462,6 +470,7 @@ public class TrivialMathTests
                 Assert.False(expected < actual);
                 Assert.False(actual > expected);
                 Assert.False(actual < expected);
+                Assert.Equal(0, actual.CompareTo(expected));
 
                 expected = modifier - value;
                 actual = typed - bValue;
@@ -477,6 +486,7 @@ public class TrivialMathTests
                 Assert.False(expected < actual);
                 Assert.False(actual > expected);
                 Assert.False(actual < expected);
+                Assert.Equal(0, actual.CompareTo(expected));
             }
 
             {
@@ -494,6 +504,7 @@ public class TrivialMathTests
                 Assert.False(expected < actual);
                 Assert.False(actual > expected);
                 Assert.False(actual < expected);
+                Assert.Equal(0, actual.CompareTo(expected));
 
                 actual = typed * bValue;
                 Assert.True(expected == actual);
@@ -508,6 +519,7 @@ public class TrivialMathTests
                 Assert.False(expected < actual);
                 Assert.False(actual > expected);
                 Assert.False(actual < expected);
+                Assert.Equal(0, actual.CompareTo(expected));
             }
 
             if (modifier != 0)
@@ -550,6 +562,7 @@ public class TrivialMathTests
                 Assert.False(expected < actual);
                 Assert.False(actual > expected);
                 Assert.False(actual < expected);
+                Assert.Equal(0, actual.CompareTo(expected));
 
                 actual = typed + bValue;
                 Assert.True(expected == actual);
@@ -564,6 +577,7 @@ public class TrivialMathTests
                 Assert.False(expected < actual);
                 Assert.False(actual > expected);
                 Assert.False(actual < expected);
+                Assert.Equal(0, actual.CompareTo(expected));
             }
 
             {
@@ -581,6 +595,7 @@ public class TrivialMathTests
                 Assert.False(expected < actual);
                 Assert.False(actual > expected);
                 Assert.False(actual < expected);
+                Assert.Equal(0, actual.CompareTo(expected));
 
                 expected = modifier - value;
                 actual = typed - bValue;
@@ -596,6 +611,7 @@ public class TrivialMathTests
                 Assert.False(expected < actual);
                 Assert.False(actual > expected);
                 Assert.False(actual < expected);
+                Assert.Equal(0, actual.CompareTo(expected));
             }
 
             {
@@ -613,6 +629,7 @@ public class TrivialMathTests
                 Assert.False(expected < actual);
                 Assert.False(actual > expected);
                 Assert.False(actual < expected);
+                Assert.Equal(0, actual.CompareTo(expected));
 
                 actual = typed * bValue;
                 Assert.True(expected == actual);
@@ -627,6 +644,7 @@ public class TrivialMathTests
                 Assert.False(expected < actual);
                 Assert.False(actual > expected);
                 Assert.False(actual < expected);
+                Assert.Equal(0, actual.CompareTo(expected));
             }
 
             if (modifier != 0)
@@ -669,6 +687,7 @@ public class TrivialMathTests
                 Assert.False(expected < actual);
                 Assert.False(actual > expected);
                 Assert.False(actual < expected);
+                Assert.Equal(0, actual.CompareTo(expected));
 
                 actual = typed + bValue;
                 Assert.True(expected == actual);
@@ -683,6 +702,7 @@ public class TrivialMathTests
                 Assert.False(expected < actual);
                 Assert.False(actual > expected);
                 Assert.False(actual < expected);
+                Assert.Equal(0, actual.CompareTo(expected));
             }
 
             {
@@ -700,6 +720,7 @@ public class TrivialMathTests
                 Assert.False(expected < actual);
                 Assert.False(actual > expected);
                 Assert.False(actual < expected);
+                Assert.Equal(0, actual.CompareTo(expected));
 
                 expected = modifier - value;
                 actual = typed - bValue;
@@ -715,6 +736,7 @@ public class TrivialMathTests
                 Assert.False(expected < actual);
                 Assert.False(actual > expected);
                 Assert.False(actual < expected);
+                Assert.Equal(0, actual.CompareTo(expected));
             }
 
             {
@@ -732,6 +754,7 @@ public class TrivialMathTests
                 Assert.False(expected < actual);
                 Assert.False(actual > expected);
                 Assert.False(actual < expected);
+                Assert.Equal(0, actual.CompareTo(expected));
 
                 actual = typed * bValue;
                 Assert.True(expected == actual);
@@ -746,6 +769,7 @@ public class TrivialMathTests
                 Assert.False(expected < actual);
                 Assert.False(actual > expected);
                 Assert.False(actual < expected);
+                Assert.Equal(0, actual.CompareTo(expected));
             }
 
             if (modifier != 0)
@@ -788,6 +812,7 @@ public class TrivialMathTests
                 Assert.False(expected < actual);
                 Assert.False(actual > expected);
                 Assert.False(actual < expected);
+                Assert.Equal(0, actual.CompareTo(expected));
 
                 actual = typed + bValue;
                 Assert.True(expected == actual);
@@ -802,6 +827,7 @@ public class TrivialMathTests
                 Assert.False(expected < actual);
                 Assert.False(actual > expected);
                 Assert.False(actual < expected);
+                Assert.Equal(0, actual.CompareTo(expected));
             }
 
             {
@@ -819,6 +845,7 @@ public class TrivialMathTests
                 Assert.False(expected < actual);
                 Assert.False(actual > expected);
                 Assert.False(actual < expected);
+                Assert.Equal(0, actual.CompareTo(expected));
 
                 expected = modifier - value;
                 actual = typed - bValue;
@@ -834,6 +861,7 @@ public class TrivialMathTests
                 Assert.False(expected < actual);
                 Assert.False(actual > expected);
                 Assert.False(actual < expected);
+                Assert.Equal(0, actual.CompareTo(expected));
             }
 
             {
@@ -851,6 +879,7 @@ public class TrivialMathTests
                 Assert.False(expected < actual);
                 Assert.False(actual > expected);
                 Assert.False(actual < expected);
+                Assert.Equal(0, actual.CompareTo(expected));
 
                 actual = typed * bValue;
                 Assert.True(expected == actual);
@@ -865,6 +894,7 @@ public class TrivialMathTests
                 Assert.False(expected < actual);
                 Assert.False(actual > expected);
                 Assert.False(actual < expected);
+                Assert.Equal(0, actual.CompareTo(expected));
             }
 
             if (modifier != 0)
@@ -907,6 +937,7 @@ public class TrivialMathTests
                 Assert.False(expected < actual);
                 Assert.False(actual > expected);
                 Assert.False(actual < expected);
+                Assert.Equal(0, actual.CompareTo(expected));
 
                 actual = typed + bValue;
                 Assert.True(expected == actual);
@@ -921,6 +952,7 @@ public class TrivialMathTests
                 Assert.False(expected < actual);
                 Assert.False(actual > expected);
                 Assert.False(actual < expected);
+                Assert.Equal(0, actual.CompareTo(expected));
             }
 
             {
@@ -938,6 +970,7 @@ public class TrivialMathTests
                 Assert.False(expected < actual);
                 Assert.False(actual > expected);
                 Assert.False(actual < expected);
+                Assert.Equal(0, actual.CompareTo(expected));
 
                 expected = modifier - value;
                 actual = typed - bValue;
@@ -953,6 +986,7 @@ public class TrivialMathTests
                 Assert.False(expected < actual);
                 Assert.False(actual > expected);
                 Assert.False(actual < expected);
+                Assert.Equal(0, actual.CompareTo(expected));
             }
 
             {
@@ -970,6 +1004,7 @@ public class TrivialMathTests
                 Assert.False(expected < actual);
                 Assert.False(actual > expected);
                 Assert.False(actual < expected);
+                Assert.Equal(0, actual.CompareTo(expected));
 
                 actual = typed * bValue;
                 Assert.True(expected == actual);
@@ -984,6 +1019,7 @@ public class TrivialMathTests
                 Assert.False(expected < actual);
                 Assert.False(actual > expected);
                 Assert.False(actual < expected);
+                Assert.Equal(0, actual.CompareTo(expected));
             }
 
             if (modifier != 0)
@@ -1026,6 +1062,7 @@ public class TrivialMathTests
                 Assert.False(expected < actual);
                 Assert.False(actual > expected);
                 Assert.False(actual < expected);
+                Assert.Equal(0, actual.CompareTo(expected));
 
                 actual = typed + bValue;
                 Assert.True(expected == actual);
@@ -1040,6 +1077,7 @@ public class TrivialMathTests
                 Assert.False(expected < actual);
                 Assert.False(actual > expected);
                 Assert.False(actual < expected);
+                Assert.Equal(0, actual.CompareTo(expected));
             }
 
             {
@@ -1057,6 +1095,7 @@ public class TrivialMathTests
                 Assert.False(expected < actual);
                 Assert.False(actual > expected);
                 Assert.False(actual < expected);
+                Assert.Equal(0, actual.CompareTo(expected));
 
                 expected = modifier - value;
                 actual = typed - bValue;
@@ -1072,6 +1111,7 @@ public class TrivialMathTests
                 Assert.False(expected < actual);
                 Assert.False(actual > expected);
                 Assert.False(actual < expected);
+                Assert.Equal(0, actual.CompareTo(expected));
             }
 
             {
@@ -1089,6 +1129,7 @@ public class TrivialMathTests
                 Assert.False(expected < actual);
                 Assert.False(actual > expected);
                 Assert.False(actual < expected);
+                Assert.Equal(0, actual.CompareTo(expected));
 
                 actual = typed * bValue;
                 Assert.True(expected == actual);
@@ -1103,6 +1144,7 @@ public class TrivialMathTests
                 Assert.False(expected < actual);
                 Assert.False(actual > expected);
                 Assert.False(actual < expected);
+                Assert.Equal(0, actual.CompareTo(expected));
             }
 
             if (modifier != 0)
@@ -1145,6 +1187,7 @@ public class TrivialMathTests
                 Assert.False(expected < actual);
                 Assert.False(actual > expected);
                 Assert.False(actual < expected);
+                Assert.Equal(0, actual.CompareTo(expected));
 
                 actual = typed + bValue;
                 Assert.True(expected == actual);
@@ -1159,6 +1202,7 @@ public class TrivialMathTests
                 Assert.False(expected < actual);
                 Assert.False(actual > expected);
                 Assert.False(actual < expected);
+                Assert.Equal(0, actual.CompareTo(expected));
             }
 
             {
@@ -1176,6 +1220,7 @@ public class TrivialMathTests
                 Assert.False(expected < actual);
                 Assert.False(actual > expected);
                 Assert.False(actual < expected);
+                Assert.Equal(0, actual.CompareTo(expected));
 
                 expected = modifier - value;
                 actual = typed - bValue;
@@ -1191,6 +1236,7 @@ public class TrivialMathTests
                 Assert.False(expected < actual);
                 Assert.False(actual > expected);
                 Assert.False(actual < expected);
+                Assert.Equal(0, actual.CompareTo(expected));
             }
 
             {
@@ -1208,6 +1254,7 @@ public class TrivialMathTests
                 Assert.False(expected < actual);
                 Assert.False(actual > expected);
                 Assert.False(actual < expected);
+                Assert.Equal(0, actual.CompareTo(expected));
 
                 actual = typed * bValue;
                 Assert.True(expected == actual);
@@ -1222,6 +1269,7 @@ public class TrivialMathTests
                 Assert.False(expected < actual);
                 Assert.False(actual > expected);
                 Assert.False(actual < expected);
+                Assert.Equal(0, actual.CompareTo(expected));
             }
 
             if (modifier != 0)
@@ -1264,6 +1312,7 @@ public class TrivialMathTests
                 Assert.False(expected < actual);
                 Assert.False(actual > expected);
                 Assert.False(actual < expected);
+                Assert.Equal(0, actual.CompareTo(expected));
 
                 actual = typed + bValue;
                 Assert.True(expected == actual);
@@ -1278,6 +1327,7 @@ public class TrivialMathTests
                 Assert.False(expected < actual);
                 Assert.False(actual > expected);
                 Assert.False(actual < expected);
+                Assert.Equal(0, actual.CompareTo(expected));
             }
 
             {
@@ -1295,6 +1345,7 @@ public class TrivialMathTests
                 Assert.False(expected < actual);
                 Assert.False(actual > expected);
                 Assert.False(actual < expected);
+                Assert.Equal(0, actual.CompareTo(expected));
 
                 expected = modifier - value;
                 actual = typed - bValue;
@@ -1310,6 +1361,7 @@ public class TrivialMathTests
                 Assert.False(expected < actual);
                 Assert.False(actual > expected);
                 Assert.False(actual < expected);
+                Assert.Equal(0, actual.CompareTo(expected));
             }
 
             {
@@ -1327,6 +1379,7 @@ public class TrivialMathTests
                 Assert.False(expected < actual);
                 Assert.False(actual > expected);
                 Assert.False(actual < expected);
+                Assert.Equal(0, actual.CompareTo(expected));
 
                 actual = typed * bValue;
                 Assert.True(expected == actual);
@@ -1341,6 +1394,7 @@ public class TrivialMathTests
                 Assert.False(expected < actual);
                 Assert.False(actual > expected);
                 Assert.False(actual < expected);
+                Assert.Equal(0, actual.CompareTo(expected));
             }
 
             if (modifier != 0)
@@ -1382,6 +1436,7 @@ public class TrivialMathTests
                 Assert.False(expected < actual);
                 Assert.False(actual > expected);
                 Assert.False(actual < expected);
+                Assert.Equal(0, actual.CompareTo(expected));
 
                 actual = typed + bValue;
                 Assert.True(expected == actual);
@@ -1396,6 +1451,7 @@ public class TrivialMathTests
                 Assert.False(expected < actual);
                 Assert.False(actual > expected);
                 Assert.False(actual < expected);
+                Assert.Equal(0, actual.CompareTo(expected));
             }
 
             {
@@ -1413,6 +1469,7 @@ public class TrivialMathTests
                 Assert.False(expected < actual);
                 Assert.False(actual > expected);
                 Assert.False(actual < expected);
+                Assert.Equal(0, actual.CompareTo(expected));
 
                 expected = modifier - value;
                 actual = typed - bValue;
@@ -1428,6 +1485,7 @@ public class TrivialMathTests
                 Assert.False(expected < actual);
                 Assert.False(actual > expected);
                 Assert.False(actual < expected);
+                Assert.Equal(0, actual.CompareTo(expected));
             }
 
             {
@@ -1445,6 +1503,7 @@ public class TrivialMathTests
                 Assert.False(expected < actual);
                 Assert.False(actual > expected);
                 Assert.False(actual < expected);
+                Assert.Equal(0, actual.CompareTo(expected));
 
                 actual = typed * bValue;
                 Assert.True(expected == actual);
@@ -1459,6 +1518,7 @@ public class TrivialMathTests
                 Assert.False(expected < actual);
                 Assert.False(actual > expected);
                 Assert.False(actual < expected);
+                Assert.Equal(0, actual.CompareTo(expected));
             }
 
             if (modifier != 0)
