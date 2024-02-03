@@ -322,17 +322,25 @@ public partial class BigDec
 
         if (this == One)
         {
-            return Zero;
+            return Zero.WithPrecision(MaxPrecision);
         }
 
         bool invert = (this <= 0.01m);
         var z = invert ? One / this : this.WithPrecision(this.MaxPrecision * 10);
 
         var result = BigDec.Zero;
-        while (z > E)
+        if (z > E)
         {
-            result += One;
-            z /= E;
+            var p1 = (long)Math.Floor(BigInteger.Log(z.Value) - z.Offset * Math.Log(10));
+            var denumenator = E.Pow(p1);
+            z /= denumenator;
+            result += p1;
+
+            while (z > E)
+            {
+                result += One;
+                z /= E;
+            }
         }
 
         // maximize the approximation of the value z to 1

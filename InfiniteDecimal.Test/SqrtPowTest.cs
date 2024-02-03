@@ -993,6 +993,16 @@ public class SqrtPowTest
         Assert.InRange(revert, value - epsilon, value + epsilon);
     }
 
+    [Fact]
+    public void TestLn_GreatPrecision()
+    {
+        var value = new BigDec(2) * BigDec.PowFracOfTen(3000);
+        var actual = value.Ln();
+        var revert = actual.WithPrecision(100).Exp();
+        var epsilon = BigDec.PowFracOfTen(100);
+        Assert.InRange(revert, value - epsilon, value + epsilon);
+    }
+
     #endregion
 
     #region Exceptions
