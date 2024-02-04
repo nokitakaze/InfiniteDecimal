@@ -2248,6 +2248,19 @@ public class SqrtPowTest
     }
 
     [Fact]
+    public void TestPow_Case6()
+    {
+        foreach (var value in new[] { 0m, 1m, 2m })
+        {
+            for (var i = 2; i < 10; i++)
+            {
+                var delimiter = 1 << i;
+                TestPowThroughDouble(2, value + 1m / delimiter);
+            }
+        }
+    }
+
+    [Fact]
     public void TestPow_Zero_Zero()
     {
         var expected = BigDec.Zero.Pow(BigDec.Zero);
@@ -2267,10 +2280,34 @@ public class SqrtPowTest
     [Fact]
     public void TestPow_Zero_Negative()
     {
+        // 0 ^ -1 or 0 ^ -2
         foreach (var power in new decimal[] { -3, -2.5m, -1, -0.5m, })
         {
             Assert.Throws<InfiniteDecimalException>(() => { BigDec.Zero.Pow(power); });
         }
+    }
+
+    [Fact]
+    public void TestPow_Negative_Fraction()
+    {
+        // -2 ^ 1.5 results in Complex Numbers
+        Assert.Throws<NotImplementedException>(() => { new BigDec(-2).Pow(1.5m); });
+    }
+
+
+    [Fact]
+    public void TestPow_FoundExpPrecision()
+    {
+        var method = typeof(BigDec).GetMethod("FoundExpPrecision", BindingFlags.Static | BindingFlags.NonPublic);
+        Assert.NotNull(method);
+
+        var input = BigDec.E * 2;
+        var rawResult = method.Invoke(null, new object[] { input });
+        Assert.NotNull(rawResult);
+
+        var result = ((decimal exp, BigDec multiplier))rawResult;
+        Assert.True(result.exp < 0);
+        Assert.True(result.multiplier < BigDec.E);
     }
 
     #endregion

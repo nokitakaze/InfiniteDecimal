@@ -6,7 +6,7 @@ namespace InfiniteDecimal;
 
 public partial class BigDec
 {
-    public override bool Equals(object obj)
+    public override bool Equals(object? obj)
     {
         if (obj is not BigDec other)
         {
@@ -190,12 +190,12 @@ public partial class BigDec
 
     public static BigDec operator /(BigDec a, BigDec b)
     {
-        if (a == Zero)
+        if (a.IsZero)
         {
             return Zero;
         }
 
-        if (b == Zero)
+        if (b.IsZero)
         {
             throw new InfiniteDecimalException("Division by zero");
         }
@@ -214,7 +214,7 @@ public partial class BigDec
 
         var realLocalPrecision = Math.Max(desiredPrecision, Math.Max(a.Offset, b.Offset));
         var result = new BigDec(a, realLocalPrecision);
-        if (result._offset < result.MaxPrecision * 2)
+        // if (result._offset < result.MaxPrecision * 2) // always true condition
         {
             var awaitedPrecision = result.MaxPrecision * 10;
             var addExp = awaitedPrecision - result._offset;

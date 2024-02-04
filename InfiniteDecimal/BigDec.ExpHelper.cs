@@ -19,7 +19,13 @@ public partial class BigDec
         const double limit1 = 1d / Math.E - 0.001d;
         const double limit2 = Math.E + 0.001d;
 
-        var metaCounts = new Dictionary<decimal, (int[] counts, int count)>();
+        var metaCounts = new Dictionary<decimal, (int[] counts, int count)>
+        {
+            // Just for speed up
+            [1m] = (new int[] { 1, 0, 0, 0, 0, 0, }, 1),
+            [-1m] = (new int[] { -1, 0, 0, 0, 0, 0, }, 1),
+        };
+
         const int MaxCount = 5;
         for (var count1 = -MaxCount; count1 <= MaxCount; count1++)
         {
@@ -135,18 +141,20 @@ public partial class BigDec
             expModifiers.Add((exp, multiplier.Round(E.MaxPrecision)));
         }
 
-        return expModifiers.ToArray();
+        return expModifiers.OrderBy(t => t.Item1).ToArray();
     }
 
     private static (decimal exp, BigDec multiplier) FoundExpPrecision(BigDec input)
     {
         if (input < 1 / E)
         {
+            // Biggest value
             return ExpModifiers.Last();
         }
 
         if (input > E)
         {
+            // Lowest value
             return ExpModifiers[0];
         }
 

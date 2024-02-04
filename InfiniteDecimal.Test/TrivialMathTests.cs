@@ -243,6 +243,15 @@ public class TrivialMathTests
         }
     }
 
+    [Fact]
+    public void Division_OffsetBiggerPrecision()
+    {
+        var e = BigDec.E.WithPrecision(10);
+        var actual = e / new BigDec(10);
+
+        Assert.InRange((double)actual, Math.E * 0.1 - 0.0000001d, Math.E * 0.1 + 0.0000001d);
+    }
+
     #endregion
 
     #region Check shorts

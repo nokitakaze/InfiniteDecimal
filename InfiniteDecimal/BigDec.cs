@@ -85,6 +85,7 @@ public partial class BigDec
         }
         else
         {
+            // Calling a method during static construction
             return BigInteger.Pow(new BigInteger(10), exp);
         }
     }
@@ -150,11 +151,6 @@ public partial class BigDec
             return Value.ToString();
         }
 
-        if (OffsetPower.IsZero)
-        {
-            throw new InfiniteDecimalException($"Inconsistent state in BidDec. Offset '{_offset}' malformed");
-        }
-
         var sign = string.Empty;
         var _value = Value;
         if (Value < 0)
@@ -170,12 +166,12 @@ public partial class BigDec
         for (var i = 0; i < _offset; i++)
         {
             var mode = (int)(_value % BigInteger10);
-            vTailString = mode + vTailString;
+            vTailString = mode.ToString() + vTailString;
             _value /= BigInteger10;
         }
 
         vTailString = vTailString.TrimEnd('0');
-        if (vTailString == string.Empty)
+        if (vTailString == string.Empty) // always false condition
         {
             return $"{sign}{vEntier}";
         }

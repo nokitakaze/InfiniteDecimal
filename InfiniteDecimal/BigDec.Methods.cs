@@ -29,7 +29,7 @@ public partial class BigDec
         return Value / OffsetPower;
     }
 
-    public bool IsZero => this.Value == BigInteger.Zero;
+    public bool IsZero => this.Value.IsZero;
 
     #region
 
@@ -163,10 +163,12 @@ public partial class BigDec
         {
             var powPrecision = Math.Max(desiredPrecisionWithBuf, this.Offset * (int)(BigInteger)exp);
             var t = this.WithPrecision(powPrecision).Pow((BigInteger)exp);
+            // codecov ignore start
             if (t.IsZero)
             {
                 throw new InfiniteDecimalException("Pow: Can't calculate proper inner operand");
             }
+            // codecov ignore end
 
             if (needReverse)
             {
@@ -180,6 +182,7 @@ public partial class BigDec
 
         if (this < Zero)
         {
+            // Complex numbers aren't implemented yet
             throw new NotImplementedException("Raising negative numbers to a fractional power is not implemented");
         }
 
@@ -195,7 +198,8 @@ public partial class BigDec
             result = this.WithPrecision(10_000).Pow(entier);
         }
 
-        if (!tail.IsZero)
+        // tail.IsZero is always false condition
+        // if (!tail.IsZero)
         {
             BigDec tailPart;
             if (tail == 0.5m)

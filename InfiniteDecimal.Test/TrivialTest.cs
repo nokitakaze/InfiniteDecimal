@@ -445,6 +445,20 @@ public class TrivialTest
         Assert.Equal(20, actual);
     }
 
+    [Fact]
+    public void ConstructorInfinite()
+    {
+        foreach (var value in new double[]
+                 {
+                     double.NegativeInfinity,
+                     double.PositiveInfinity,
+                     double.NaN,
+                 })
+        {
+            Assert.Throws<InfiniteDecimalException>(() => { _ = new BigDec(value); });
+        }
+    }
+
     #region inequality
 
     public static object[][] CheckInequalityData()
