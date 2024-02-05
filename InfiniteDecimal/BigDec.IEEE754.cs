@@ -72,7 +72,7 @@ public partial class BigDec
         }
 
         var t1 = (int)Math.Floor(BigInteger.Log10(mantissaStep.Value));
-        var t2 = BigInteger.Pow(BigInteger10, t1);
+        var t2 = BigDec.Pow10BigInt(t1);
         var mantissaStep1 = mantissaStep.Copy();
         mantissaStep1.Value /= t2;
         mantissaStep1.Offset -= t1;
@@ -165,7 +165,7 @@ public partial class BigDec
         }
 
         var t1 = (int)Math.Floor(BigInteger.Log10(mantissaStep.Value));
-        var t2 = BigInteger.Pow(BigInteger10, t1);
+        var t2 = BigDec.Pow10BigInt(t1);
         var mantissaStep1 = mantissaStep.Copy();
         mantissaStep1.Value /= t2;
         mantissaStep1.Offset -= t1;
