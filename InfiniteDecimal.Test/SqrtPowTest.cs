@@ -2294,7 +2294,6 @@ public class SqrtPowTest
         Assert.Throws<NotImplementedException>(() => { new BigDec(-2).Pow(1.5m); });
     }
 
-
     [Fact]
     public void TestPow_FoundExpPrecision()
     {

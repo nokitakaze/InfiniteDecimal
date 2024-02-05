@@ -84,7 +84,7 @@ public partial class BigDec
         if (y < 0)
         {
             y = -y; // make the exponent positive
-            x = 1.0 / x; // and take the reciprocal
+            x = One / x; // and take the reciprocal
         }
 
         BigDec result = One;
