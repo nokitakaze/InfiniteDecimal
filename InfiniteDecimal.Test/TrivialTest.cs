@@ -446,13 +446,27 @@ public class TrivialTest
     }
 
     [Fact]
-    public void ConstructorInfinite()
+    public void ConstructorDoubleInfinite()
     {
         foreach (var value in new double[]
                  {
                      double.NegativeInfinity,
                      double.PositiveInfinity,
                      double.NaN,
+                 })
+        {
+            Assert.Throws<InfiniteDecimalException>(() => { _ = new BigDec(value); });
+        }
+    }
+
+    [Fact]
+    public void ConstructorFloatInfinite()
+    {
+        foreach (var value in new float[]
+                 {
+                     float.NegativeInfinity,
+                     float.PositiveInfinity,
+                     float.NaN,
                  })
         {
             Assert.Throws<InfiniteDecimalException>(() => { _ = new BigDec(value); });
@@ -610,6 +624,36 @@ public class TrivialTest
         Assert.True(operand1 != (double)operand2);
         Assert.Equal(1, operand1.CompareTo((double)operand2));
         Assert.Equal(-1, operand2.CompareTo((double)operand1));
+
+        {
+            var p = typeof(BigDec).GetField("Value", BindingFlags.NonPublic | BindingFlags.Instance)!;
+            var value1 = (BigInteger)p.GetValue(operand1)!;
+            var value2 = (BigInteger)p.GetValue(operand2)!;
+            var lg10V1 = BigInteger.Log10(BigInteger.Abs(value1));
+            var lg10V2 = BigInteger.Log10(BigInteger.Abs(value2));
+            // log10(2) * 23 ~= 6.923
+            if ((lg10V1 >= 6.923) || (lg10V2 >= 6.923))
+            {
+                // float can't hold such values
+            }
+            else
+            {
+                Assert.True(operand1 > (float)operand2);
+                Assert.True(operand1 >= (float)operand2);
+                Assert.True((float)operand1 > operand2);
+                Assert.True((float)operand1 >= operand2);
+                Assert.False(operand1 < (float)operand2);
+                Assert.False(operand1 <= (float)operand2);
+                Assert.False((float)operand1 < operand2);
+                Assert.False((float)operand1 <= operand2);
+                Assert.False((float)operand1 == operand2);
+                Assert.True((float)operand1 != operand2);
+                Assert.False(operand1 == (float)operand2);
+                Assert.True(operand1 != (float)operand2);
+                Assert.Equal(1, operand1.CompareTo((float)operand2));
+                Assert.Equal(-1, operand2.CompareTo((float)operand1));
+            }
+        }
 
         if (operand1.IsInteger)
         {

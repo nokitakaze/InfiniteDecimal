@@ -101,12 +101,15 @@ public partial class BigDec
             .OrderBy(t => t.Key)
             .ToArray();
         var modifierDic = new Dictionary<int, Dictionary<int, BigDec>>();
+        // ReSharper disable UnusedVariable
         foreach (var (index, min, max) in maxCounts)
+            // ReSharper restore UnusedVariable
         {
             var modifier = modifiers[index];
             var modifierR = BigDec.One / modifier;
             var dic = new Dictionary<int, BigDec> { { 0, BigDec.One }, { 1, modifier }, { -1, modifierR } };
 
+            /*  dead code
             var current = modifier;
             for (var i = 2; i <= max; i++)
             {
@@ -120,6 +123,7 @@ public partial class BigDec
                 current *= modifierR;
                 dic[-i] = current;
             }
+            // */
 
             modifierDic[index] = dic;
         }

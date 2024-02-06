@@ -54,6 +54,12 @@ public partial class BigDec
         return double.Parse(item.ToStringDouble());
     }
 
+    public static explicit operator float(BigDec item)
+    {
+        // TODO Maybe we need to do it more lower way
+        return float.Parse(item.ToStringDouble());
+    }
+
     #endregion
 
     #region operator ==

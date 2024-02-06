@@ -27,6 +27,7 @@ public partial class BigDec : System.IComparable
             long vLong => new BigDec(vLong),
             decimal vDecimal => new BigDec(vDecimal),
             double vDouble => new BigDec(vDouble),
+            float vFloat => new BigDec(vFloat),
             _ => null
         };
 
