@@ -44,11 +44,6 @@ public partial class BigDec
 
     static BigDec()
     {
-        IEEE2MantissaDenumenator = BigInteger.One << 52;
-        IEEE2MantissaStep = BigDec.One.WithPrecision(1023) / IEEE2MantissaDenumenator;
-        IEEE1MantissaDenumenator = BigInteger.One << 23;
-        IEEE1MantissaStep = BigDec.One.WithPrecision(1023) / IEEE1MantissaDenumenator;
-
         {
             var powDec = new Dictionary<int, BigInteger>();
             var last = BigInteger.One;

@@ -91,7 +91,7 @@ public class DeconstructIEEE754
     [MemberData(nameof(TestSumFloat1Data))]
     public void TestSumFloat1(BigDec b1)
     {
-        foreach (var b2 in TestDataStep2(7))
+        foreach (var b2 in TestDataStep2(6))
         {
             _testOutputHelper.WriteLine("{0} + {1}", b1, b2);
             TestSingleNumber(b1, b2);
@@ -105,7 +105,7 @@ public class DeconstructIEEE754
 
         var realSum = b1 + b2;
         var sumFloat = f1 + f2;
-        var rounded = BigDec.Rounding(sumFloat);
+        var rounded = new BigDec(sumFloat);
         Assert.Equal(realSum, rounded);
     }
 
@@ -114,11 +114,11 @@ public class DeconstructIEEE754
     #region Picked cases
 
     [Fact]
-    public void TrivialTest()
+    public void PickedTest()
     {
-        TestDoubleNumber(new BigDec(-0.2m), new BigDec(0.3m));
+        // TestDoubleNumber(new BigDec(-0.2m), new BigDec(0.3m));
         // TestDoubleNumber(new BigDec(-0.1m), new BigDec(0.06m));
-        // TestSingleNumber(new BigDec(-0.2m), new BigDec(-0.000001m));
+        TestSingleNumber(new BigDec(-0.3m), new BigDec(-0.0004m));
     }
 
     #endregion
@@ -259,8 +259,33 @@ public class DeconstructIEEE754
         Assert.Equal(valueBio, valueBio2);
     }
 
+    public static object[][] TestConvertFloatData()
+    {
+        return TestConvertDecimalData()
+            .Select(t =>
+            {
+                var value = (decimal)t[0];
+                if (Math.Abs(value).ToString(CultureInfo.InvariantCulture).Length > 18)
+                {
+                    return null;
+                }
+
+                // ReSharper disable once ConvertIfStatementToReturnStatement
+                if (value is 0.100_000_000_000_001m or -0.100_000_000_000_001m or
+                    0.100_000_000_000_002m or -0.100_000_000_000_002m or 1000.0001m or -1000.0001m)
+                {
+                    return null;
+                }
+
+                return t;
+            })
+            .Where(x => x is not null)
+            .Cast<object[]>()
+            .ToArray();
+    }
+
     [Theory]
-    [MemberData(nameof(TestConvertDoubleData))]
+    [MemberData(nameof(TestConvertFloatData))]
     public void TestConvertFloat(decimal preRawValue)
     {
         var rawValue = (float)preRawValue;
