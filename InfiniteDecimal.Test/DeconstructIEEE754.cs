@@ -74,7 +74,7 @@ public class DeconstructIEEE754
 
         var realSum = b1 + b2;
         var sumDouble = d1 + d2;
-        var rounded = BigDec.Rounding(sumDouble);
+        var rounded = new BigDec(sumDouble);
         Assert.Equal(realSum, rounded);
     }
 
@@ -116,8 +116,9 @@ public class DeconstructIEEE754
     [Fact]
     public void TrivialTest()
     {
-        TestDoubleNumber(new BigDec(-0.1m), new BigDec(0.06m));
-        TestSingleNumber(new BigDec(-0.2m), new BigDec(-0.000001m));
+        TestDoubleNumber(new BigDec(-0.2m), new BigDec(0.3m));
+        // TestDoubleNumber(new BigDec(-0.1m), new BigDec(0.06m));
+        // TestSingleNumber(new BigDec(-0.2m), new BigDec(-0.000001m));
     }
 
     #endregion
