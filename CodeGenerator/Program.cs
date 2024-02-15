@@ -14,6 +14,7 @@ internal static class Program
         {
             0 => BigDecConstructor.Generate(),
             1 => PowDecPrecision.CalculatePowDec(),
+            2 => DecFloatPrecision.Test(),
             _ => throw new Exception($"Mode '{mode}' is not found")
         };
     }
