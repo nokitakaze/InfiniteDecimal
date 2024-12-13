@@ -35,40 +35,22 @@ public partial class BigDec
 
     public BigDec(decimal value)
     {
-        var sign = 1;
-        if (value < 0)
+        var parts = decimal.GetBits(value);
+        var rawValue = new BigInteger((uint)parts[0]);
+        rawValue |= new BigInteger((uint)parts[1]) << 32;
+        rawValue |= new BigInteger((uint)parts[2]) << 64;
+
+        // ReSharper disable once RedundantCast
+        bool isNegative = ((uint)parts[3] & (uint)0x8000_0000) != 0;
+        byte scale = (byte) ((parts[3] >> 16) & 0x7F);
+
+        Offset = scale;
+        Value = rawValue;
+        if (isNegative)
         {
-            value = -value;
-            sign = -1;
+            Value = -Value;
         }
 
-        var decEntier = Math.Floor(value);
-        var decTail = value - decEntier;
-
-        if (decTail == 0)
-        {
-            var bi = new BigInteger(decEntier);
-            Value = bi * sign;
-            return;
-        }
-
-        var tailResult = BigInteger.Zero;
-        const int OffsetStep = 9;
-        var modifier = Pow10BigInt(OffsetStep);
-        const decimal modifierDecimal = 1000_000_000m;
-        while (decTail > 0)
-        {
-            Offset += OffsetStep;
-            tailResult *= modifier;
-            decTail *= modifierDecimal;
-
-            var a = (long)Math.Floor(decTail);
-            tailResult += a;
-            decTail -= a;
-        }
-
-        Value = tailResult + (new BigInteger(decEntier)) * OffsetPower;
-        Value *= sign;
         this.NormalizeOffset();
     }
 
