@@ -200,7 +200,7 @@ public class DeconstructIEEE754
     public void StringifyDecimal(decimal rawValue)
     {
         var valueBio1 = new BigDec(rawValue);
-        var stringify = valueBio1.ToStringDouble();
+        var stringify = valueBio1.ToStringDouble(CultureInfo.InvariantCulture);
         var valueBio2 = BigDec.Parse(stringify);
         Assert.Equal(valueBio1, valueBio2);
     }

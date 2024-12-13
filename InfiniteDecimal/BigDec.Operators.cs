@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 
@@ -46,18 +47,18 @@ public partial class BigDec
 
     public static explicit operator decimal(BigDec item)
     {
-        return decimal.Parse(item.ToStringDouble());
+        return decimal.Parse(item.ToStringDouble(CultureInfo.InvariantCulture), CultureInfo.InvariantCulture);
     }
 
     public static explicit operator double(BigDec item)
     {
-        return double.Parse(item.ToStringDouble());
+        return double.Parse(item.ToStringDouble(CultureInfo.InvariantCulture), CultureInfo.InvariantCulture);
     }
 
     public static explicit operator float(BigDec item)
     {
         // TODO Maybe we need to do it more lower way
-        return float.Parse(item.ToStringDouble());
+        return float.Parse(item.ToStringDouble(CultureInfo.InvariantCulture), CultureInfo.InvariantCulture);
     }
 
     #endregion

@@ -148,6 +148,7 @@ public partial class BigDec
     {
         if (_offset == 0)
         {
+            // It's just a big integer
             return Value.ToString();
         }
 

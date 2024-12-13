@@ -1,4 +1,6 @@
-﻿namespace InfiniteDecimal.CodeGenerator;
+﻿using System.Globalization;
+
+namespace InfiniteDecimal.CodeGenerator;
 
 public static class DecFloatPrecision
 {
@@ -22,8 +24,8 @@ public static class DecFloatPrecision
                     var confFloat = (float)full;
                     var viaFloat = (decimal)confFloat;
 
-                    var parsedDouble = BigDec.Parse(confDouble.ToString("G"));
-                    var parsedFloat = BigDec.Parse(confFloat.ToString("G"));
+                    var parsedDouble = BigDec.Parse(confDouble.ToString("G", CultureInfo.InvariantCulture));
+                    var parsedFloat = BigDec.Parse(confFloat.ToString("G", CultureInfo.InvariantCulture));
 
                     var diffDouble = (parsedDouble - full).Abs();
                     if (diffDouble > 0)

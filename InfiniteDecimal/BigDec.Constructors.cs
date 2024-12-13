@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
@@ -104,7 +105,7 @@ public partial class BigDec
             return;
         }
 
-        var valueStringify = value.ToString("G17");
+        var valueStringify = value.ToString("G17", CultureInfo.InvariantCulture);
         if (!valueStringify.Contains("E"))
         {
             var a = valueStringify.Split('.');
@@ -242,7 +243,7 @@ public partial class BigDec
             return;
         }
 
-        var valueStringify = value.ToString("G9");
+        var valueStringify = value.ToString("G9", CultureInfo.InvariantCulture);
         if (!valueStringify.Contains("E"))
         {
             var a = valueStringify.Split('.');

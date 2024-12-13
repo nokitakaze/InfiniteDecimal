@@ -1321,6 +1321,45 @@ public class TrivialTest
         Assert.Equal(expectedString, actual3);
     }
 
+    public static IEnumerable<object[]> TestDefaultCultureData()
+    {
+        var russiaCulture = CultureInfo.GetCultureInfo("ru-RU");
+        var usaCulture = CultureInfo.GetCultureInfo("en-US");
+        var cultures = new[] { russiaCulture, usaCulture, CultureInfo.InvariantCulture };
+        var values = new decimal[] { -1.1m, -0.1m, -0.0000001m, 0, 1.1m, 0.1m, 0.0000001m };
+
+        return cultures
+            .SelectMany(culture => values
+                .OrderBy(t => t)
+                .Select(value => new object[] { value, culture }));
+    }
+
+    [Theory]
+    [MemberData(nameof(TestDefaultCultureData))]
+    public void TestDefaultCulture(decimal value, CultureInfo cultureInfo)
+    {
+        var culture1 = CultureInfo.DefaultThreadCurrentCulture;
+        var culture2 = CultureInfo.DefaultThreadCurrentUICulture;
+
+        try
+        {
+            CultureInfo.DefaultThreadCurrentCulture = cultureInfo;
+            CultureInfo.DefaultThreadCurrentUICulture = cultureInfo;
+
+            var bio = new BigDec(value);
+            var restoredDecimal = (decimal)bio;
+            Assert.InRange(restoredDecimal, value - 0.000001m, value + 0.000001m);
+
+            var restoredDouble = (double)bio;
+            Assert.InRange(restoredDouble, (double)value - 0.000001d, (double)value + 0.000001);
+        }
+        finally
+        {
+            CultureInfo.DefaultThreadCurrentCulture = culture1;
+            CultureInfo.DefaultThreadCurrentUICulture = culture2;
+        }
+    }
+
     #endregion
 
     #region BigInteger conversion

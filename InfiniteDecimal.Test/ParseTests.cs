@@ -1,4 +1,5 @@
-﻿using System.Numerics;
+﻿using System.Globalization;
+using System.Numerics;
 
 namespace InfiniteDecimal.Test;
 
@@ -66,7 +67,7 @@ public class ParseTests
             rnd.NextBytes(bytes);
 
             var t = new BigInteger(bytes, isBigEndian: true, isUnsigned: true);
-            var s = t.ToString();
+            var s = t.ToString(CultureInfo.InvariantCulture);
             var len1 = s.Length - 1;
             // ReSharper disable once LoopCanBeConvertedToQuery
             foreach (var sign in new[] { 1, -1 })

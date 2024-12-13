@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Numerics;
 
 namespace InfiniteDecimal;
@@ -65,8 +66,9 @@ public partial class BigDec : System.IConvertible
         return (float)(double)this;
     }
 
-    public object ToType(Type conversionType, IFormatProvider provider)
+    public object ToType(Type conversionType, IFormatProvider? provider)
     {
+        provider ??= CultureInfo.InvariantCulture;
         if (conversionType == typeof(ulong))
         {
             return this.ToUInt64(provider);
