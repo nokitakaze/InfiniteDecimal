@@ -248,7 +248,7 @@ public class DeconstructIEEE754
         var valueBio = new BigDec(rawValue);
         var valueString = valueBio.ToString(CultureInfo.InvariantCulture);
         var decimalRevert1 = (decimal)valueBio;
-        var decimalRevert2 = decimal.Parse(valueString);
+        var decimalRevert2 = decimal.Parse(valueString, CultureInfo.InvariantCulture);
         var decimalRevert1a = (double)valueBio.ToType(typeof(double), null);
 
         Assert.Equal(preRawValue, decimalRevert1);
