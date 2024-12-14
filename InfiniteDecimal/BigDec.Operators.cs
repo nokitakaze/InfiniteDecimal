@@ -47,7 +47,76 @@ public partial class BigDec
 
     public static explicit operator decimal(BigDec item)
     {
-        return decimal.Parse(item.ToStringDouble(CultureInfo.InvariantCulture), CultureInfo.InvariantCulture);
+        if (item == Zero)
+        {
+            return 0m;
+        }
+
+        var scale = item.Offset;
+        if (scale == 0)
+        {
+            // If we got "overflow here" System.Numberic will raise it anyway
+            return (decimal)item.Value;
+        }
+
+        if (item > 0)
+        {
+            if ((item > MaxDecimalValue) || (item < MinAbsDecimalValue))
+            {
+                throw new OverflowException("Value was either too large or too small for a Decimal");
+            }
+        }
+        else
+        {
+            if ((item < -MaxDecimalValue) || (item > -MinAbsDecimalValue))
+            {
+                throw new OverflowException("Value was either too large or too small for a Decimal");
+            }
+        }
+
+        var isNegative = item.Value < 0;
+        var value = BigInteger.Abs(item.Value);
+        if (scale > MaxDecimalScale)
+        {
+            value /= BigInteger.Pow(BigInteger10, scale - MaxDecimalScale);
+            scale = MaxDecimalScale;
+        }
+
+        while ((scale > 0) && (GetRealByteCount(value) > 12))
+        {
+            value /= BigInteger10;
+            scale--;
+        }
+
+        var mask = (BigInteger.One << 32) - 1;
+        uint uByteLo = (uint)(value & mask);
+        var byteLo = unchecked((int)uByteLo);
+        uint uByteMid = (uint)((value >> 32) & mask);
+        var byteMid = unchecked((int)uByteMid);
+        uint uByteHi = (uint)((value >> 64) & mask);
+        var byteHi = unchecked((int)uByteHi);
+
+        var result = new decimal(byteLo, byteMid, byteHi, isNegative, (byte)scale);
+        return result;
+    }
+
+    public static int GetRealByteCount(BigInteger item)
+    {
+        if (item.IsZero)
+        {
+            return 1;
+        }
+
+        var array = item.ToByteArray(true, false);
+        for (var count = array.Length - 1; count >= 0; count--)
+        {
+            if (array[count] > 0)
+            {
+                return count + 1;
+            }
+        }
+
+        throw new Exception();
     }
 
     public static explicit operator double(BigDec item)

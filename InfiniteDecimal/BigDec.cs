@@ -9,18 +9,46 @@ namespace InfiniteDecimal;
 public partial class BigDec
 {
     public const int MaxDefaultPrecision = 18;
+
+    /// <summary>
+    /// A constant BigInteger representing the numeric value ten, used as the base for decimal scaling
+    /// and exponentiation operations within the BigDec class
+    /// </summary>
     public static readonly BigInteger BigInteger10 = new BigInteger(10);
+
+    /// <summary>
+    /// Specifies the maximum number of decimal digits that the BigDec instance can accurately represent
+    /// and maintain for its fractional part
+    /// </summary>
     public readonly int MaxPrecision = MaxDefaultPrecision;
+
     public static readonly BigDec One = new BigDec(1);
     public static readonly BigDec Zero = new BigDec(0);
 
+    /// <summary>
+    /// Represents the underlying BigInteger that stores the unscaled significant digits of the BigDec number
+    /// </summary>
     protected BigInteger Value = BigInteger.Zero;
+
+    /// <summary>
+    /// Represents the scale of the decimal value by specifying how many digits are placed to the right
+    /// of the decimal point. An offset of zero implies the value is an integer, while a positive offset shifts
+    /// the decimal point accordingly
+    /// </summary>
     protected int _offset;
 
-    protected int Offset
+    /// <summary>
+    /// Represents the scale of the decimal value by specifying how many digits are placed to the right
+    /// of the decimal point. An offset of zero implies the value is an integer, while a positive offset shifts
+    /// the decimal point accordingly
+    /// </summary>
+    /// <remarks>
+    /// Adjusting this property also updates the internal power-of-ten factor used for calculations.
+    /// </remarks>
+    public int Offset
     {
         get => _offset;
-        set
+        protected set
         {
             if (value < 0)
             {
@@ -37,9 +65,32 @@ public partial class BigDec
         }
     }
 
+    /// <summary>
+    /// Represents the core numeric value of the decimal as a BigInteger, without considering its decimal offset
+    /// </summary>
+    public BigInteger BigIntBody => Value;
+
+    /// <summary>
+    /// Represents the numeric scale factor associated with the current offset, calculated as 10
+    /// raised to the power of `Offset`
+    /// </summary>
+    /// <remarks>
+    /// It is used internally to efficiently handle scaling operations and avoid recalculating powers
+    /// of ten during arithmetic computations.
+    /// </remarks>
     protected BigInteger OffsetPower = BigInteger.One;
+
+    /// <summary>
+    /// Indicates whether this BigDec instance represents an integer value, i.e., a value without any fractional component.
+    /// </summary>
     public bool IsInteger => (_offset == 0);
 
+    /// <summary>
+    /// A read-only dictionary that maps an exponent to the corresponding power of 10 as a BigInteger.
+    /// </summary>
+    /// <remarks>
+    /// It provides fast access to precomputed values of 10^n to avoid recalculating them repeatedly.
+    /// </remarks>
     public static readonly IReadOnlyDictionary<int, BigInteger> BigInt10Powers;
 
     static BigDec()
@@ -65,6 +116,11 @@ public partial class BigDec
         }
         // */
         ExpModifiers = GenerateExpModifiers();
+        MaxDecimalValue = new((BigInteger.One << 96) - 1);
+        MinAbsDecimalValue = new BigDec(BigInteger.One)
+        {
+            Offset = MaxDecimalScale,
+        };
     }
 
     /// <summary>

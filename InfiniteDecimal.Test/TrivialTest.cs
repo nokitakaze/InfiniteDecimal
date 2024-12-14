@@ -1046,7 +1046,7 @@ public class TrivialTest
     public void NegativeOffset()
     {
         var offsetField = typeof(BigDec)
-            .GetProperty("Offset", BindingFlags.NonPublic | BindingFlags.Instance);
+            .GetProperty("Offset", BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance);
         if (offsetField is null)
         {
             throw new Exception("'Offset' property does not exist");
