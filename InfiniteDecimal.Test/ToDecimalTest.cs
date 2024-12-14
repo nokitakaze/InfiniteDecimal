@@ -139,4 +139,10 @@ public class ToDecimalTest
             }
         }
     }
+
+    [Fact]
+    public void GetRealByteCount_Zero()
+    {
+        Assert.Equal(1, BigDec.GetRealByteCount(BigInteger.Zero));
+    }
 }
