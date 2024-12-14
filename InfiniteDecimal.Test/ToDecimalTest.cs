@@ -120,4 +120,23 @@ public class ToDecimalTest
         var a3 = (decimal)BigDec.Zero.ToType(typeof(decimal), CultureInfo.InvariantCulture);
         Assert.Equal(0m, a3);
     }
+
+    [Fact]
+    public void GetRealByteCount()
+    {
+        for (var bitCount = 95; bitCount < 96; bitCount++)
+        {
+            foreach (var modifier in new[] { -1, 0, 1 })
+            {
+                var realBitCount = bitCount + (modifier == -1 ? 0 : 1);
+                var realByteCount = (int)Math.Ceiling(realBitCount * (1d / 8));
+
+                var value = (BigInteger.One << bitCount) + modifier;
+                var calculatedByteCount = BigDec.GetRealByteCount(value);
+                Assert.Equal(realByteCount, calculatedByteCount);
+                calculatedByteCount = BigDec.GetRealByteCount(-value);
+                Assert.Equal(realByteCount, calculatedByteCount);
+            }
+        }
+    }
 }

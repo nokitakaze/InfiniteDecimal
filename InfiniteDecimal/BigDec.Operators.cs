@@ -107,7 +107,7 @@ public partial class BigDec
             return 1;
         }
 
-        var array = item.ToByteArray(true, false);
+        var array = BigInteger.Abs(item).ToByteArray(true, false);
         for (var count = array.Length - 1; count >= 0; count--)
         {
             if (array[count] > 0)
