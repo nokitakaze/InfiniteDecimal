@@ -1,0 +1,44 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        locale: [en_US.UTF-8, ru_RU.UTF-8]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '6.0.x'
+
+      - name: Install locales
+        run: |
+          sudo locale-gen en_US.UTF-8 ru_RU.UTF-8
+          sudo update-locale
+
+      - name: Set locale to ${{ matrix.locale }}
+        run: |
+          export LC_ALL=${{ matrix.locale }}
+          export LANG=${{ matrix.locale }}
+          locale
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --configuration Release
+
+      - name: Test with locale ${{ matrix.locale }}
+        env:
+          LANG: ${{ matrix.locale }}
+          LC_ALL: ${{ matrix.locale }}
+        run: dotnet test --configuration Release

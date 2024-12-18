@@ -1334,8 +1334,8 @@ public class TrivialTest
                 .Select(value => new object[] { value, culture }));
     }
 
-    [Theory]
-    [MemberData(nameof(TestDefaultCultureData))]
+    // [Theory]
+    // [MemberData(nameof(TestDefaultCultureData))]
     public void TestDefaultCulture(decimal value, CultureInfo cultureInfo)
     {
         var culture1 = CultureInfo.DefaultThreadCurrentCulture;
