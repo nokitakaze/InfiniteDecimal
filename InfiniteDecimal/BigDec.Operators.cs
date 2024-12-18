@@ -100,6 +100,7 @@ public partial class BigDec
         return result;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int GetRealByteCount(BigInteger item)
     {
         if (item.IsZero)
@@ -107,16 +108,10 @@ public partial class BigDec
             return 1;
         }
 
-        var array = item.ToByteArray(true, false);
-        for (var count = array.Length - 1; count >= 0; count--)
-        {
-            if (array[count] > 0)
-            {
-                return count + 1;
-            }
-        }
-
-        throw new Exception();
+        return BigInteger
+            .Abs(item)
+            .ToByteArray(true, false)
+            .Length;
     }
 
     public static explicit operator double(BigDec item)

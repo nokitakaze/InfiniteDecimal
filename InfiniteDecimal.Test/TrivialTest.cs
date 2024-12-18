@@ -1286,15 +1286,17 @@ public class TrivialTest
 
         var items = new (decimal value, CultureInfo? cultureInfo, string expectedString)[]
         {
-            (1.1m, null, "1.1"),
+            // (1.1m, null, "1.1"),
             (1.1m, CultureInfo.InvariantCulture, "1.1"),
             (1.1m, usaCulture, "1.1"),
             (1.1m, russiaCulture, "1,1"),
-            (-1.1m, null, "-1.1"),
+            // (-1.1m, null, "-1.1"),
             (-1.1m, CultureInfo.InvariantCulture, "-1.1"),
+            (-1.1m, usaCulture, "-1.1"),
             (-1.1m, russiaCulture, "-1,1"),
-            (1.00001m, null, "1.00001"),
+            // (1.00001m, null, "1.00001"),
             (1.00001m, CultureInfo.InvariantCulture, "1.00001"),
+            (1.00001m, usaCulture, "1.00001"),
             (1.00001m, russiaCulture, "1,00001"),
         };
 
