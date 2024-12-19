@@ -282,8 +282,7 @@ public partial class BigDec
             return One.WithPrecision(this.MaxPrecision);
         }
 
-        var half = new BigDec(0.5m);
-        var epsilon = PowFracOfTen(this.MaxPrecision);
+        var epsilon = BigInteger.Pow(BigInteger10, PrecisionBuffer);
         // codecov ignore start
         if (epsilon <= Zero)
         {
@@ -291,19 +290,39 @@ public partial class BigDec
         }
         // codecov ignore end
 
-        var current = this.WithPrecision(this.MaxPrecision + PrecisionBuffer) * half;
+        var addPowPow = this.MaxPrecision + PrecisionBuffer;
+        var addPowValue = BigInteger.Pow(BigInteger10, addPowPow);
+        var needPowerLevel = addPowPow * 2 - _offset;
+        var expected = needPowerLevel switch
+        {
+            > 0 => this.Value * BigInteger.Pow(BigInteger10, needPowerLevel),
+            0 => this.Value,
+            _ => this.Value / BigInteger.Pow(BigInteger10, -needPowerLevel)
+        };
+
+        var expectedDiv = expected / addPowValue;
+        var current = expectedDiv / 2;
         while (true)
         {
             for (var i = 0; i < 5; i++)
             {
-                current = (current + this / current) * half;
+                var currentT = (current + expected / current) / 2;
+                if (currentT == current)
+                {
+                    // At this moment, we are in a situation whereit is impossible to approximate
+                    // the value any further in any case
+                    return new BigDec(current).WithPrecision(MaxPrecision) / addPowValue;
+                }
+
+                current = currentT;
             }
 
-            var a = current * current;
-            var diff = (this - a).Abs();
+            var actual = current * current;
+            var diff = BigInteger.Abs(expected - actual);
+            // ReSharper disable once InvertIf
             if (diff <= epsilon)
             {
-                return current.Round(this.MaxPrecision);
+                return new BigDec(current).WithPrecision(MaxPrecision) / addPowValue;
             }
         }
     }

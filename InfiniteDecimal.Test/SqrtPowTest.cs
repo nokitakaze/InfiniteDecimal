@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.Numerics;
 using System.Reflection;
 using Xunit.Abstractions;
 
@@ -110,17 +111,21 @@ public class SqrtPowTest
 
     public static IEnumerable<object[]> TestSqrtPrecisionData()
     {
-        var values = new[]
+        var values = new BigDec[]
         {
-            2,
-            Math.PI,
-            3,
-            Math.E,
-            5,
-            7,
+            new BigDec(2),
+            new BigDec(2) + BigDec.One / BigInteger.Pow(BigDec.BigInteger10, 16),
+            new BigDec(Math.E),
+            BigDec.E,
+            new BigDec(3),
+            new BigDec(Math.PI),
+            BigDec.PI,
+            new BigDec(4),
+            new BigDec(5),
+            new BigDec(7),
         };
 
-        var precisions = new int[] { 18, 50, 100, 10_000 };
+        var precisions = new int[] { 3, 18, 50, 100, 10_000 };
 
         return values
             .SelectMany(value => precisions.Select(p => new object[] { value, p }));
@@ -128,7 +133,7 @@ public class SqrtPowTest
 
     [Theory]
     [MemberData(nameof(TestSqrtPrecisionData))]
-    public void TestSqrtPrecision(double value, int precision)
+    public void TestSqrtPrecision(BigDec value, int precision)
     {
         var recast = new BigDec(value).WithPrecision(precision);
         var sqrt = recast.Sqrt();
