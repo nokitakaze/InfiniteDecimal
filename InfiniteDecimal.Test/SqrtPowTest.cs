@@ -60,7 +60,7 @@ public class SqrtPowTest
             .ToArray();
     }
 
-    #region Ln & Sqrt
+    #region Sqrt
 
     public static object[][] TestSqrtData()
     {
@@ -107,6 +107,40 @@ public class SqrtPowTest
             Assert.True(diff < 0.000_000_1m);
         }
     }
+
+    public static IEnumerable<object[]> TestSqrtPrecisionData()
+    {
+        var values = new[]
+        {
+            2,
+            Math.PI,
+            3,
+            Math.E,
+            5,
+            7,
+        };
+
+        var precisions = new int[] { 18, 50, 100, 10_000 };
+
+        return values
+            .SelectMany(value => precisions.Select(p => new object[] { value, p }));
+    }
+
+    [Theory]
+    [MemberData(nameof(TestSqrtPrecisionData))]
+    public void TestSqrtPrecision(double value, int precision)
+    {
+        var recast = new BigDec(value).WithPrecision(precision);
+        var sqrt = recast.Sqrt();
+        var actual = sqrt * sqrt;
+        var diff = new BigDec(10).Pow(-precision);
+
+        Assert.InRange(actual, actual - diff, actual + diff);
+    }
+
+    #endregion
+
+    #region Ln
 
     [Theory]
     [MemberData(nameof(TestSqrtData))]
