@@ -11,6 +11,16 @@ public partial class BigDec
     public const int MaxDefaultPrecision = 18;
 
     /// <summary>
+    /// Regular expression for matching exponential notation strings.
+    /// The regex matches strings in the format: [+/-][digits].[digits]e[+/-][digits]
+    /// For example: 1.23e+10
+    /// </summary>
+    private static readonly Regex ExponentialNotationRegex = new Regex(
+        "^([+-]?[0-9]+(?:\\.[0-9]*?)?)e([+-][0-9]+)$",
+        RegexOptions.Compiled
+    );
+
+    /// <summary>
     /// A constant BigInteger representing the numeric value ten, used as the base for decimal scaling
     /// and exponentiation operations within the BigDec class
     /// </summary>
@@ -257,13 +267,6 @@ public partial class BigDec
         return ToStringDouble();
     }
 
-    /// <summary>
-    /// Regular expression for matching exponential notation strings.
-    /// The regex matches strings in the format: [+/-][digits].[digits]e[+/-][digits]
-    /// For example: 1.23e+10
-    /// </summary>
-    private static Regex? ExponentialNotationRegex;
-
     public static BigDec Parse(string value)
     {
         if (value == "0")
@@ -276,8 +279,15 @@ public partial class BigDec
             .Replace("_", string.Empty);
 
         {
-            ExponentialNotationRegex ??= new Regex("^([+-]?[0-9]+(?:\\.[0-9]*?)?)e([+-][0-9]+)$");
-            var m = ExponentialNotationRegex.Match(value);
+            // This method could be called before static initialization
+            // ReSharper disable NullCoalescingConditionIsAlwaysNotNullAccordingToAPIContract
+            var exponentialNotationRegex = ExponentialNotationRegex ?? new Regex(
+                "^([+-]?[0-9]+(?:\\.[0-9]*?)?)e([+-][0-9]+)$",
+                RegexOptions.Compiled
+            );
+            // ReSharper restore NullCoalescingConditionIsAlwaysNotNullAccordingToAPIContract
+
+            var m = exponentialNotationRegex.Match(value);
             if (m.Success)
             {
                 var body = Parse(m.Groups[1].Value);
@@ -316,27 +326,12 @@ public partial class BigDec
         }
 
         {
-            // This method could be called from static constructor
-            var bigInteger10 = !BigInteger10.IsZero ? BigInteger10 : new BigInteger(10);
-
-            var tail = BigInteger.Zero;
-            for (var i = 0; i < chunks1.Length; i++)
-            {
-                tail *= bigInteger10;
-                var c1 = chunks1.Substring(i, 1);
-                tail += int.Parse(c1);
-            }
-
+            var newOffset = chunks1.Length;
             // ReSharper disable once UseObjectOrCollectionInitializer
-            var valBI = new BigDec(tail);
-            valBI._offset = chunks1.Length;
-            valBI.OffsetPower = Pow10BigInt(valBI._offset);
-            valBI.Value += valBI.OffsetPower * BigInteger.Parse(chunks[0]);
+            var valBI = new BigDec(0).WithPrecision(newOffset);
+            valBI.Value = BigInteger.Parse(chunks[0] + chunks1, NumberStyles.Integer);
             valBI.Value *= sign;
-            if (valBI._offset > valBI.MaxPrecision)
-            {
-                valBI = valBI.WithPrecision(valBI._offset);
-            }
+            valBI.Offset = newOffset;
 
             return valBI;
         }
