@@ -104,13 +104,6 @@ public class ReverseTest
 
     private void WritePrecision(BigDec diff, int precision)
     {
-        var valueField = typeof(BigDec)
-            .GetField("Value", BindingFlags.NonPublic | BindingFlags.Instance);
-        if (valueField is null)
-        {
-            throw new Exception();
-        }
-
         var t = (BigDec.One - diff).Abs();
         if (t.IsZero)
         {
@@ -118,7 +111,7 @@ public class ReverseTest
             return;
         }
 
-        var value = (BigInteger)valueField.GetValue(t)!;
+        var value = t.BigIntegerBody;
         var diffLg10 = t.Offset - Math.Log10((double)value);
         _testOutputHelper.WriteLine($"precision {precision} returns with {diffLg10:F3} ({(diffLg10 - precision):F3})");
     }

@@ -27,7 +27,7 @@ public partial class BigDec
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    protected BigDec(BigInteger body, int offset, int maxPrecision)
+    public BigDec(BigInteger body, int offset, int maxPrecision)
     {
         Value = body;
         Offset = offset;

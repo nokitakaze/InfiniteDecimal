@@ -1033,13 +1033,13 @@ public class SqrtPowTest
             var actualLn = input.WithPrecision(PickedPrecision + 2).Ln();
             Assert.InRange(actualLn, expectedLn - epsilon, expectedLn + epsilon);
             Assert.InRange(actualLn.MaxPrecision, 0, PickedPrecision + 2);
-            Assert.InRange(GetOffset(actualLn), 0, PickedPrecision + 2);
+            Assert.InRange(actualLn.Offset, 0, PickedPrecision + 2);
         }
         {
             var actualExp = expectedLn.WithPrecision(PickedPrecision + 2).Exp();
             Assert.InRange(actualExp, input - epsilon, input + epsilon);
             Assert.InRange(actualExp.MaxPrecision, 0, PickedPrecision + 2);
-            Assert.InRange(GetOffset(actualExp), 0, PickedPrecision + 2);
+            Assert.InRange(actualExp.Offset, 0, PickedPrecision + 2);
         }
     }
 
@@ -2268,7 +2268,7 @@ public class SqrtPowTest
         var epsilon = BigDec.PowFracOfTen(localPrecision);
         Assert.InRange(actual, expected - epsilon, expected + epsilon);
         Assert.InRange(actual.MaxPrecision, 0, PickedPrecision);
-        Assert.InRange(GetOffset(actual), 0, PickedPrecision);
+        Assert.InRange(actual.Offset, 0, PickedPrecision);
     }
 
     #endregion
@@ -2372,11 +2372,4 @@ public class SqrtPowTest
     }
 
     #endregion
-
-    protected static int GetOffset(BigDec input)
-    {
-        var r = input.GetType().GetField("_offset", BindingFlags.NonPublic | BindingFlags.Instance)!;
-
-        return (int)r.GetValue(input)!;
-    }
 }

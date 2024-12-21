@@ -367,20 +367,6 @@ public class TrivialTest
     [MemberData(nameof(CheckLongTailData))]
     public void CheckLongTail(int exp1, int exp2)
     {
-        var valueField = typeof(BigDec)
-            .GetField("Value", BindingFlags.NonPublic | BindingFlags.Instance);
-        if (valueField is null)
-        {
-            throw new Exception();
-        }
-
-        var offsetField = typeof(BigDec)
-            .GetField("_offset", BindingFlags.NonPublic | BindingFlags.Instance);
-        if (offsetField is null)
-        {
-            throw new Exception();
-        }
-
         BigDec operand1 = BigDec.One;
         if (exp1 >= 0)
         {
@@ -412,16 +398,16 @@ public class TrivialTest
 
         var actual = 0;
 
-        var _value = (BigInteger)valueField.GetValue(result)!;
+        var _value = result.BigIntegerBody;
         while (_value >= 10)
         {
             result /= 10;
-            _value = (BigInteger)valueField.GetValue(result)!;
+            _value = result.BigIntegerBody;
             actual++;
         }
 
         Assert.Equal(BigInteger.One, _value);
-        actual -= (int)offsetField.GetValue(result)!;
+        actual -= result.Offset;
 
         Assert.Equal(expected, actual);
     }
@@ -626,9 +612,8 @@ public class TrivialTest
         Assert.Equal(-1, operand2.CompareTo((double)operand1));
 
         {
-            var p = typeof(BigDec).GetField("Value", BindingFlags.NonPublic | BindingFlags.Instance)!;
-            var value1 = (BigInteger)p.GetValue(operand1)!;
-            var value2 = (BigInteger)p.GetValue(operand2)!;
+            var value1 = operand1.BigIntegerBody;
+            var value2 = operand2.BigIntegerBody;
             var lg10V1 = BigInteger.Log10(BigInteger.Abs(value1));
             var lg10V2 = BigInteger.Log10(BigInteger.Abs(value2));
             // log10(2) * 23 ~= 6.923

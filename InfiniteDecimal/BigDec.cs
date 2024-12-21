@@ -78,7 +78,7 @@ public partial class BigDec
     /// <summary>
     /// Represents the core numeric value of the decimal as a BigInteger, without considering its decimal offset
     /// </summary>
-    public BigInteger BigIntBody => Value;
+    public BigInteger BigIntegerBody => Value;
 
     /// <summary>
     /// Represents the numeric scale factor associated with the current offset, calculated as 10
