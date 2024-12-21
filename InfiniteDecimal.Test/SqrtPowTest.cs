@@ -143,6 +143,38 @@ public class SqrtPowTest
         Assert.InRange(actual, actual - diff, actual + diff);
     }
 
+    [Fact]
+    public void TestZeroSqrt()
+    {
+        var sqrt = BigDec.Zero.Sqrt();
+        Assert.True(sqrt.IsZero);
+    }
+
+    [Fact]
+    public void TestSqrt_Zero_Negative()
+    {
+        foreach (var value in new decimal[] { -3, -2.5m, -1, -0.5m, })
+        {
+            Assert.Throws<InfiniteDecimalException>(() => { new BigDec(value).Sqrt(); });
+        }
+    }
+
+    [Fact]
+    public void TestBigIntZeroSqrt()
+    {
+        var sqrt = BigDec.Sqrt(BigInteger.Zero);
+        Assert.True(sqrt.IsZero);
+    }
+
+    [Fact]
+    public void TestBigIntSqrt_Zero_Negative()
+    {
+        foreach (var value in new BigInteger[] { -3, -1, })
+        {
+            Assert.Throws<InfiniteDecimalException>(() => { BigDec.Sqrt(value); });
+        }
+    }
+
     #endregion
 
     #region Ln
@@ -1012,15 +1044,6 @@ public class SqrtPowTest
     }
 
     #endregion
-
-    [Fact]
-    public void TestSqrt_Zero_Negative()
-    {
-        foreach (var value in new decimal[] { -3, -2.5m, -1, -0.5m, })
-        {
-            Assert.Throws<InfiniteDecimalException>(() => { new BigDec(value).Sqrt(); });
-        }
-    }
 
     [Fact]
     public void TestSqrt_GreatPrecision()
@@ -2312,7 +2335,7 @@ public class SqrtPowTest
         foreach (var power in new decimal[] { 0.5m, 1, 2.5m, 3 })
         {
             var expected = BigDec.Zero.Pow(power);
-            Assert.Equal(BigDec.Zero, expected);
+            Assert.True(expected.IsZero);
         }
     }
 

@@ -300,7 +300,7 @@ public partial class BigDec
             throw new InfiniteDecimalException($"'{this}' below zero");
         }
 
-        if (this == Zero)
+        if (this.IsZero)
         {
             return Zero.WithPrecision(this.MaxPrecision);
         }
