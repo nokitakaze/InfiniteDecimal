@@ -24,7 +24,7 @@ public class SimplePrecisionTest
     public void Copy_Copy()
     {
         var a = new BigDec(1337);
-        var b = a.Copy();
+        var b = a;
         b += 1;
 
         Assert.NotEqual(a, b);

@@ -135,7 +135,7 @@ public class SqrtPowTest
     [MemberData(nameof(TestSqrtPrecisionData))]
     public void TestSqrtPrecision(BigDec value, int precision)
     {
-        var recast = new BigDec(value).WithPrecision(precision);
+        var recast = new BigDec(value, precision);
         var sqrt = recast.Sqrt();
         var actual = sqrt * sqrt;
         var diff = new BigDec(10).Pow(-precision);
@@ -205,7 +205,7 @@ public class SqrtPowTest
     public void TestLn_Euler()
     {
         var expected = BigDec.One;
-        var actual = new BigDec(BigDec.E).Ln().WithPrecision(20);
+        var actual = BigDec.E.Ln().WithPrecision(20);
 
         var diff = (actual - expected).Abs();
         var epsilon = BigDec.Parse("0.00000000000000000001");

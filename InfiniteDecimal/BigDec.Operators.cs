@@ -141,8 +141,8 @@ public partial class BigDec
             return false;
         }
 
-        a.NormalizeOffset();
-        b.NormalizeOffset();
+        a.ReduceOffsetWhile10();
+        b.ReduceOffsetWhile10();
         return (a._offset == b._offset) && (a.Value == b.Value);
     }
 
@@ -213,7 +213,7 @@ public partial class BigDec
             Value = valueA + valueB,
             Offset = maxOffset,
         };
-        newValue.NormalizeOffset();
+        newValue.ReduceOffsetWhile10();
 
         return newValue;
     }
@@ -227,7 +227,7 @@ public partial class BigDec
     {
         var newValue = new BigDec(a);
         newValue.Value += b * newValue.OffsetPower;
-        newValue.NormalizeOffset();
+        newValue.ReduceOffsetWhile10();
 
         return newValue;
     }
@@ -241,7 +241,7 @@ public partial class BigDec
         var newValue = a.WithPrecision(Math.Max(a.MaxPrecision, b.MaxPrecision));
         newValue.Offset += b.Offset;
         newValue.Value *= b.Value;
-        newValue.NormalizeOffset();
+        newValue.ReduceOffsetWhile10();
 
         return newValue;
     }
@@ -250,7 +250,7 @@ public partial class BigDec
     {
         var newValue = new BigDec(a);
         newValue.Value *= b;
-        newValue.NormalizeOffset();
+        newValue.ReduceOffsetWhile10();
 
         return newValue;
     }

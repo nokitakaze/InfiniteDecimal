@@ -54,17 +54,15 @@ public partial class BigDec
 
         var u = !tail1.IsZero && ((leftPow1 / tail1) <= 1);
 
-        var result = new BigDec(this);
-        result.Value -= tail;
-        result.Value /= leftPow;
-        result.Offset = decimalNumber;
+        var value = Value / leftPow;
         if (u)
         {
-            result.Value++;
+            value++;
         }
 
-        result.NormalizeOffset();
-        return result.WithPrecision(decimalNumber);
+        var result = new BigDec(value, decimalNumber, decimalNumber);
+        result.ReduceOffsetWhile10();
+        return result;
     }
 
     #endregion
@@ -337,7 +335,7 @@ public partial class BigDec
 
         result.Offset = b;
         result.Value = aSqrt;
-        result.NormalizeOffset();
+        result.ReduceOffsetWhile10();
 
         return result;
     }

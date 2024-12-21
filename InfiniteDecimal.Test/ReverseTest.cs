@@ -55,7 +55,7 @@ public class ReverseTest
     {
         foreach (var precision in new[] { 5, 18, 50, 100 })
         {
-            var inputBD = new BigDec(input).WithPrecision(precision + BigDec.PrecisionBuffer);
+            var inputBD = new BigDec(input, precision + BigDec.PrecisionBuffer);
             var reverse = inputBD.Pow(-1);
             var revRev = inputBD * reverse;
             WritePrecision(revRev, precision);
@@ -70,7 +70,7 @@ public class ReverseTest
     {
         foreach (var precision in new[] { 5, 18, 50, 100 })
         {
-            var inputBD = new BigDec(input).WithPrecision(precision + BigDec.PrecisionBuffer);
+            var inputBD = new BigDec(input, precision + BigDec.PrecisionBuffer);
             var reverse = inputBD.Pow(-BigDec.One);
             var revRev = inputBD * reverse;
             WritePrecision(revRev, precision);
@@ -104,11 +104,9 @@ public class ReverseTest
 
     private void WritePrecision(BigDec diff, int precision)
     {
-        var offsetField = typeof(BigDec)
-            .GetField("_offset", BindingFlags.NonPublic | BindingFlags.Instance);
         var valueField = typeof(BigDec)
             .GetField("Value", BindingFlags.NonPublic | BindingFlags.Instance);
-        if ((offsetField is null) || (valueField is null))
+        if (valueField is null)
         {
             throw new Exception();
         }
@@ -120,9 +118,8 @@ public class ReverseTest
             return;
         }
 
-        var offset = (int)offsetField.GetValue(t)!;
         var value = (BigInteger)valueField.GetValue(t)!;
-        var diffLg10 = offset - Math.Log10((double)value);
+        var diffLg10 = t.Offset - Math.Log10((double)value);
         _testOutputHelper.WriteLine($"precision {precision} returns with {diffLg10:F3} ({(diffLg10 - precision):F3})");
     }
 }

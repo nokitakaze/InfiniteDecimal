@@ -8,33 +8,49 @@ namespace InfiniteDecimal;
 
 public partial class BigDec
 {
-    public BigDec(BigDec value)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    protected BigDec(BigDec value) : this(value.Value, value._offset, value.OffsetPower, value.MaxPrecision)
     {
-        Value = value.Value;
-        Offset = value.Offset;
-        MaxPrecision = value.MaxPrecision;
     }
 
-    public BigDec(BigDec value, int maxPrecision) : this(value)
+    public BigDec(BigDec value, int maxPrecision) : this(value.Value, value._offset, value.OffsetPower, maxPrecision)
     {
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    protected BigDec(BigInteger body, int offset, BigInteger offsetPower, int maxPrecision)
+    {
+        Value = body;
+        _offset = offset;
+        OffsetPower = offsetPower;
         MaxPrecision = maxPrecision;
     }
 
-    public BigDec(BigInteger value)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    protected BigDec(BigInteger body, int offset, int maxPrecision)
+    {
+        Value = body;
+        Offset = offset;
+        MaxPrecision = maxPrecision;
+    }
+
+    public BigDec(BigInteger value, int maxPrecision = MaxDefaultPrecision)
     {
         Value = value;
+        MaxPrecision = maxPrecision;
     }
 
-    public BigDec(long value) : this(new BigInteger(value))
+    public BigDec(long value, int maxPrecision = MaxDefaultPrecision) : this(new BigInteger(value), maxPrecision)
     {
     }
 
-    public BigDec(ulong value) : this(new BigInteger(value))
+    public BigDec(ulong value, int maxPrecision = MaxDefaultPrecision) : this(new BigInteger(value), maxPrecision)
     {
     }
 
-    public BigDec(decimal value)
+    public BigDec(decimal value, int maxPrecision = MaxDefaultPrecision)
     {
+        MaxPrecision = maxPrecision;
         var parts = decimal.GetBits(value);
         var rawValue = new BigInteger((uint)parts[0]);
         rawValue |= new BigInteger((uint)parts[1]) << 32;
@@ -42,7 +58,7 @@ public partial class BigDec
 
         // ReSharper disable once RedundantCast
         bool isNegative = ((uint)parts[3] & (uint)0x8000_0000) != 0;
-        byte scale = (byte) ((parts[3] >> 16) & 0x7F);
+        byte scale = (byte)((parts[3] >> 16) & 0x7F);
 
         Offset = scale;
         Value = rawValue;
@@ -51,15 +67,10 @@ public partial class BigDec
             Value = -Value;
         }
 
-        this.NormalizeOffset();
+        this.ReduceOffsetWhile10();
     }
 
-    public BigDec(decimal value, int maxPrecision) : this(value)
-    {
-        MaxPrecision = maxPrecision;
-    }
-
-    public BigDec(double value)
+    public BigDec(double value, int maxPrecision = MaxDefaultPrecision)
     {
         if (!double.IsFinite(value))
         {
@@ -73,6 +84,7 @@ public partial class BigDec
             return;
         }
 
+        MaxPrecision = maxPrecision;
         var sign = 1;
         if (value < 0)
         {
@@ -194,10 +206,10 @@ public partial class BigDec
 
         Value = bio.Value * sign;
         Offset = bio._offset + addExp;
-        NormalizeOffset();
+        ReduceOffsetWhile10();
     }
 
-    public BigDec(float value)
+    public BigDec(float value, int maxPrecision = MaxDefaultPrecision)
     {
         if (!float.IsFinite(value))
         {
@@ -211,6 +223,7 @@ public partial class BigDec
             return;
         }
 
+        MaxPrecision = maxPrecision;
         var sign = 1;
         if (value < 0)
         {
@@ -280,7 +293,7 @@ public partial class BigDec
         }
 
         var bio = Parse(valueStringify);
-        bio.NormalizeOffset();
+        bio.ReduceOffsetWhile10();
         if (valueStringifyLength + addExp >= 9)
         {
             // TODO It is more correct to do via IEEE-754 mantissa size
@@ -353,7 +366,7 @@ public partial class BigDec
 
         Value = bio.Value * sign;
         Offset = bio._offset + addExp;
-        NormalizeOffset();
+        ReduceOffsetWhile10();
     }
 
     /// <summary>
@@ -365,15 +378,5 @@ public partial class BigDec
     public BigDec WithPrecision(int newPrecision)
     {
         return new BigDec(this, newPrecision);
-    }
-
-    /// <summary>
-    /// Creates a copy of the current BigDec object
-    /// </summary>
-    /// <returns>A new BigDec object that is a copy of the current instance.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public BigDec Copy()
-    {
-        return new BigDec(this);
     }
 }

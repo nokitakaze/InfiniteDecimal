@@ -175,7 +175,10 @@ public partial class BigDec
         return result;
     }
 
-    public void NormalizeOffset()
+    /// <summary>
+    /// Reduce the offset while the body is divisible by 10
+    /// </summary>
+    protected void ReduceOffsetWhile10()
     {
         if (Value.IsZero)
         {
@@ -189,19 +192,21 @@ public partial class BigDec
         }
 
         var value = (Value > 0) ? Value : -Value;
-        var u = false;
-        while ((_offset > 0) && (value % BigInteger10 == BigInteger.Zero))
+        if (!(value % BigInteger10).IsZero)
         {
-            _offset--;
-            value /= 10;
-            Value /= 10;
-            u = true;
+            return;
         }
 
-        if (u)
+        var prevOffset = _offset;
+        while ((_offset > 0) && (value % BigInteger10).IsZero)
         {
-            OffsetPower = Pow10BigInt(_offset);
+            _offset--;
+            value /= BigInteger10;
         }
+
+        var delim = Pow10BigInt(prevOffset - _offset);
+        Value /= delim;
+        OffsetPower = Pow10BigInt(_offset);
     }
 
     /// <summary>
@@ -233,6 +238,7 @@ public partial class BigDec
         for (var i = 0; i < _offset; i++)
         {
             var mode = (int)(_value % BigInteger10);
+            // ReSharper disable once RedundantToStringCallForValueType
             vTailString = mode.ToString() + vTailString;
             _value /= BigInteger10;
         }
