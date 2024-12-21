@@ -316,7 +316,8 @@ public partial class BigDec
         }
 
         {
-            var bigInteger10 = new BigInteger(10);
+            // This method could be called from static constructor
+            var bigInteger10 = !BigInteger10.IsZero ? BigInteger10 : new BigInteger(10);
 
             var tail = BigInteger.Zero;
             for (var i = 0; i < chunks1.Length; i++)

@@ -78,7 +78,7 @@ public partial class BigDec
         var value = BigInteger.Abs(item.Value);
         if (scale > MaxDecimalScale)
         {
-            value /= BigInteger.Pow(BigInteger10, scale - MaxDecimalScale);
+            value /= Pow10BigInt(scale - MaxDecimalScale);
             scale = MaxDecimalScale;
         }
 

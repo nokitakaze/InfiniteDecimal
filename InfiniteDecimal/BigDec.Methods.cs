@@ -265,6 +265,34 @@ public partial class BigDec
 
     #region Sqrt
 
+    public static BigInteger Sqrt(BigInteger value)
+    {
+        if (value.IsZero)
+        {
+            return value;
+        }
+
+        if (value < 0)
+        {
+            throw new InfiniteDecimalException($"'{value}' below zero");
+        }
+
+        // Оценка начального приближения
+        int bitLength = (int)Math.Ceiling(BigInteger.Log10(value) * Math.Log(10, 2));
+        BigInteger root = BigInteger.One << (bitLength / 2);
+
+        while (true)
+        {
+            BigInteger next = (root + value / root) >> 1;
+            if ((next == root) || (next == root - 1))
+            {
+                return next;
+            }
+
+            root = next;
+        }
+    }
+
     public BigDec Sqrt()
     {
         if (this.Value < BigInteger.Zero)
@@ -282,49 +310,36 @@ public partial class BigDec
             return One.WithPrecision(this.MaxPrecision);
         }
 
-        var epsilon = BigInteger.Pow(BigInteger10, PrecisionBuffer);
-        // codecov ignore start
-        if (epsilon <= Zero)
-        {
-            throw new InfiniteDecimalException($"Can't calculate r-component for precision '{MaxPrecision}'");
-        }
-        // codecov ignore end
+        // this = a * 10^-b
+        // sqrt(this) = sqrt(a) * 10^(-0.5*b)
 
-        var addPowPow = this.MaxPrecision + PrecisionBuffer;
-        var addPowValue = BigInteger.Pow(BigInteger10, addPowPow);
-        var needPowerLevel = addPowPow * 2 - _offset;
-        var expected = needPowerLevel switch
-        {
-            > 0 => this.Value * BigInteger.Pow(BigInteger10, needPowerLevel),
-            0 => this.Value,
-            _ => this.Value / BigInteger.Pow(BigInteger10, -needPowerLevel)
-        };
+        BigInteger a;
+        int b = this.MaxPrecision + PrecisionBuffer;
 
-        var expectedDiv = expected / addPowValue;
-        var current = expectedDiv / 2;
-        while (true)
         {
-            for (var i = 0; i < 5; i++)
+            var needPowerLevel = b * 2 - _offset;
+            a = needPowerLevel switch
             {
-                var currentT = (current + expected / current) / 2;
-                if (currentT == current)
-                {
-                    // At this moment, we are in a situation whereit is impossible to approximate
-                    // the value any further in any case
-                    return new BigDec(current).WithPrecision(MaxPrecision) / addPowValue;
-                }
-
-                current = currentT;
-            }
-
-            var actual = current * current;
-            var diff = BigInteger.Abs(expected - actual);
-            // ReSharper disable once InvertIf
-            if (diff <= epsilon)
-            {
-                return new BigDec(current).WithPrecision(MaxPrecision) / addPowValue;
-            }
+                > 0 => this.Value * Pow10BigInt(needPowerLevel),
+                0 => this.Value,
+                _ => this.Value / Pow10BigInt(-needPowerLevel)
+            };
         }
+
+        var aSqrt = Sqrt(a);
+        var result = Zero.WithPrecision(MaxPrecision);
+        if (b > MaxPrecision)
+        {
+            var c = Pow10BigInt(b - MaxPrecision);
+            aSqrt /= c;
+            b = MaxPrecision;
+        }
+
+        result.Offset = b;
+        result.Value = aSqrt;
+        result.NormalizeOffset();
+
+        return result;
     }
 
     #endregion
@@ -414,6 +429,7 @@ public partial class BigDec
                 result += tmp;
             }
 
+            // ReSharper disable once InvertIf
             if (numenator.Offset > numenator.MaxPrecision + (PrecisionBuffer + 10))
             {
                 var diff = numenator.Offset - numenator.MaxPrecision;
@@ -428,7 +444,7 @@ public partial class BigDec
                 }
                 else
                 {
-                    localDenumenator = BigInteger.Pow(BigInteger10, diff);
+                    localDenumenator = Pow10BigInt(diff);
                     powDic[diff] = localDenumenator;
                 }
 

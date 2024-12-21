@@ -1156,7 +1156,7 @@ public class SqrtPowTest
             var actual2 = valueBI.Pow(exponent);
             Assert.Equal(BigDec.Zero, actual2);
         }
-        else if (expected == 1)
+        else if (Math.Abs(expected - 1) < 0.0000000001d)
         {
             var actual1 = valueBI.Pow(exponentBI);
             Assert.Equal(BigDec.One, actual1);
