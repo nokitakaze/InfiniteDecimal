@@ -84,7 +84,7 @@ public class ParseTests
                     );
 
                     var offset1 = offset - len1;
-                    var expected = t * BigDec.PowFracOfTen(-offset1) * sign;
+                    var expected = t * BigDec.PowFractionOfTen(-offset1) * sign;
                     result.Add((inputString, expected));
                 }
             }

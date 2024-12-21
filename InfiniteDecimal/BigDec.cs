@@ -127,10 +127,7 @@ public partial class BigDec
         // */
         ExpModifiers = GenerateExpModifiers();
         MaxDecimalValue = new((BigInteger.One << 96) - 1);
-        MinAbsDecimalValue = new BigDec(BigInteger.One)
-        {
-            Offset = MaxDecimalScale,
-        };
+        MinAbsDecimalValue = new BigDec(BigInteger.One, MaxDecimalScale, MaxDecimalScale);
     }
 
     /// <summary>
@@ -162,17 +159,15 @@ public partial class BigDec
     /// <param name="power">The power to raise 0.1 to</param>
     /// <param name="maxPrecision">The maximum precision to use.</param>
     /// <returns>The result of raising 0.1 to the specified power.</returns>
-    public static BigDec PowFracOfTen(int power, int maxPrecision = MaxDefaultPrecision)
+    public static BigDec PowFractionOfTen(int power, int maxPrecision = MaxDefaultPrecision)
     {
+        // ReSharper disable once ConvertIfStatementToReturnStatement
         if (power <= 0)
         {
             return new BigDec(BigInteger.Pow(BigInteger10, -power));
         }
 
-        var result = One.WithPrecision(Math.Max(power, maxPrecision));
-        result.Offset = power;
-
-        return result;
+        return new BigDec(BigInteger.One, power, Math.Max(power, maxPrecision));
     }
 
     /// <summary>
@@ -204,9 +199,23 @@ public partial class BigDec
             value /= BigInteger10;
         }
 
-        var delim = Pow10BigInt(prevOffset - _offset);
-        Value /= delim;
+        var denominator = Pow10BigInt(prevOffset - _offset);
+        Value /= denominator;
         OffsetPower = Pow10BigInt(_offset);
+    }
+
+    protected void ReduceTrailingZeroes()
+    {
+        if (this._offset <= MaxPrecision)
+        {
+            return;
+        }
+
+        var expDiff = _offset - MaxPrecision;
+        var denominator = Pow10BigInt(expDiff);
+        Value /= denominator;
+        Offset -= expDiff;
+        ReduceOffsetWhile10();
     }
 
     /// <summary>
@@ -298,7 +307,7 @@ public partial class BigDec
             {
                 var body = Parse(m.Groups[1].Value);
                 var exp = int.Parse(m.Groups[2].Value);
-                var frac = PowFracOfTen(-exp);
+                var frac = PowFractionOfTen(-exp);
 
                 return body.WithPrecision(frac.Offset + body.MaxPrecision) * frac;
             }

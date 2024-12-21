@@ -183,7 +183,6 @@ public partial class BigDec
     /// <returns></returns>
     public static BigDec operator -(BigDec a)
     {
-        // a.NormalizeOffset();
         var newValue = new BigDec(a);
         newValue.Value = -newValue.Value;
 

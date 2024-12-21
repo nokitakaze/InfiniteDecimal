@@ -13,9 +13,9 @@ public class ToDecimalTest
                 BigDec.MaxDecimalValue + 10,
                 BigDec.MaxDecimalValue + 100,
                 BigDec.MaxDecimalValue * 2,
-                BigDec.MaxDecimalValue * 1.000001m,
-                BigDec.MinAbsDecimalValue * 0.9999999999m,
-                BigDec.MinAbsDecimalValue * 0.1m,
+                BigDec.MaxDecimalValue.WithPrecision(BigDec.MaxDecimalValue.Offset + 6) * 1.000001m,
+                BigDec.MinAbsDecimalValue.WithPrecision(BigDec.MinAbsDecimalValue.Offset + 10) * 0.999_999_999_9m,
+                BigDec.MinAbsDecimalValue.WithPrecision(BigDec.MinAbsDecimalValue.Offset + 1) * 0.1m,
             }
             .SelectMany(t => new object[] { t, -t })
             .Select(t => new object[] { t });
@@ -35,33 +35,25 @@ public class ToDecimalTest
 
     public static IEnumerable<object[]> RaiseNoExceptionData()
     {
-        /*
-        return new BigDec[]
-            {
-                BigDec.MinAbsDecimalValue * (2 - 0.9999999999m),
-            }
-            .SelectMany(t => new object[] { t })
-            .Select(t => new object[] { t });
-        // */
-
+        var minAbsDecimalValue = BigDec.MinAbsDecimalValue.WithPrecision(BigDec.MinAbsDecimalValue.Offset + 18);
         return new BigDec[]
             {
                 BigDec.One,
                 BigDec.MaxDecimalValue,
                 BigDec.MaxDecimalValue - 1,
-                BigDec.MaxDecimalValue * 0.999999m,
+                BigDec.MaxDecimalValue.WithPrecision(BigDec.MaxDecimalValue.Offset + 6) * 0.999_999m,
                 BigDec.MinAbsDecimalValue,
-                BigDec.MinAbsDecimalValue * (2 - 0.9999999999m),
+                minAbsDecimalValue * (2 - 0.999_999_999_9m),
                 BigDec.MinAbsDecimalValue * 10,
-                BigDec.MinAbsDecimalValue * 1.1m,
-                BigDec.MinAbsDecimalValue * 1.999_999_999m,
-                BigDec.MinAbsDecimalValue * 1.999_999_999_999_999_999m,
+                minAbsDecimalValue * 1.1m,
+                minAbsDecimalValue * 1.999_999_999m,
+                minAbsDecimalValue * 1.999_999_999_999_999_999m,
                 new BigDec(123_456_789_012_345m) + new BigDec(0.123_456_789_012_345m),
                 new BigDec(123_456_789_012_345m) + new BigDec(0.123_456_789_012_345_678_901m),
                 new BigDec(123_456_789_012m) + new BigDec(0.123_456_789_012_345_678_901_345m),
                 new BigDec(123_456_789m) + new BigDec(0.123_456_789_012_345_678_901_345_012m),
-                BigDec.MinAbsDecimalValue * 1_000_000.000_000_1m,
-                BigDec.MinAbsDecimalValue * 10_000_000.000_000_01m,
+                minAbsDecimalValue * 1_000_000.000_000_1m,
+                minAbsDecimalValue * 10_000_000.000_000_01m,
             }
             .SelectMany(t => new object[] { t, -t })
             .Select(t => new object[] { t });

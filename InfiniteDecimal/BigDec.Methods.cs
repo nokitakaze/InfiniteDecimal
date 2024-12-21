@@ -12,6 +12,11 @@ public partial class BigDec
     /// </summary>
     public const int PrecisionBuffer = 5;
 
+    /// <summary>
+    /// Precision buffer used for inner calculations in natural logarithm
+    /// </summary>
+    public const int PrecisionLnBuffer = 5;
+
     public BigDec Abs()
     {
         if (this.Value >= 0)
@@ -38,7 +43,7 @@ public partial class BigDec
         // var pow = GetPow10BigInt(maxPrecision);
         if (Offset <= decimalNumber)
         {
-            return this.WithPrecision(decimalNumber);
+            return this.WithPrecision(Math.Max(decimalNumber, MaxDefaultPrecision));
         }
 
         var leftPow = Pow10BigInt(Offset - decimalNumber);
@@ -61,7 +66,21 @@ public partial class BigDec
         }
 
         var result = new BigDec(value, decimalNumber, decimalNumber);
-        result.ReduceOffsetWhile10();
+        return result;
+    }
+
+    public BigDec Floor(int decimalNumber)
+    {
+        if (this._offset <= decimalNumber)
+        {
+            return this;
+        }
+
+        var expDiff = _offset - decimalNumber;
+        var denominator = Pow10BigInt(expDiff);
+        var biValue = this.Value;
+        biValue /= denominator;
+        var result = new BigDec(biValue, this.Offset - expDiff, Math.Max(decimalNumber, MaxDefaultPrecision));
         return result;
     }
 
@@ -71,6 +90,16 @@ public partial class BigDec
 
     public BigDec Pow(BigInteger exp)
     {
+        if (IsZero && exp.IsZero)
+        {
+            return One.WithPrecision(MaxPrecision);
+        }
+
+        if (exp.IsOne)
+        {
+            return this;
+        }
+
         var y = exp;
         if (y == 0)
         {
@@ -361,15 +390,16 @@ public partial class BigDec
             return Zero.WithPrecision(MaxPrecision);
         }
 
+        var zPrecision = Math.Max(MaxPrecision, Offset) + PrecisionLnBuffer;
         bool invert = (this <= 0.01m);
-        var z = invert ? One / this : this.WithPrecision(this.MaxPrecision * 10);
+        var z = invert ? One / this.WithPrecision(zPrecision) : this.WithPrecision(zPrecision);
 
         var result = BigDec.Zero;
         if (z > E)
         {
             var p1 = (long)Math.Floor(BigInteger.Log(z.Value) - z.Offset * Math.Log(10));
-            var denumenator = E.Pow(p1);
-            z /= denumenator;
+            var denominator = E.Pow(p1);
+            z /= denominator;
             result += p1;
 
             while (z > E)
@@ -387,17 +417,15 @@ public partial class BigDec
             z *= multiplier;
         }
 
-        z = z.Round(this.MaxPrecision + PrecisionBuffer);
-
         var powDic = new Dictionary<int, BigInteger>();
         // Supported accuracy limit
         BigDec epsilon;
         {
             // ReSharper disable once RedundantCast
-            int t = (int)Math.Max(MaxPrecision * 2 - (int)result, PrecisionBuffer);
-            var t1 = Pow10BigInt(t);
-            powDic[t] = t1;
-            epsilon = PowFracOfTen(t + 1);
+            int epsilonPrecision = MaxPrecision + PrecisionLnBuffer;
+            var t1 = Pow10BigInt(epsilonPrecision);
+            powDic[epsilonPrecision] = t1;
+            epsilon = PowFractionOfTen(epsilonPrecision + 1);
         }
 
         // codecov ignore start
@@ -407,15 +435,15 @@ public partial class BigDec
         }
         // codecov ignore end
 
-        z -= One;
-        var numenator = z;
-        result += numenator;
+        z = z.Round(zPrecision) - One;
+        var numerator = z.WithPrecision(z.MaxPrecision + PrecisionLnBuffer);
+        result += numerator;
 
         bool lastCycle = false;
-        for (var i = 2; (!lastCycle || (i < 10)) && (i < 10_000) && !numenator.IsZero; i++)
+        for (var i = 2; (!lastCycle || (i < 10)) && (i < 10_000) && !numerator.IsZero; i++)
         {
-            numenator *= z;
-            var tmp = numenator / i;
+            numerator *= z;
+            var tmp = numerator / i;
             lastCycle = (tmp.Abs() < epsilon);
 
             if ((i & 1) == 0)
@@ -428,26 +456,26 @@ public partial class BigDec
             }
 
             // ReSharper disable once InvertIf
-            if (numenator.Offset > numenator.MaxPrecision + (PrecisionBuffer + 10))
+            if (!lastCycle && (numerator.Offset > numerator.MaxPrecision + (PrecisionLnBuffer + 10)))
             {
-                var diff = numenator.Offset - numenator.MaxPrecision;
-                BigInteger localDenumenator;
+                var diff = numerator.Offset - numerator.MaxPrecision - PrecisionLnBuffer;
+                BigInteger localDenominator;
                 if (BigInt10Powers.TryGetValue(diff, out var t1))
                 {
-                    localDenumenator = t1;
+                    localDenominator = t1;
                 }
                 else if (powDic.TryGetValue(diff, out var t2))
                 {
-                    localDenumenator = t2;
+                    localDenominator = t2;
                 }
                 else
                 {
-                    localDenumenator = Pow10BigInt(diff);
-                    powDic[diff] = localDenumenator;
+                    localDenominator = Pow10BigInt(diff);
+                    powDic[diff] = localDenominator;
                 }
 
-                numenator.Value /= localDenumenator;
-                numenator.Offset -= diff;
+                numerator.Value /= localDenominator;
+                numerator.Offset -= diff;
             }
         }
 
@@ -477,7 +505,7 @@ public partial class BigDec
         BigDec term = One;
 
         // Set accuracy limit to 0.001 of the precision
-        var epsilon = PowFracOfTen(MaxPrecision + 3);
+        var epsilon = PowFractionOfTen(MaxPrecision + 3);
         // codecov ignore start
         if (epsilon <= Zero)
         {

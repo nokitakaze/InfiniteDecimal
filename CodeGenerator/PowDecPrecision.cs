@@ -1703,7 +1703,7 @@ public static class PowDecPrecision
                     .Round(PickedPrecision);
                 var lg10 = GetLg10Ceiling(actual);
                 var localPrecision = Math.Min((OriginPrecision - 2) - lg10, PickedPrecision);
-                var epsilon = BigDec.PowFracOfTen(localPrecision);
+                var epsilon = BigDec.PowFractionOfTen(localPrecision);
                 if ((actual >= expected - epsilon) && (actual <= expected + epsilon))
                 {
                     foundAdd = add;

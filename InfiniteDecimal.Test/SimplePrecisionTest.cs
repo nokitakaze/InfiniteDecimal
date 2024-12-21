@@ -1,4 +1,6 @@
-﻿namespace InfiniteDecimal.Test;
+﻿using System.Numerics;
+
+namespace InfiniteDecimal.Test;
 
 public class SimplePrecisionTest
 {
@@ -43,6 +45,48 @@ public class SimplePrecisionTest
             var b2 = a.Round(a.MaxPrecision);
             b2 += 1;
             Assert.NotEqual(a, b2);
+        }
+    }
+
+    #endregion
+
+    #region
+
+    [Fact]
+    public void TestDeletionTrailingZeros()
+    {
+        for (var n2 = 0; n2 < 5; n2++)
+        {
+            var body2 = BigInteger.Pow(2, n2);
+
+            for (var n5 = 0; n5 < 5; n5++)
+            {
+                var body5 = BigInteger.Pow(5, n5);
+                var value = new BigDec(body2) * 0.0001m * new BigDec(body5);
+                if (value.Offset > 0)
+                {
+                    Assert.NotEqual(0, value.BigIntegerBody % 10);
+                }
+            }
+
+            {
+                var body5 = BigInteger.Pow(5, n2);
+                var value = new BigDec(body2) * 0.0001m * new BigDec(body5);
+                Assert.Equal(1, value.BigIntegerBody);
+            }
+        }
+    }
+
+    [Fact]
+    public void TestReduced()
+    {
+        var value = new BigDec(1) + BigDec.PowFractionOfTen(18);
+
+        for (var i = 0; i < 18; i++)
+        {
+            var actual1 = value.WithPrecision(i);
+            Assert.Equal(1, actual1.BigIntegerBody);
+            Assert.Equal(0, actual1.Offset);
         }
     }
 

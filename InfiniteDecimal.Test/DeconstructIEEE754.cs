@@ -40,7 +40,7 @@ public class DeconstructIEEE754
             {
                 for (var i2 = 1; i2 <= limit; i2++)
                 {
-                    var b2 = new BigDec(i2) * BigDec.PowFracOfTen(offset2) * s2;
+                    var b2 = new BigDec(i2) * BigDec.PowFractionOfTen(offset2) * s2;
                     values2.Add(b2);
                 }
             }

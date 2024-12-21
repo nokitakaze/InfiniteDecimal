@@ -44,7 +44,7 @@ public class ReverseTest
             var reverse = BigDec.One / inputBD;
             var revRev = inputBD * reverse;
             WritePrecision(revRev, precision);
-            var epsilon = BigDec.PowFracOfTen(precision - 1);
+            var epsilon = BigDec.PowFractionOfTen(precision - 1);
             Assert.InRange(revRev, 1 - epsilon, 1 + epsilon);
         }
     }
@@ -59,7 +59,7 @@ public class ReverseTest
             var reverse = inputBD.Pow(-1);
             var revRev = inputBD * reverse;
             WritePrecision(revRev, precision);
-            var epsilon = BigDec.PowFracOfTen(precision - 1);
+            var epsilon = BigDec.PowFractionOfTen(precision - 1);
             Assert.InRange(revRev, 1 - epsilon, 1 + epsilon);
         }
     }
@@ -74,7 +74,7 @@ public class ReverseTest
             var reverse = inputBD.Pow(-BigDec.One);
             var revRev = inputBD * reverse;
             WritePrecision(revRev, precision);
-            var epsilon = BigDec.PowFracOfTen(precision - 1);
+            var epsilon = BigDec.PowFractionOfTen(precision - 1);
             Assert.InRange(revRev, 1 - epsilon, 1 + epsilon);
         }
     }
@@ -97,7 +97,7 @@ public class ReverseTest
             var reverse = inputBD.Pow(new BigDec(-pow));
             var revRev = inputBD.Pow(pow) * reverse;
             WritePrecision(revRev, precision);
-            var epsilon = BigDec.PowFracOfTen(precision - 1);
+            var epsilon = BigDec.PowFractionOfTen(precision - 1);
             Assert.InRange(revRev, 1 - epsilon, 1 + epsilon);
         }
     }

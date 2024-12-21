@@ -24,14 +24,15 @@ public partial class BigDec
         _offset = offset;
         OffsetPower = offsetPower;
         MaxPrecision = maxPrecision;
+        ReduceTrailingZeroes();
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public BigDec(BigInteger body, int offset, int maxPrecision)
     {
         Value = body;
         Offset = offset;
         MaxPrecision = maxPrecision;
+        ReduceTrailingZeroes();
     }
 
     public BigDec(BigInteger value, int maxPrecision = MaxDefaultPrecision)
@@ -48,9 +49,14 @@ public partial class BigDec
     {
     }
 
-    public BigDec(decimal value, int maxPrecision = MaxDefaultPrecision)
+    public BigDec(decimal value, int maxPrecision = MaxDefaultPrecision) : this(value)
     {
         MaxPrecision = maxPrecision;
+        ReduceTrailingZeroes();
+    }
+
+    public BigDec(decimal value)
+    {
         var parts = decimal.GetBits(value);
         var rawValue = new BigInteger((uint)parts[0]);
         rawValue |= new BigInteger((uint)parts[1]) << 32;
@@ -62,12 +68,11 @@ public partial class BigDec
 
         Offset = scale;
         Value = rawValue;
+        MaxPrecision = Math.Max(MaxDefaultPrecision, _offset);
         if (isNegative)
         {
             Value = -Value;
         }
-
-        this.ReduceOffsetWhile10();
     }
 
     public BigDec(double value, int maxPrecision = MaxDefaultPrecision)
@@ -206,7 +211,7 @@ public partial class BigDec
 
         Value = bio.Value * sign;
         Offset = bio._offset + addExp;
-        ReduceOffsetWhile10();
+        ReduceTrailingZeroes();
     }
 
     public BigDec(float value, int maxPrecision = MaxDefaultPrecision)
@@ -366,7 +371,7 @@ public partial class BigDec
 
         Value = bio.Value * sign;
         Offset = bio._offset + addExp;
-        ReduceOffsetWhile10();
+        ReduceTrailingZeroes();
     }
 
     /// <summary>

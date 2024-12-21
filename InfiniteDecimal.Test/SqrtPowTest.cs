@@ -1027,19 +1027,31 @@ public class SqrtPowTest
     {
         var lg10 = GetLg10Ceiling(input);
         var localPrecision = (PickedPrecision - 2) - lg10;
-        var epsilon = BigDec.PowFracOfTen(localPrecision);
+        var epsilon = BigDec.PowFractionOfTen(localPrecision);
 
         {
-            var actualLn = input.WithPrecision(PickedPrecision + 2).Ln();
+            var pickedPrecision = Math.Max(PickedPrecision, input.Offset);
+            var actualLn = input.WithPrecision(pickedPrecision).Ln();
             Assert.InRange(actualLn, expectedLn - epsilon, expectedLn + epsilon);
-            Assert.InRange(actualLn.MaxPrecision, 0, PickedPrecision + 2);
-            Assert.InRange(actualLn.Offset, 0, PickedPrecision + 2);
+            Assert.InRange(actualLn.MaxPrecision, 0, pickedPrecision);
+            Assert.InRange(actualLn.Offset, 0, pickedPrecision);
         }
+    }
+
+    [Theory]
+    [MemberData(nameof(TestLnPickedData))]
+    public void TestExpPicked(BigDec input, BigDec expectedLn)
+    {
+        var lg10 = GetLg10Ceiling(input);
+        var localPrecision = (PickedPrecision - 2) - lg10;
+        var epsilon = BigDec.PowFractionOfTen(localPrecision);
+
         {
-            var actualExp = expectedLn.WithPrecision(PickedPrecision + 2).Exp();
+            var pickedPrecision = Math.Max(PickedPrecision, expectedLn.Offset);
+            var actualExp = expectedLn.WithPrecision(pickedPrecision).Exp();
             Assert.InRange(actualExp, input - epsilon, input + epsilon);
-            Assert.InRange(actualExp.MaxPrecision, 0, PickedPrecision + 2);
-            Assert.InRange(actualExp.Offset, 0, PickedPrecision + 2);
+            Assert.InRange(actualExp.MaxPrecision, 0, pickedPrecision);
+            Assert.InRange(actualExp.Offset, 0, pickedPrecision);
         }
     }
 
@@ -1051,17 +1063,19 @@ public class SqrtPowTest
         var value = new BigDec(2).WithPrecision(10_000);
         var actual = value.Sqrt();
         var revert = actual * actual;
-        var epsilon = BigDec.PowFracOfTen(100);
+        var epsilon = BigDec.PowFractionOfTen(100);
         Assert.InRange(revert, value - epsilon, value + epsilon);
     }
 
     [Fact]
     public void TestLn_GreatPrecision()
     {
-        var value = new BigDec(2) * BigDec.PowFracOfTen(3000);
+        var value = new BigDec(2) * BigDec.PowFractionOfTen(3000);
         var actual = value.Ln();
-        var revert = actual.WithPrecision(100).Exp();
-        var epsilon = BigDec.PowFracOfTen(100);
+        var revert = actual.WithPrecision(3002).Exp();
+        Assert.False(revert.IsZero);
+        Assert.True(revert.BigIntegerBody > 0);
+        var epsilon = BigDec.PowFractionOfTen(3000);
         Assert.InRange(revert, value - epsilon, value + epsilon);
     }
 
@@ -1197,7 +1211,7 @@ public class SqrtPowTest
                 return;
             }
 
-            var epsilon = BigDec.PowFracOfTen(14 - Math.Max((int)Math.Ceiling(lg10), 0));
+            var epsilon = BigDec.PowFractionOfTen(14 - Math.Max((int)Math.Ceiling(lg10), 0));
             var rangeMin = new BigDec(expected) - epsilon;
             var rangeMax = new BigDec(expected) + epsilon;
 
@@ -2265,7 +2279,7 @@ public class SqrtPowTest
 
         Assert.True(lg10 < 18);
         var localPrecision = (PickedPrecision - 2) - lg10;
-        var epsilon = BigDec.PowFracOfTen(localPrecision);
+        var epsilon = BigDec.PowFractionOfTen(localPrecision);
         Assert.InRange(actual, expected - epsilon, expected + epsilon);
         Assert.InRange(actual.MaxPrecision, 0, PickedPrecision);
         Assert.InRange(actual.Offset, 0, PickedPrecision);
@@ -2299,7 +2313,7 @@ public class SqrtPowTest
 
         var expected = BigDec.Parse(
             "9120.108393559097421209594079187233350932385875569610921476036185177169548799909950015361077745653988");
-        var epsilon = BigDec.PowFracOfTen(48);
+        var epsilon = BigDec.PowFractionOfTen(48);
         Assert.InRange(actual, expected - epsilon, expected + epsilon);
     }
 
@@ -2326,6 +2340,13 @@ public class SqrtPowTest
     public void TestPow_Zero_Zero()
     {
         var expected = BigDec.Zero.Pow(BigDec.Zero);
+        Assert.Equal(BigDec.One, expected);
+    }
+
+    [Fact]
+    public void TestBigIntegerPow_Zero_Zero()
+    {
+        var expected = BigDec.Zero.Pow(BigInteger.Zero);
         Assert.Equal(BigDec.One, expected);
     }
 
