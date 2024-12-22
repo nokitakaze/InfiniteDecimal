@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Numerics;
 using System.Text.RegularExpressions;
 
@@ -105,6 +106,7 @@ public partial class BigDec
 
     static BigDec()
     {
+        E_inverse = 1m / E;
         {
             var powDec = new Dictionary<int, BigInteger>();
             var last = BigInteger.One;
@@ -126,6 +128,7 @@ public partial class BigDec
         }
         // */
         ExpModifiers = GenerateExpModifiers();
+        ExpModifiers_multipliers = ExpModifiers.Select(t => (double)t.multiplier).ToArray();
         MaxDecimalValue = new((BigInteger.One << 96) - 1);
         MinAbsDecimalValue = new BigDec(BigInteger.One, MaxDecimalScale, MaxDecimalScale);
     }
@@ -164,7 +167,7 @@ public partial class BigDec
         // ReSharper disable once ConvertIfStatementToReturnStatement
         if (power <= 0)
         {
-            return new BigDec(BigInteger.Pow(BigInteger10, -power));
+            return new BigDec(BigDec.Pow10BigInt(-power));
         }
 
         return new BigDec(BigInteger.One, power, Math.Max(power, maxPrecision));

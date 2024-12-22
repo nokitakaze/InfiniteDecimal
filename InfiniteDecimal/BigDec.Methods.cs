@@ -410,7 +410,8 @@ public partial class BigDec
         }
 
         // maximize the approximation of the value z to 1
-        while ((1m - z).Abs() > 0.05)
+        // 0.00098 ~= 1 / 1024, where 1024 is max power of E-group constants
+        while ((One - z).Abs() >= 0.00098m)
         {
             var (exp, multiplier) = FoundExpPrecision(z);
             result -= exp;

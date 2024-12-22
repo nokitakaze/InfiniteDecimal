@@ -2,12 +2,17 @@
 
 public class InnerConstantTest
 {
-    private static readonly BigDec Epsilon = BigDec.One.WithPrecision(997) / BigDec.BigInt10Powers[997];
+    private static readonly BigDec Epsilon = BigDec.PowFractionOfTen(996);
 
     public static ICollection<object[]> TestEData()
     {
         var constants = new BigDec[]
         {
+            BigDec.E_Root1024,
+            BigDec.E_Root512,
+            BigDec.E_Root256,
+            BigDec.E_Root128,
+            BigDec.E_Root64,
             BigDec.E_Root32,
             BigDec.E_Root16,
             BigDec.E_Root8,
