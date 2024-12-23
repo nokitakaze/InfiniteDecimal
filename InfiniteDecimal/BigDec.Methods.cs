@@ -113,7 +113,7 @@ public partial class BigDec
         if (y < 0)
         {
             y = -y; // make the exponent positive
-            x = One / x; // and take the reciprocal
+            x = x.Inverse(); // and take the reciprocal
         }
 
         BigDec result = One;
@@ -165,7 +165,7 @@ public partial class BigDec
 
         if (exp == -One)
         {
-            return One / this;
+            return this.Inverse();
         }
 
         bool needReverse = false;
@@ -203,7 +203,7 @@ public partial class BigDec
             {
                 // TODO too big exponent
                 // var localPrecision = desiredPrecision + PrecisionBuffer * (int)(BigInteger)exp;
-                t = One / t.WithPrecision(desiredPrecisionWithBuf);
+                t = t.WithPrecision(desiredPrecisionWithBuf).Inverse();
             }
 
             return t.Round(desiredPrecision);
@@ -260,7 +260,7 @@ public partial class BigDec
 
         if (needReverse)
         {
-            result = One / result;
+            result = result.Inverse();
         }
 
         return result.Round(desiredPrecision);
@@ -394,7 +394,7 @@ public partial class BigDec
 
         var zPrecision = Math.Max(MaxPrecision, Offset) + PrecisionLnBuffer;
         bool invert = (this <= 0.01m);
-        var z = invert ? One / this.WithPrecision(zPrecision) : this.WithPrecision(zPrecision);
+        var z = invert ? this.WithPrecision(zPrecision).Inverse() : this.WithPrecision(zPrecision);
 
         var result = BigDec.Zero;
         if (z > E)
@@ -472,8 +472,7 @@ public partial class BigDec
     {
         if (this < Zero)
         {
-            var invertedValue = (-this).Exp();
-            return One / invertedValue;
+            return (-this).Exp().Inverse();
         }
 
         // Set accuracy limit to 0.001 of the precision
@@ -524,6 +523,32 @@ public partial class BigDec
             endedMultiplier.Offset + termPrecision,
             MaxPrecision
         );
+    }
+
+    #endregion
+
+    #region Inverse
+
+    /// <summary>
+    /// 1 / x or x^-1
+    /// </summary>
+    /// <returns></returns>
+    public BigDec Inverse()
+    {
+        // 1 / (a * 10^-b) = 10^m / (a * 10^(m-b)) = 10^m / a * 10^-(m-b)
+        var m = MaxPrecision + _offset;
+        var numerator = BigDec.Pow10BigInt(m);
+        var value = numerator / this.BigIntegerBody;
+
+        var newOffset = m - _offset;
+        if (newOffset < 0)
+        {
+            newOffset = 0;
+            value *= BigDec.Pow10BigInt(-newOffset);
+        }
+
+        var t = new BigDec(value, newOffset, MaxPrecision);
+        return t;
     }
 
     #endregion

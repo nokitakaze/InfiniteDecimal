@@ -150,7 +150,7 @@ public partial class BigDec
         foreach (var (index, _, _) in maxCounts)
         {
             var modifier = modifiers[index];
-            var modifierR = BigDec.One / modifier;
+            var modifierR = modifier.Inverse();
             var dic = new Dictionary<int, BigDec> { { 0, BigDec.One }, { 1, modifier }, { -1, modifierR } };
 
             modifierDic[index] = dic;
