@@ -35,6 +35,7 @@ public partial class BigDec
 
     public static readonly BigDec One = new BigDec(1);
     public static readonly BigDec Zero = new BigDec(0);
+    public static readonly BigDec Half = new BigDec(0.5m);
 
     /// <summary>
     /// Represents the underlying BigInteger that stores the unscaled significant digits of the BigDec number
@@ -211,6 +212,7 @@ public partial class BigDec
     {
         if (this._offset <= MaxPrecision)
         {
+            ReduceOffsetWhile10();
             return;
         }
 

@@ -46,26 +46,29 @@ public partial class BigDec
             return this.WithPrecision(Math.Max(decimalNumber, MaxDefaultPrecision));
         }
 
-        var leftPow = Pow10BigInt(Offset - decimalNumber);
+        var leftExpModifier = Offset - decimalNumber;
+        var leftPow = Pow10BigInt(leftExpModifier);
         var tail = this.Value % leftPow;
-
-        var leftPow1 = leftPow;
-        var tail1 = tail;
-        while (tail1 > (BigInteger.One << 10))
-        {
-            tail1 >>= 8;
-            leftPow1 >>= 8;
-        }
-
-        var u = !tail1.IsZero && ((leftPow1 / tail1) <= 1);
-
+        var tailDownAgain = new BigDec(tail, leftExpModifier) / leftPow;
         var value = Value / leftPow;
-        if (u)
+        if (tailDownAgain < Half)
+        {
+        }
+        else if (tailDownAgain == Half)
+        {
+            // Round to Even
+            if (!value.IsEven)
+            {
+                value++;
+            }
+        }
+        else
         {
             value++;
         }
 
         var result = new BigDec(value, decimalNumber, decimalNumber);
+        result.ReduceTrailingZeroes();
         return result;
     }
 
@@ -229,7 +232,7 @@ public partial class BigDec
         // if (!tail.IsZero)
         {
             BigDec tailPart;
-            if (tail == 0.5m)
+            if (tail == Half)
             {
                 tailPart = Sqrt().WithPrecision(desiredPrecisionWithBuf);
             }
