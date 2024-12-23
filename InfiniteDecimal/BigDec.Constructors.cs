@@ -8,53 +8,110 @@ namespace InfiniteDecimal;
 
 public partial class BigDec
 {
+    /// <summary>
+    /// Copy constructor
+    /// </summary>
+    /// <param name="origin"></param>
+    /// <remarks>This constructor has no meaning outside of this class since the class is immutable, so it is protected</remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    protected BigDec(BigDec value) : this(value._mantissa, value._offset, value.OffsetPower, value.MaxPrecision)
+    protected BigDec(BigDec origin) : this(origin._mantissa, origin._offset, origin.OffsetPower, origin.MaxPrecision)
     {
     }
 
-    public BigDec(BigDec value, int maxPrecision) : this(value._mantissa, value._offset, value.OffsetPower, maxPrecision)
+    /// <summary>
+    /// Copy constructor with max precision adjustment.
+    /// Automatically truncates the mantissa if the offset exceeds max precision
+    /// </summary>
+    /// <param name="origin"></param>
+    /// <param name="maxPrecision">The precision of the new BigDec instance.</param>
+    public BigDec(BigDec origin, int maxPrecision) : this(
+        origin._mantissa,
+        origin._offset,
+        origin.OffsetPower,
+        maxPrecision
+    )
     {
     }
 
+    /// <summary>
+    /// Constructor for creating an instance from all fields. Since the ability to set an incorrect offsetPower
+    /// leads to dire consequences, this constructor is made protected.
+    /// Use its public overload without offsetPower.
+    /// Automatically truncates the mantissa if the offset exceeds max precision
+    /// </summary>
+    /// <param name="mantissa"></param>
+    /// <param name="offset"></param>
+    /// <param name="offsetPower"></param>
+    /// <param name="maxPrecision">The precision of the new BigDec instance.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    protected BigDec(BigInteger body, int offset, BigInteger offsetPower, int maxPrecision)
+    protected BigDec(BigInteger mantissa, int offset, BigInteger offsetPower, int maxPrecision)
     {
-        _mantissa = body;
+        _mantissa = mantissa;
         _offset = offset;
         OffsetPower = offsetPower;
         MaxPrecision = maxPrecision;
         ReduceTrailingZeroes();
     }
 
-    public BigDec(BigInteger body, int offset, int maxPrecision)
+    /// <summary>
+    /// Constructor for creating an instance from all public fields. OffsetPower is set automatically.
+    /// Automatically truncates the mantissa if the offset exceeds max precision
+    /// </summary>
+    /// <param name="mantissa"></param>
+    /// <param name="offset"></param>
+    /// <param name="maxPrecision">The precision of the new BigDec instance.</param>
+    public BigDec(BigInteger mantissa, int offset, int maxPrecision)
     {
-        _mantissa = body;
+        _mantissa = mantissa;
         Offset = offset;
         MaxPrecision = maxPrecision;
         ReduceTrailingZeroes();
     }
 
-    public BigDec(BigInteger mantissa, int maxPrecision = MaxDefaultPrecision)
+    /// <summary>
+    /// Constructor for creating an instance from BigInteger
+    /// </summary>
+    /// <param name="value">The value that the instance will be equal to. No offset is provided here</param>
+    /// <param name="maxPrecision">The precision of the new BigDec instance.</param>
+    public BigDec(BigInteger value, int maxPrecision = MaxDefaultPrecision)
     {
-        _mantissa = mantissa;
+        _mantissa = value;
         MaxPrecision = maxPrecision;
     }
 
+    /// <summary>
+    /// Constructor for creating an instance from int64
+    /// </summary>
+    /// <param name="value">The value that the instance will be equal to. No offset is provided here</param>
+    /// <param name="maxPrecision">The precision of the new BigDec instance.</param>
     public BigDec(long value, int maxPrecision = MaxDefaultPrecision) : this(new BigInteger(value), maxPrecision)
     {
     }
 
+    /// <summary>
+    /// Constructor for creating an instance from uint64
+    /// </summary>
+    /// <param name="value">The value that the instance will be equal to. No offset is provided here</param>
+    /// <param name="maxPrecision">The precision of the new BigDec instance.</param>
     public BigDec(ulong value, int maxPrecision = MaxDefaultPrecision) : this(new BigInteger(value), maxPrecision)
     {
     }
 
+    /// <summary>
+    /// Constructor for creating an instance from MS decimal
+    /// </summary>
+    /// <param name="value">The value that the instance will be equal to. No offset is provided here</param>
+    /// <param name="maxPrecision">The precision of the new BigDec instance.</param>
     public BigDec(decimal value, int maxPrecision = MaxDefaultPrecision) : this(value)
     {
         MaxPrecision = maxPrecision;
         ReduceTrailingZeroes();
     }
 
+    /// <summary>
+    /// Constructor for creating an instance from uint64
+    /// </summary>
+    /// <param name="value">The value that the instance will be equal to. No offset is provided here</param>
     public BigDec(decimal value)
     {
         var parts = decimal.GetBits(value);
@@ -75,6 +132,11 @@ public partial class BigDec
         }
     }
 
+    /// <summary>
+    /// Constructor for creating an instance from IEEE-754 double
+    /// </summary>
+    /// <param name="value">The value that the instance will be equal to. No offset is provided here</param>
+    /// <param name="maxPrecision">The precision of the new BigDec instance.</param>
     public BigDec(double value, int maxPrecision = MaxDefaultPrecision)
     {
         if (!double.IsFinite(value))
@@ -214,6 +276,11 @@ public partial class BigDec
         ReduceTrailingZeroes();
     }
 
+    /// <summary>
+    /// Constructor for creating an instance from IEEE-754 single
+    /// </summary>
+    /// <param name="value">The value that the instance will be equal to. No offset is provided here</param>
+    /// <param name="maxPrecision">The precision of the new BigDec instance.</param>
     public BigDec(float value, int maxPrecision = MaxDefaultPrecision)
     {
         if (!float.IsFinite(value))
