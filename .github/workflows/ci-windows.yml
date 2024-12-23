@@ -1,0 +1,36 @@
+name: Windows CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build-and-test-windows:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        locale: [en-US, ru-RU]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Set locale ${{ matrix.locale }}
+        if: matrix.locale == 'ru-RU'
+        run: |
+          powershell -Command "Set-Culture ru-RU"
+          powershell -Command "[System.Globalization.CultureInfo]::CurrentCulture"
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build project
+        run: dotnet build --configuration Release
+
+      - name: Run tests
+        run: dotnet test --configuration Release
