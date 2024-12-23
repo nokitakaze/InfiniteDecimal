@@ -117,6 +117,7 @@ public partial class BigDec
                 powDec[i] = last;
             }
 
+            powDec[3000] = powDec[1000] * powDec[2000];
             BigInt10Powers = powDec;
         }
         /*
