@@ -130,6 +130,7 @@ public partial class BigDec
         // */
         ExpModifiers = GenerateExpModifiers();
         ExpModifiers_multipliers = ExpModifiers.Select(t => (double)t.multiplier).ToArray();
+        ExpModifiers_exp = ExpModifiers.Select(t => t.exp).ToArray();
         MaxDecimalValue = new((BigInteger.One << 96) - 1);
         MinAbsDecimalValue = new BigDec(BigInteger.One, MaxDecimalScale, MaxDecimalScale);
     }

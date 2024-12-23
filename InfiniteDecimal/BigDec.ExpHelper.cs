@@ -8,6 +8,7 @@ public partial class BigDec
 {
     protected static readonly (decimal exp, BigDec multiplier)[] ExpModifiers;
     protected static readonly double[] ExpModifiers_multipliers;
+    protected static readonly decimal[] ExpModifiers_exp;
 
     private static (decimal, BigDec)[] GenerateExpModifiers()
     {

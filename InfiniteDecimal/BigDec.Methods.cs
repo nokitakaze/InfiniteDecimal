@@ -463,35 +463,46 @@ public partial class BigDec
     #region Exp
 
     /// <summary>
-    /// Calculates the exponential function of the current instance with Taylor series
+    /// Calculates the exponential function of the current instance with Taylor-Maclaurin series
     /// </summary>
     /// <returns>
     /// The result of raising the mathematical constant e to the power of the current <see cref="BigDec"/> value.
     /// </returns>
     public BigDec Exp()
     {
+        if (this < Zero)
+        {
+            var invertedValue = (-this).Exp();
+            return One / invertedValue;
+        }
+
         // Set accuracy limit to 0.001 of the precision
         int termPrecision = MaxPrecision + 4;
-        var innerTmpLPrecision = MaxPrecision + PrecisionBuffer;
 
-        BigDec tmpL;
+        BigDec simplifiedX;
         BigDec endedMultiplier;
-        if (this >= 2)
+        if (this >= One)
         {
-            var t = this.Floor() - 1;
+            var t = this.Floor();
             endedMultiplier = BigDec.E.Pow(t);
-            tmpL = (this - t).Round(innerTmpLPrecision);
-        }
-        else if (this < Zero)
-        {
-            var t = (-this).Floor() + 2;
-            endedMultiplier = BigDec.One / BigDec.E.WithPrecision(innerTmpLPrecision).Pow(t);
-            tmpL = (this + t).Round(innerTmpLPrecision);
+            simplifiedX = (this - t).Round(termPrecision);
         }
         else
         {
-            tmpL = this.Round(innerTmpLPrecision);
+            simplifiedX = this.Round(termPrecision);
             endedMultiplier = One;
+        }
+
+        {
+            var index = Array.BinarySearch(ExpModifiers_exp, (decimal)simplifiedX);
+            if (index <= 0)
+            {
+                index = -index - 1;
+            }
+
+            var (exp, multiplier) = ExpModifiers[index];
+            endedMultiplier *= multiplier;
+            simplifiedX -= exp;
         }
 
         var termPower = BigDec.Pow10BigInt(termPrecision);
@@ -499,11 +510,11 @@ public partial class BigDec
         BigInteger result = termPower;
         // Initial term of the series (for i=0)
         BigInteger term = termPower;
-        BigInteger tmpL_BI = (BigInteger)(tmpL * termPower);
+        BigInteger simplifiedX_BI = (BigInteger)(simplifiedX * termPower);
 
         for (int i = 1; BigInteger.Abs(term) >= 10; i++)
         {
-            term *= tmpL_BI / i;
+            term *= simplifiedX_BI / i;
             term /= termPower;
             result += term;
         }

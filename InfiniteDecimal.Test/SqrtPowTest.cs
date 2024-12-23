@@ -2264,7 +2264,7 @@ public class SqrtPowTest
 
     [Theory]
     [MemberData(nameof(TestPowPickedData))]
-    public void TestPowPicked(BigDec value, BigDec exponent, BigDec expected)
+    public void TestPowPicked(BigDec value, BigDec power, BigDec expected)
     {
         /*
         if ((exponent.Abs() != 1337) || (value < 0.97) || (value > 1.03))
@@ -2276,7 +2276,7 @@ public class SqrtPowTest
 
         var actual = value
             .WithPrecision(PickedPrecision)
-            .Pow(exponent.WithPrecision(PickedPrecision));
+            .Pow(power.WithPrecision(PickedPrecision));
         var lg10 = GetLg10Ceiling(actual);
 
         Assert.True(lg10 < 18);
