@@ -346,13 +346,9 @@ public partial class BigDec
         int b = this.MaxPrecision + PrecisionBuffer;
 
         {
+            // At the point MaxPrecision is bigger or equal to Offset, it has been normalized in "this == One"
             var needPowerLevel = b * 2 - _offset;
-            a = needPowerLevel switch
-            {
-                > 0 => this.Value * Pow10BigInt(needPowerLevel),
-                0 => this.Value,
-                _ => this.Value / Pow10BigInt(-needPowerLevel)
-            };
+            a = this.Value * Pow10BigInt(needPowerLevel);
         }
 
         var aSqrt = Sqrt(a);

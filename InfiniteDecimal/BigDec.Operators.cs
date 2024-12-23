@@ -141,6 +141,7 @@ public partial class BigDec
             return false;
         }
 
+        // Normalize both variables
         a.ReduceOffsetWhile10();
         b.ReduceOffsetWhile10();
         return (a._offset == b._offset) && (a.Value == b.Value);
