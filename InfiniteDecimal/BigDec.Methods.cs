@@ -540,14 +540,7 @@ public partial class BigDec
         var numerator = BigDec.Pow10BigInt(m);
         var value = numerator / this.BigIntegerBody;
 
-        var newOffset = m - _offset;
-        if (newOffset < 0)
-        {
-            newOffset = 0;
-            value *= BigDec.Pow10BigInt(-newOffset);
-        }
-
-        var t = new BigDec(value, newOffset, MaxPrecision);
+        var t = new BigDec(value, MaxPrecision, MaxPrecision);
         return t;
     }
 
