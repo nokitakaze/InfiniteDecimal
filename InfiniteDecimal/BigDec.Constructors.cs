@@ -50,7 +50,7 @@ public partial class BigDec
         _offset = offset;
         OffsetPower = offsetPower;
         MaxPrecision = maxPrecision;
-        ReduceTrailingZeroes();
+        ReduceOverflowPrecision();
     }
 
     /// <summary>
@@ -65,7 +65,7 @@ public partial class BigDec
         _mantissa = mantissa;
         Offset = offset;
         MaxPrecision = maxPrecision;
-        ReduceTrailingZeroes();
+        ReduceOverflowPrecision();
     }
 
     /// <summary>
@@ -105,7 +105,7 @@ public partial class BigDec
     public BigDec(decimal value, int maxPrecision = MaxDefaultPrecision) : this(value)
     {
         MaxPrecision = maxPrecision;
-        ReduceTrailingZeroes();
+        ReduceOverflowPrecision();
     }
 
     /// <summary>
@@ -273,7 +273,7 @@ public partial class BigDec
 
         _mantissa = bio._mantissa * sign;
         Offset = bio._offset + addExp;
-        ReduceTrailingZeroes();
+        ReduceOverflowPrecision();
     }
 
     /// <summary>
@@ -365,7 +365,7 @@ public partial class BigDec
         }
 
         var bio = Parse(valueStringify);
-        bio.ReduceOffsetWhile10();
+        bio.ReduceTrailingZeroes();
         if (valueStringifyLength + addExp >= 9)
         {
             // TODO It is more correct to do via IEEE-754 mantissa size
@@ -438,7 +438,7 @@ public partial class BigDec
 
         _mantissa = bio._mantissa * sign;
         Offset = bio._offset + addExp;
-        ReduceTrailingZeroes();
+        ReduceOverflowPrecision();
     }
 
     /// <summary>

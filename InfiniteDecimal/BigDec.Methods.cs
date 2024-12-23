@@ -67,7 +67,7 @@ public partial class BigDec
         }
 
         var result = new BigDec(value, decimalNumber, decimalNumber);
-        result.ReduceTrailingZeroes();
+        result.ReduceOverflowPrecision();
         return result;
     }
 
@@ -361,7 +361,7 @@ public partial class BigDec
 
         result.Offset = b;
         result._mantissa = aSqrt;
-        result.ReduceOffsetWhile10();
+        result.ReduceTrailingZeroes();
 
         return result;
     }

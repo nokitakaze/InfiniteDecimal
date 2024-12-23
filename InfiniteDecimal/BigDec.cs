@@ -179,7 +179,7 @@ public partial class BigDec
     /// <summary>
     /// Reduce the offset while the body is divisible by 10
     /// </summary>
-    protected void ReduceOffsetWhile10()
+    protected void ReduceTrailingZeroes()
     {
         if (_mantissa.IsZero)
         {
@@ -206,11 +206,14 @@ public partial class BigDec
         _mantissa /= denominator;
     }
 
-    protected void ReduceTrailingZeroes()
+    /// <summary>
+    /// Reducing Offset if it exceeds Max Precision
+    /// </summary>
+    protected void ReduceOverflowPrecision()
     {
         if (this._offset <= MaxPrecision)
         {
-            ReduceOffsetWhile10();
+            ReduceTrailingZeroes();
             return;
         }
 
@@ -218,7 +221,7 @@ public partial class BigDec
         var denominator = Pow10BigInt(expDiff);
         _mantissa /= denominator;
         Offset -= expDiff;
-        ReduceOffsetWhile10();
+        ReduceTrailingZeroes();
     }
 
     /// <summary>

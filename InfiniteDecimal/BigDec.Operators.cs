@@ -110,6 +110,7 @@ public partial class BigDec
 
         return BigInteger
             .Abs(item)
+            // ReSharper disable once RedundantArgumentDefaultValue
             .ToByteArray(true, false)
             .Length;
     }
@@ -142,8 +143,8 @@ public partial class BigDec
         }
 
         // Normalize both variables
-        a.ReduceOffsetWhile10();
-        b.ReduceOffsetWhile10();
+        a.ReduceTrailingZeroes();
+        b.ReduceTrailingZeroes();
         return (a._offset == b._offset) && (a._mantissa == b._mantissa);
     }
 
@@ -213,7 +214,7 @@ public partial class BigDec
             _mantissa = valueA + valueB,
             Offset = maxOffset,
         };
-        newValue.ReduceOffsetWhile10();
+        newValue.ReduceOverflowPrecision();
 
         return newValue;
     }
@@ -227,7 +228,7 @@ public partial class BigDec
     {
         var newValue = new BigDec(a);
         newValue._mantissa += b * newValue.OffsetPower;
-        newValue.ReduceOffsetWhile10();
+        newValue.ReduceOverflowPrecision();
 
         return newValue;
     }
@@ -241,7 +242,7 @@ public partial class BigDec
         var newValue = a.WithPrecision(Math.Max(a.MaxPrecision, b.MaxPrecision));
         newValue.Offset += b.Offset;
         newValue._mantissa *= b._mantissa;
-        newValue.ReduceOffsetWhile10();
+        newValue.ReduceOverflowPrecision();
 
         return newValue;
     }
@@ -250,7 +251,7 @@ public partial class BigDec
     {
         var newValue = new BigDec(a);
         newValue._mantissa *= b;
-        newValue.ReduceOffsetWhile10();
+        newValue.ReduceOverflowPrecision();
 
         return newValue;
     }
@@ -276,6 +277,11 @@ public partial class BigDec
         if (b == One)
         {
             return a.WithPrecision(desiredPrecision);
+        }
+
+        if (a == One)
+        {
+            return b.WithPrecision(desiredPrecision).Inverse();
         }
 
         if (a == b)
