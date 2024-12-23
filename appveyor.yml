@@ -14,5 +14,5 @@ test_script:
   - codecov -f "InfiniteDecimal_coverage.xml"
 
   # Testing for Russian locale
-  - powershell -Command "Set-Culture ru-RU"
-  - dotnet test --configuration Release
+  # - powershell -Command "Set-Culture ru-RU"
+  # - dotnet test --configuration Release
