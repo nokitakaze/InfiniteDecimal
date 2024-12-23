@@ -223,8 +223,7 @@ public partial class BigDec
         }
         else
         {
-            // todo fix magic number
-            result = this.WithPrecision(10_000).Pow(entier);
+            result = this.WithPrecision(MaxPrecision * 2).Pow(entier);
         }
 
         // tail.IsZero is always false condition
