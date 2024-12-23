@@ -71,7 +71,7 @@ public class ToDecimalTest
         };
 
         var log_10_2 = Math.Log2(10);
-        var bodySizeInBits = BigInteger.Log(BigInteger.Abs(value.BigIntegerBody), 2);
+        var bodySizeInBits = BigInteger.Log(BigInteger.Abs(value.Mantissa), 2);
         double wrkBits;
         if (value.Offset > BigDec.MaxDecimalScale)
         {

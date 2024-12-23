@@ -398,11 +398,11 @@ public class TrivialTest
 
         var actual = 0;
 
-        var _value = result.BigIntegerBody;
+        var _value = result.Mantissa;
         while (_value >= 10)
         {
             result /= 10;
-            _value = result.BigIntegerBody;
+            _value = result.Mantissa;
             actual++;
         }
 
@@ -612,8 +612,8 @@ public class TrivialTest
         Assert.Equal(-1, operand2.CompareTo((double)operand1));
 
         {
-            var value1 = operand1.BigIntegerBody;
-            var value2 = operand2.BigIntegerBody;
+            var value1 = operand1.Mantissa;
+            var value2 = operand2.Mantissa;
             var lg10V1 = BigInteger.Log10(BigInteger.Abs(value1));
             var lg10V2 = BigInteger.Log10(BigInteger.Abs(value2));
             // log10(2) * 23 ~= 6.923

@@ -20,14 +20,14 @@ public partial class BigDec
     public override int GetHashCode()
     {
         // ReSharper disable once NonReadonlyMemberInGetHashCode
-        return System.HashCode.Combine(this.Value, this.MaxPrecision);
+        return System.HashCode.Combine(this._mantissa, this.MaxPrecision);
     }
 
     #region operator type casting
 
     public static explicit operator BigInteger(BigDec item)
     {
-        return item.Value / item.OffsetPower;
+        return item._mantissa / item.OffsetPower;
     }
 
     public static explicit operator int(BigDec item)
@@ -56,7 +56,7 @@ public partial class BigDec
         if (scale == 0)
         {
             // If we got "overflow here" System.Numberic will raise it anyway
-            return (decimal)item.Value;
+            return (decimal)item._mantissa;
         }
 
         if (item > 0)
@@ -74,8 +74,8 @@ public partial class BigDec
             }
         }
 
-        var isNegative = item.Value < 0;
-        var value = BigInteger.Abs(item.Value);
+        var isNegative = item._mantissa < 0;
+        var value = BigInteger.Abs(item._mantissa);
         if (scale > MaxDecimalScale)
         {
             value /= Pow10BigInt(scale - MaxDecimalScale);
@@ -144,7 +144,7 @@ public partial class BigDec
         // Normalize both variables
         a.ReduceOffsetWhile10();
         b.ReduceOffsetWhile10();
-        return (a._offset == b._offset) && (a.Value == b.Value);
+        return (a._offset == b._offset) && (a._mantissa == b._mantissa);
     }
 
     public static bool operator >(BigDec a, BigDec b)
@@ -156,15 +156,15 @@ public partial class BigDec
 
         if (b == Zero)
         {
-            return a.Value > 0;
+            return a._mantissa > 0;
         }
 
-        if ((a.Value < 0) != (b.Value < 0))
+        if ((a._mantissa < 0) != (b._mantissa < 0))
         {
-            return (a.Value >= 0);
+            return (a._mantissa >= 0);
         }
 
-        return (a - b).Value > 0;
+        return (a - b)._mantissa > 0;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -185,7 +185,7 @@ public partial class BigDec
     public static BigDec operator -(BigDec a)
     {
         var newValue = new BigDec(a);
-        newValue.Value = -newValue.Value;
+        newValue._mantissa = -newValue._mantissa;
 
         return newValue;
     }
@@ -194,14 +194,14 @@ public partial class BigDec
     {
         var maxOffset = Math.Max(a._offset, b._offset);
 
-        BigInteger valueA = a.Value;
+        BigInteger valueA = a._mantissa;
         if (a._offset < maxOffset)
         {
             var p = Pow10BigInt(maxOffset - a._offset);
             valueA *= p;
         }
 
-        BigInteger valueB = b.Value;
+        BigInteger valueB = b._mantissa;
         if (b._offset < maxOffset)
         {
             var p = Pow10BigInt(maxOffset - b._offset);
@@ -210,7 +210,7 @@ public partial class BigDec
 
         var newValue = new BigDec(a, Math.Max(a.MaxPrecision, b.MaxPrecision))
         {
-            Value = valueA + valueB,
+            _mantissa = valueA + valueB,
             Offset = maxOffset,
         };
         newValue.ReduceOffsetWhile10();
@@ -226,7 +226,7 @@ public partial class BigDec
     public static BigDec operator +(BigDec a, BigInteger b)
     {
         var newValue = new BigDec(a);
-        newValue.Value += b * newValue.OffsetPower;
+        newValue._mantissa += b * newValue.OffsetPower;
         newValue.ReduceOffsetWhile10();
 
         return newValue;
@@ -240,7 +240,7 @@ public partial class BigDec
     {
         var newValue = a.WithPrecision(Math.Max(a.MaxPrecision, b.MaxPrecision));
         newValue.Offset += b.Offset;
-        newValue.Value *= b.Value;
+        newValue._mantissa *= b._mantissa;
         newValue.ReduceOffsetWhile10();
 
         return newValue;
@@ -249,7 +249,7 @@ public partial class BigDec
     public static BigDec operator *(BigDec a, BigInteger b)
     {
         var newValue = new BigDec(a);
-        newValue.Value *= b;
+        newValue._mantissa *= b;
         newValue.ReduceOffsetWhile10();
 
         return newValue;
@@ -289,11 +289,11 @@ public partial class BigDec
         {
             var awaitedPrecision = result.MaxPrecision * 10;
             var addExp = awaitedPrecision - result._offset;
-            result.Value *= Pow10BigInt(addExp);
+            result._mantissa *= Pow10BigInt(addExp);
             result.Offset = awaitedPrecision;
         }
 
-        result.Value /= b.Value;
+        result._mantissa /= b._mantissa;
         var newOffset = result._offset - b._offset;
         // codecov ignore start
         if (newOffset < 0)

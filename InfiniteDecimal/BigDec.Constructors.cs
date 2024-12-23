@@ -9,18 +9,18 @@ namespace InfiniteDecimal;
 public partial class BigDec
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    protected BigDec(BigDec value) : this(value.Value, value._offset, value.OffsetPower, value.MaxPrecision)
+    protected BigDec(BigDec value) : this(value._mantissa, value._offset, value.OffsetPower, value.MaxPrecision)
     {
     }
 
-    public BigDec(BigDec value, int maxPrecision) : this(value.Value, value._offset, value.OffsetPower, maxPrecision)
+    public BigDec(BigDec value, int maxPrecision) : this(value._mantissa, value._offset, value.OffsetPower, maxPrecision)
     {
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     protected BigDec(BigInteger body, int offset, BigInteger offsetPower, int maxPrecision)
     {
-        Value = body;
+        _mantissa = body;
         _offset = offset;
         OffsetPower = offsetPower;
         MaxPrecision = maxPrecision;
@@ -29,15 +29,15 @@ public partial class BigDec
 
     public BigDec(BigInteger body, int offset, int maxPrecision)
     {
-        Value = body;
+        _mantissa = body;
         Offset = offset;
         MaxPrecision = maxPrecision;
         ReduceTrailingZeroes();
     }
 
-    public BigDec(BigInteger value, int maxPrecision = MaxDefaultPrecision)
+    public BigDec(BigInteger mantissa, int maxPrecision = MaxDefaultPrecision)
     {
-        Value = value;
+        _mantissa = mantissa;
         MaxPrecision = maxPrecision;
     }
 
@@ -67,11 +67,11 @@ public partial class BigDec
         byte scale = (byte)((parts[3] >> 16) & 0x7F);
 
         Offset = scale;
-        Value = rawValue;
+        _mantissa = rawValue;
         MaxPrecision = Math.Max(MaxDefaultPrecision, _offset);
         if (isNegative)
         {
-            Value = -Value;
+            _mantissa = -_mantissa;
         }
     }
 
@@ -84,7 +84,7 @@ public partial class BigDec
 
         if (value == 0)
         {
-            Value = Zero.Value;
+            _mantissa = Zero._mantissa;
             Offset = Zero._offset;
             return;
         }
@@ -100,7 +100,7 @@ public partial class BigDec
         // ReSharper disable once CompareOfFloatsByEqualityOperator
         if (value == Math.Floor(value))
         {
-            Value = new BigInteger(value) * sign;
+            _mantissa = new BigInteger(value) * sign;
             return;
         }
 
@@ -124,7 +124,7 @@ public partial class BigDec
             if (m.Success)
             {
                 var exp = int.Parse(m.Groups[1].Value);
-                Value = sign;
+                _mantissa = sign;
                 Offset = exp - 1;
 
                 return;
@@ -135,7 +135,7 @@ public partial class BigDec
             if (m.Success)
             {
                 var exp = int.Parse(m.Groups[1].Value);
-                Value = sign;
+                _mantissa = sign;
                 Offset = exp;
 
                 return;
@@ -164,52 +164,52 @@ public partial class BigDec
             // TODO It is more correct to do via IEEE-754 mantissa size
 
             {
-                var mod1_000_000 = bio.Value % 1_000_000;
+                var mod1_000_000 = bio._mantissa % 1_000_000;
                 if (mod1_000_000 == 0)
                 {
                 }
                 else if (mod1_000_000 <= 15)
                 {
-                    bio.Value -= mod1_000_000;
+                    bio._mantissa -= mod1_000_000;
                 }
                 else if (mod1_000_000 >= 1_000_000 - 15)
                 {
-                    bio.Value += 1_000_000 - mod1_000_000;
+                    bio._mantissa += 1_000_000 - mod1_000_000;
                 }
             }
 
             {
-                var mod10000 = bio.Value % 10_000;
+                var mod10000 = bio._mantissa % 10_000;
                 if (mod10000 == 0)
                 {
                 }
                 else if (mod10000 <= 10)
                 {
-                    bio.Value -= mod10000;
+                    bio._mantissa -= mod10000;
                 }
                 else if (mod10000 >= 10_000 - 10)
                 {
-                    bio.Value += 10_000 - mod10000;
+                    bio._mantissa += 10_000 - mod10000;
                 }
             }
 
             {
-                var mod1000 = bio.Value % 1000;
+                var mod1000 = bio._mantissa % 1000;
                 if (mod1000 == 0)
                 {
                 }
                 else if (mod1000 <= 3)
                 {
-                    bio.Value -= mod1000;
+                    bio._mantissa -= mod1000;
                 }
                 else if (mod1000 >= 1000 - 3)
                 {
-                    bio.Value += 1000 - mod1000;
+                    bio._mantissa += 1000 - mod1000;
                 }
             }
         }
 
-        Value = bio.Value * sign;
+        _mantissa = bio._mantissa * sign;
         Offset = bio._offset + addExp;
         ReduceTrailingZeroes();
     }
@@ -223,7 +223,7 @@ public partial class BigDec
 
         if (value == 0)
         {
-            Value = Zero.Value;
+            _mantissa = Zero._mantissa;
             Offset = Zero._offset;
             return;
         }
@@ -239,7 +239,7 @@ public partial class BigDec
         // ReSharper disable once CompareOfFloatsByEqualityOperator
         if (value == Math.Floor(value))
         {
-            Value = new BigInteger(value) * sign;
+            _mantissa = new BigInteger(value) * sign;
             return;
         }
 
@@ -263,7 +263,7 @@ public partial class BigDec
             if (m.Success)
             {
                 var exp = int.Parse(m.Groups[1].Value);
-                Value = sign;
+                _mantissa = sign;
                 Offset = exp - 1;
 
                 return;
@@ -274,7 +274,7 @@ public partial class BigDec
             if (m.Success)
             {
                 var exp = int.Parse(m.Groups[1].Value);
-                Value = sign;
+                _mantissa = sign;
                 Offset = exp;
 
                 return;
@@ -304,18 +304,18 @@ public partial class BigDec
             // TODO It is more correct to do via IEEE-754 mantissa size
 
             {
-                var mod1_000_000 = bio.Value % 1_000_000;
+                var mod1_000_000 = bio._mantissa % 1_000_000;
                 const int maxDiff = 55;
                 if (mod1_000_000 == 0)
                 {
                 }
                 else if (mod1_000_000 <= maxDiff)
                 {
-                    bio.Value -= mod1_000_000;
+                    bio._mantissa -= mod1_000_000;
                 }
                 else if (mod1_000_000 >= 1_000_000 - maxDiff)
                 {
-                    bio.Value += 1_000_000 - mod1_000_000;
+                    bio._mantissa += 1_000_000 - mod1_000_000;
                 }
             }
 
@@ -338,38 +338,38 @@ public partial class BigDec
             */
 
             {
-                var mod10000 = bio.Value % 10_000;
+                var mod10000 = bio._mantissa % 10_000;
                 const int maxDiff = 53;
                 if (mod10000 == 0)
                 {
                 }
                 else if (mod10000 <= maxDiff)
                 {
-                    bio.Value -= mod10000;
+                    bio._mantissa -= mod10000;
                 }
                 else if (mod10000 >= 10_000 - maxDiff)
                 {
-                    bio.Value += 10_000 - mod10000;
+                    bio._mantissa += 10_000 - mod10000;
                 }
             }
 
             {
-                var mod1000 = bio.Value % 1000;
+                var mod1000 = bio._mantissa % 1000;
                 if (mod1000 == 0)
                 {
                 }
                 else if (mod1000 <= 10)
                 {
-                    bio.Value -= mod1000;
+                    bio._mantissa -= mod1000;
                 }
                 else if (mod1000 >= 1000 - 10)
                 {
-                    bio.Value += 1000 - mod1000;
+                    bio._mantissa += 1000 - mod1000;
                 }
             }
         }
 
-        Value = bio.Value * sign;
+        _mantissa = bio._mantissa * sign;
         Offset = bio._offset + addExp;
         ReduceTrailingZeroes();
     }

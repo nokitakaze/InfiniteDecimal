@@ -38,9 +38,9 @@ public partial class BigDec
     public static readonly BigDec Half = new BigDec(0.5m);
 
     /// <summary>
-    /// Represents the underlying BigInteger that stores the unscaled significant digits of the BigDec number
+    /// Represents the core numeric value of the decimal as a BigInteger, without considering its decimal offset
     /// </summary>
-    protected BigInteger Value = BigInteger.Zero;
+    protected BigInteger _mantissa = BigInteger.Zero;
 
     /// <summary>
     /// Represents the scale of the decimal value by specifying how many digits are placed to the right
@@ -80,7 +80,7 @@ public partial class BigDec
     /// <summary>
     /// Represents the core numeric value of the decimal as a BigInteger, without considering its decimal offset
     /// </summary>
-    public BigInteger BigIntegerBody => Value;
+    public BigInteger Mantissa => _mantissa;
 
     /// <summary>
     /// Represents the numeric scale factor associated with the current offset, calculated as 10
@@ -181,7 +181,7 @@ public partial class BigDec
     /// </summary>
     protected void ReduceOffsetWhile10()
     {
-        if (Value.IsZero)
+        if (_mantissa.IsZero)
         {
             Offset = 0;
             return;
@@ -192,7 +192,7 @@ public partial class BigDec
             return;
         }
 
-        var value = (Value > 0) ? Value : -Value;
+        var value = (_mantissa > 0) ? _mantissa : -_mantissa;
         if (!(value % BigInteger10).IsZero)
         {
             return;
@@ -203,7 +203,7 @@ public partial class BigDec
         var addOffset = Math.Min(s1.Length - s2.Length, this.Offset);
         var denominator = Pow10BigInt(addOffset);
         Offset -= addOffset;
-        Value /= denominator;
+        _mantissa /= denominator;
     }
 
     protected void ReduceTrailingZeroes()
@@ -216,7 +216,7 @@ public partial class BigDec
 
         var expDiff = _offset - MaxPrecision;
         var denominator = Pow10BigInt(expDiff);
-        Value /= denominator;
+        _mantissa /= denominator;
         Offset -= expDiff;
         ReduceOffsetWhile10();
     }
@@ -232,12 +232,12 @@ public partial class BigDec
         if (_offset == 0)
         {
             // It's just a big integer
-            return Value.ToString();
+            return _mantissa.ToString();
         }
 
         var sign = string.Empty;
-        var _value = Value;
-        if (Value < 0)
+        var _value = _mantissa;
+        if (_mantissa < 0)
         {
             sign = "-";
             _value = -_value;
@@ -347,8 +347,8 @@ public partial class BigDec
             var newOffset = chunks1.Length;
             // ReSharper disable once UseObjectOrCollectionInitializer
             var valBI = new BigDec(0).WithPrecision(newOffset);
-            valBI.Value = BigInteger.Parse(chunks[0] + chunks1, NumberStyles.Integer);
-            valBI.Value *= sign;
+            valBI._mantissa = BigInteger.Parse(chunks[0] + chunks1, NumberStyles.Integer);
+            valBI._mantissa *= sign;
             valBI.Offset = newOffset;
 
             return valBI;

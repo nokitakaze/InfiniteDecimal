@@ -18,7 +18,7 @@ public partial class BigDec
 
     public BigDec Abs()
     {
-        if (this.Value >= 0)
+        if (this._mantissa >= 0)
         {
             return this;
         }
@@ -30,10 +30,10 @@ public partial class BigDec
 
     public BigInteger Floor()
     {
-        return Value / OffsetPower;
+        return _mantissa / OffsetPower;
     }
 
-    public bool IsZero => this.Value.IsZero;
+    public bool IsZero => this._mantissa.IsZero;
 
     #region
 
@@ -47,9 +47,9 @@ public partial class BigDec
 
         var leftExpModifier = Offset - decimalNumber;
         var leftPow = Pow10BigInt(leftExpModifier);
-        var tail = this.Value % leftPow;
+        var tail = this._mantissa % leftPow;
         var tailDownAgain = new BigDec(tail, leftExpModifier) / leftPow;
-        var value = Value / leftPow;
+        var value = _mantissa / leftPow;
         if (tailDownAgain < Half)
         {
         }
@@ -80,7 +80,7 @@ public partial class BigDec
 
         var expDiff = _offset - decimalNumber;
         var denominator = Pow10BigInt(expDiff);
-        var biValue = this.Value;
+        var biValue = this._mantissa;
         biValue /= denominator;
         var result = new BigDec(biValue, this.Offset - expDiff, Math.Max(decimalNumber, MaxDefaultPrecision));
         return result;
@@ -178,7 +178,7 @@ public partial class BigDec
         int powAdditionalPrecision = 4;
         if (this.Offset > 0)
         {
-            var v = BigInteger.Log10(BigInteger.Abs(this.Value));
+            var v = BigInteger.Log10(BigInteger.Abs(this._mantissa));
             var bufferPrecision = 3 * (int)Math.Ceiling(this.Offset - v);
             powAdditionalPrecision += Math.Max(bufferPrecision, 0);
         }
@@ -324,7 +324,7 @@ public partial class BigDec
 
     public BigDec Sqrt()
     {
-        if (this.Value < BigInteger.Zero)
+        if (this._mantissa < BigInteger.Zero)
         {
             throw new InfiniteDecimalException($"'{this}' below zero");
         }
@@ -348,7 +348,7 @@ public partial class BigDec
         {
             // At the point MaxPrecision is bigger or equal to Offset, it has been normalized in "this == One"
             var needPowerLevel = b * 2 - _offset;
-            a = this.Value * Pow10BigInt(needPowerLevel);
+            a = this._mantissa * Pow10BigInt(needPowerLevel);
         }
 
         var aSqrt = Sqrt(a);
@@ -361,7 +361,7 @@ public partial class BigDec
         }
 
         result.Offset = b;
-        result.Value = aSqrt;
+        result._mantissa = aSqrt;
         result.ReduceOffsetWhile10();
 
         return result;
@@ -395,7 +395,7 @@ public partial class BigDec
         var result = BigDec.Zero;
         if (z > E)
         {
-            var p1 = (long)Math.Floor(BigInteger.Log(z.Value) - z.Offset * Math.Log(10));
+            var p1 = (long)Math.Floor(BigInteger.Log(z._mantissa) - z.Offset * Math.Log(10));
             var denominator = E.Pow(p1);
             z /= denominator;
             result += p1;
@@ -515,7 +515,7 @@ public partial class BigDec
         }
 
         return new BigDec(
-            endedMultiplier.BigIntegerBody * result,
+            endedMultiplier.Mantissa * result,
             endedMultiplier.Offset + termPrecision,
             MaxPrecision
         );
@@ -534,7 +534,7 @@ public partial class BigDec
         // 1 / (a * 10^-b) = 10^m / (a * 10^(m-b)) = 10^m / a * 10^-(m-b)
         var m = MaxPrecision + _offset;
         var numerator = BigDec.Pow10BigInt(m);
-        var value = numerator / this.BigIntegerBody;
+        var value = numerator / this.Mantissa;
 
         var t = new BigDec(value, MaxPrecision, MaxPrecision);
         return t;

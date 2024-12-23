@@ -1076,7 +1076,7 @@ public class SqrtPowTest
         var actual = value.Ln();
         var revert = actual.WithPrecision(megaPower + 10).Exp();
         Assert.False(revert.IsZero);
-        Assert.True(revert.BigIntegerBody > 0);
+        Assert.True(revert.Mantissa > 0);
         var epsilon = BigDec.PowFractionOfTen(megaPower + 7);
         Assert.InRange(revert, value - epsilon, value + epsilon);
     }

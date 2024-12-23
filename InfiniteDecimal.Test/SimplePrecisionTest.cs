@@ -65,14 +65,14 @@ public class SimplePrecisionTest
                 var value = new BigDec(body2) * 0.0001m * new BigDec(body5);
                 if (value.Offset > 0)
                 {
-                    Assert.NotEqual(0, value.BigIntegerBody % 10);
+                    Assert.NotEqual(0, value.Mantissa % 10);
                 }
             }
 
             {
                 var body5 = BigInteger.Pow(5, n2);
                 var value = new BigDec(body2) * 0.0001m * new BigDec(body5);
-                Assert.Equal(1, value.BigIntegerBody);
+                Assert.Equal(1, value.Mantissa);
             }
         }
     }
@@ -85,7 +85,7 @@ public class SimplePrecisionTest
         for (var i = 0; i < 18; i++)
         {
             var actual1 = value.WithPrecision(i);
-            Assert.Equal(1, actual1.BigIntegerBody);
+            Assert.Equal(1, actual1.Mantissa);
             Assert.Equal(0, actual1.Offset);
         }
     }
@@ -98,7 +98,7 @@ public class SimplePrecisionTest
         for (var i = 0; i < 18; i++)
         {
             var actual1 = value.Round(i);
-            Assert.Equal(1, actual1.BigIntegerBody);
+            Assert.Equal(1, actual1.Mantissa);
             Assert.Equal(0, actual1.Offset);
         }
     }
@@ -167,7 +167,7 @@ public class SimplePrecisionTest
     {
         var actual = input.Round(precision);
         Assert.Equal(expected, actual);
-        Assert.NotEqual(0, actual.BigIntegerBody % 10);
+        Assert.NotEqual(0, actual.Mantissa % 10);
     }
 
     [Theory]
@@ -176,13 +176,13 @@ public class SimplePrecisionTest
     {
         var actual = input.Floor(precision);
         Assert.Equal(expected, actual);
-        Assert.NotEqual(0, actual.BigIntegerBody % 10);
+        Assert.NotEqual(0, actual.Mantissa % 10);
         actual = input.WithPrecision(precision);
         Assert.Equal(expected, actual);
-        Assert.NotEqual(0, actual.BigIntegerBody % 10);
+        Assert.NotEqual(0, actual.Mantissa % 10);
         actual = new BigDec(input, precision);
         Assert.Equal(expected, actual);
-        Assert.NotEqual(0, actual.BigIntegerBody % 10);
+        Assert.NotEqual(0, actual.Mantissa % 10);
     }
 
     #endregion
