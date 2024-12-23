@@ -211,16 +211,16 @@ public partial class BigDec
     /// </summary>
     protected void ReduceOverflowPrecision()
     {
-        if (this._offset <= MaxPrecision)
+        var expDiff = _offset - MaxPrecision;
+        if (expDiff <= 0)
         {
             ReduceTrailingZeroes();
             return;
         }
 
-        var expDiff = _offset - MaxPrecision;
         var denominator = Pow10BigInt(expDiff);
         _mantissa /= denominator;
-        Offset -= expDiff;
+        Offset = MaxPrecision;
         ReduceTrailingZeroes();
     }
 
