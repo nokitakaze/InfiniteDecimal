@@ -1035,6 +1035,7 @@ public class SqrtPowTest
             Assert.InRange(actualLn, expectedLn - epsilon, expectedLn + epsilon);
             Assert.InRange(actualLn.MaxPrecision, 0, pickedPrecision);
             Assert.InRange(actualLn.Offset, 0, pickedPrecision);
+            Assert.Equal(expectedLn > 0, actualLn > 0);
         }
     }
 
@@ -1070,12 +1071,13 @@ public class SqrtPowTest
     [Fact]
     public void TestLn_GreatPrecision()
     {
-        var value = new BigDec(2) * BigDec.PowFractionOfTen(3000);
+        const int megaPower = 3000;
+        var value = new BigDec(2) * BigDec.PowFractionOfTen(megaPower);
         var actual = value.Ln();
-        var revert = actual.WithPrecision(3002).Exp();
+        var revert = actual.WithPrecision(megaPower + 10).Exp();
         Assert.False(revert.IsZero);
         Assert.True(revert.BigIntegerBody > 0);
-        var epsilon = BigDec.PowFractionOfTen(3000);
+        var epsilon = BigDec.PowFractionOfTen(megaPower + 7);
         Assert.InRange(revert, value - epsilon, value + epsilon);
     }
 

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 
@@ -421,67 +420,35 @@ public partial class BigDec
             z *= multiplier;
         }
 
-        var powDic = new Dictionary<int, BigInteger>();
-        // Supported accuracy limit
-        BigDec epsilon;
-        {
-            // ReSharper disable once RedundantCast
-            int epsilonPrecision = MaxPrecision + PrecisionLnBuffer;
-            var t1 = Pow10BigInt(epsilonPrecision);
-            powDic[epsilonPrecision] = t1;
-            epsilon = PowFractionOfTen(epsilonPrecision + 1);
-        }
-
-        // codecov ignore start
-        if (epsilon <= Zero)
-        {
-            throw new InfiniteDecimalException($"Can't calculate r-component for precision '{MaxPrecision}'");
-        }
-        // codecov ignore end
-
         z = z.Round(zPrecision) - One;
-        var numerator = z.WithPrecision(z.MaxPrecision + PrecisionLnBuffer);
-        result += numerator;
+        BigInteger numerator;
+        int numeratorPrecision;
+        BigInteger resultWithinNumerator = BigInteger.Zero;
+        {
+            numeratorPrecision = z.MaxPrecision + PrecisionLnBuffer;
+            var numeratorBD = z.WithPrecision(numeratorPrecision);
+            result += numeratorBD;
+            numerator = (BigInteger)(numeratorBD * BigDec.Pow10BigInt(numeratorPrecision));
+        }
 
         bool lastCycle = false;
         for (var i = 2; (!lastCycle || (i < 10)) && (i < 10_000) && !numerator.IsZero; i++)
         {
-            numerator *= z;
+            numerator = (BigInteger)(numerator * z);
             var tmp = numerator / i;
-            lastCycle = (tmp.Abs() < epsilon);
+            lastCycle = (BigInteger.Abs(tmp) < BigInteger.One);
 
             if ((i & 1) == 0)
             {
-                result -= tmp;
+                resultWithinNumerator -= tmp;
             }
             else
             {
-                result += tmp;
-            }
-
-            // ReSharper disable once InvertIf
-            if (!lastCycle && (numerator.Offset > numerator.MaxPrecision + (PrecisionLnBuffer + 10)))
-            {
-                var diff = numerator.Offset - numerator.MaxPrecision - PrecisionLnBuffer;
-                BigInteger localDenominator;
-                if (BigInt10Powers.TryGetValue(diff, out var t1))
-                {
-                    localDenominator = t1;
-                }
-                else if (powDic.TryGetValue(diff, out var t2))
-                {
-                    localDenominator = t2;
-                }
-                else
-                {
-                    localDenominator = Pow10BigInt(diff);
-                    powDic[diff] = localDenominator;
-                }
-
-                numerator.Value /= localDenominator;
-                numerator.Offset -= diff;
+                resultWithinNumerator += tmp;
             }
         }
+
+        result += resultWithinNumerator * BigDec.PowFractionOfTen(numeratorPrecision);
 
         if (invert)
         {
@@ -503,20 +470,8 @@ public partial class BigDec
     /// </returns>
     public BigDec Exp()
     {
-        // Initial value for the result
-        BigDec result = One;
-        // Initial term of the series (for i=0)
-        BigDec term = One;
-
         // Set accuracy limit to 0.001 of the precision
-        var epsilon = PowFractionOfTen(MaxPrecision + 3);
-        // codecov ignore start
-        if (epsilon <= Zero)
-        {
-            throw new InfiniteDecimalException($"Can't calculate r-component for precision '{MaxPrecision}'");
-        }
-        // codecov ignore end
-
+        int termPrecision = MaxPrecision + 4;
         var innerTmpLPrecision = MaxPrecision + PrecisionBuffer;
 
         BigDec tmpL;
@@ -539,13 +494,25 @@ public partial class BigDec
             endedMultiplier = One;
         }
 
-        for (int i = 1; term.Abs() >= epsilon; i++)
+        var termPower = BigDec.Pow10BigInt(termPrecision);
+        // Initial value for the result
+        BigInteger result = termPower;
+        // Initial term of the series (for i=0)
+        BigInteger term = termPower;
+        BigInteger tmpL_BI = (BigInteger)(tmpL * termPower);
+
+        for (int i = 1; BigInteger.Abs(term) >= 10; i++)
         {
-            term *= tmpL / i;
+            term *= tmpL_BI / i;
+            term /= termPower;
             result += term;
         }
 
-        return (result * endedMultiplier).Round(MaxPrecision);
+        return new BigDec(
+            endedMultiplier.BigIntegerBody * result,
+            endedMultiplier.Offset + termPrecision,
+            MaxPrecision
+        );
     }
 
     #endregion
