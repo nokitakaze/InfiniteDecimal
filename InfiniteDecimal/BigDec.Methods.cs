@@ -514,7 +514,7 @@ public partial class BigDec
         }
 
         return new BigDec(
-            endedMultiplier.Mantissa * result,
+            endedMultiplier._mantissa * result,
             endedMultiplier.Offset + termPrecision,
             MaxPrecision
         );
@@ -533,7 +533,7 @@ public partial class BigDec
         // 1 / (a * 10^-b) = 10^m / (a * 10^(m-b)) = 10^m / a * 10^-(m-b)
         var m = MaxPrecision + _offset;
         var numerator = BigDec.Pow10BigInt(m);
-        var value = numerator / this.Mantissa;
+        var value = numerator / this._mantissa;
 
         var t = new BigDec(value, MaxPrecision, MaxPrecision);
         return t;
