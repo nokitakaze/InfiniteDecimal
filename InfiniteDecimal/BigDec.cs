@@ -198,16 +198,12 @@ public partial class BigDec
             return;
         }
 
-        var prevOffset = _offset;
-        while ((_offset > 0) && (value % BigInteger10).IsZero)
-        {
-            _offset--;
-            value /= BigInteger10;
-        }
-
-        var denominator = Pow10BigInt(prevOffset - _offset);
+        var s1 = value.ToString();
+        var s2 = s1.TrimEnd('0');
+        var addOffset = Math.Min(s1.Length - s2.Length, this.Offset);
+        var denominator = Pow10BigInt(addOffset);
+        Offset -= addOffset;
         Value /= denominator;
-        OffsetPower = Pow10BigInt(_offset);
     }
 
     protected void ReduceTrailingZeroes()
