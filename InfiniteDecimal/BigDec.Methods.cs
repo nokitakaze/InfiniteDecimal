@@ -127,11 +127,7 @@ public partial class BigDec
 
             x *= x; // increase the base
             y >>= 1; // divide the exponent by 2
-
-            if (x.Offset > x.MaxPrecision * 10)
-            {
-                x = x.Round(x.MaxPrecision);
-            }
+            // Offset is always limited to MaxPrecision
         }
 
         return result.Round(x.MaxPrecision);
