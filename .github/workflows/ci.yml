@@ -2,6 +2,8 @@ name: CI
 
 on:
   push:
+    branches:
+      - '**'  # tests only branches, ignoring tags
   pull_request:
 
 jobs:
