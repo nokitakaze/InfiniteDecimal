@@ -480,6 +480,10 @@ public partial class BigDec
             var t = this.Floor();
             endedMultiplier = BigDec.E.Pow(t);
             simplifiedX = (this - t).Round(termPrecision);
+            if (simplifiedX.IsZero)
+            {
+                return endedMultiplier.WithPrecision(MaxPrecision);
+            }
         }
         else
         {
@@ -497,6 +501,10 @@ public partial class BigDec
             var (exp, multiplier) = ExpModifiers[index];
             endedMultiplier *= multiplier;
             simplifiedX -= exp;
+            if (simplifiedX.IsZero)
+            {
+                return endedMultiplier.WithPrecision(MaxPrecision);
+            }
         }
 
         var termPower = BigDec.Pow10BigInt(termPrecision);
@@ -516,6 +524,45 @@ public partial class BigDec
         return new BigDec(
             endedMultiplier._mantissa * result,
             endedMultiplier.Offset + termPrecision,
+            MaxPrecision
+        );
+    }
+
+    /// <summary>
+    /// Calculates the exponential function of the current instance with Taylor-Maclaurin series.
+    /// This method does not use acceleration through the built-in Euler constant, which is limited to 1000 digits.
+    /// If you do not need precision above 999 digits, use <see cref="Exp"/> instead.
+    /// </summary>
+    /// <returns>
+    /// The result of raising the mathematical constant e to the power of the current <see cref="BigDec"/> value.
+    /// </returns>
+    public BigDec ExpWithBigPrecision()
+    {
+        if (this < Zero)
+        {
+            return (-this).ExpWithBigPrecision().Inverse();
+        }
+
+        // Set accuracy limit to 0.001 of the precision
+        int termPrecision = MaxPrecision + 4;
+        var localMantissa = Mantissa * BigDec.Pow10BigInt(termPrecision - _offset);
+
+        var termPower = BigDec.Pow10BigInt(termPrecision);
+        // Initial value for the result
+        BigInteger result = termPower;
+        // Initial term of the series (for i=0)
+        BigInteger term = termPower;
+
+        for (int i = 1; BigInteger.Abs(term) >= 10; i++)
+        {
+            term *= localMantissa / i;
+            term /= termPower;
+            result += term;
+        }
+
+        return new BigDec(
+            result,
+            termPrecision,
             MaxPrecision
         );
     }

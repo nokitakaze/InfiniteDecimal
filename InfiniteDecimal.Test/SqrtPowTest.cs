@@ -199,6 +199,10 @@ public class SqrtPowTest
         var actualExp = actual.Exp();
         diff = (actualExp - input).Abs();
         Assert.True(diff < 0.000_000_1m);
+
+        actualExp = actual.ExpWithBigPrecision();
+        diff = (actualExp - input).Abs();
+        Assert.True(diff < 0.000_000_1m);
     }
 
     [Fact]
@@ -212,6 +216,10 @@ public class SqrtPowTest
         Assert.True(diff < epsilon);
 
         var actualExp = actual.Exp();
+        diff = (actualExp - BigDec.E).Abs();
+        Assert.True(diff < 0.000_000_1m);
+
+        actualExp = actual.ExpWithBigPrecision();
         diff = (actualExp - BigDec.E).Abs();
         Assert.True(diff < 0.000_000_1m);
     }
@@ -1050,6 +1058,13 @@ public class SqrtPowTest
         {
             var pickedPrecision = Math.Max(PickedPrecision, expectedLn.Offset);
             var actualExp = expectedLn.WithPrecision(pickedPrecision).Exp();
+            Assert.InRange(actualExp, input - epsilon, input + epsilon);
+            Assert.InRange(actualExp.MaxPrecision, 0, pickedPrecision);
+            Assert.InRange(actualExp.Offset, 0, pickedPrecision);
+        }
+        {
+            var pickedPrecision = Math.Max(PickedPrecision, expectedLn.Offset);
+            var actualExp = expectedLn.WithPrecision(pickedPrecision).ExpWithBigPrecision();
             Assert.InRange(actualExp, input - epsilon, input + epsilon);
             Assert.InRange(actualExp.MaxPrecision, 0, pickedPrecision);
             Assert.InRange(actualExp.Offset, 0, pickedPrecision);
