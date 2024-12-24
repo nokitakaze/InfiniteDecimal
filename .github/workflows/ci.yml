@@ -56,4 +56,5 @@ jobs:
           files: ./InfiniteDecimal_coverage.xml
           token: ${{ secrets.CODECOV_TOKEN }}
           flags: unittests
+          verbose: true
           fail_ci_if_error: true
