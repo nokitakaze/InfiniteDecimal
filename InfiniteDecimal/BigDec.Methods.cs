@@ -305,7 +305,7 @@ public partial class BigDec
             throw new InfiniteDecimalException($"'{value}' below zero");
         }
 
-        // Оценка начального приближения
+        // Initial approximation evaluation
         int bitLength = (int)Math.Ceiling(BigInteger.Log10(value) * Math.Log(10, 2));
         BigInteger root = BigInteger.One << (bitLength / 2);
 
@@ -351,19 +351,7 @@ public partial class BigDec
         }
 
         var aSqrt = Sqrt(a);
-        var result = Zero.WithPrecision(MaxPrecision);
-        if (b > MaxPrecision)
-        {
-            var c = Pow10BigInt(b - MaxPrecision);
-            aSqrt /= c;
-            b = MaxPrecision;
-        }
-
-        result.Offset = b;
-        result._mantissa = aSqrt;
-        result.ReduceTrailingZeroes();
-
-        return result;
+        return new BigDec(aSqrt, b, MaxPrecision);
     }
 
     #endregion

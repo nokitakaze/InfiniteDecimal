@@ -183,17 +183,29 @@ public class InnerConstantTest
         "   885487617616198937079438005666336488436508914480557103976521469602766258359\n" +
         "   905198704230017946553679";
 
+    protected static BigDec GetE()
+    {
+        var r = new Regex("[^0-9.+]");
+        var eString = r.Replace(EString, string.Empty);
+        return BigDec.Parse(eString);
+    }
+
     [Fact]
     public void CompareExpWithE()
     {
-        BigDec eExpected;
-        {
-            var r = new Regex("[^0-9.+]");
-            var eString = r.Replace(EString, string.Empty);
-            eExpected = BigDec.Parse(eString);
-        }
-
+        var eExpected = GetE();
         var eActual = new BigDec(1m, eExpected.MaxPrecision).ExpWithBigPrecision();
+        var abs = (eActual - eExpected).Abs();
+        var epsilon = BigDec.PowFractionOfTen(eExpected.MaxPrecision - 1);
+        Assert.InRange(abs, BigDec.Zero, epsilon);
+    }
+
+    [Fact]
+    public void BigPrecisionEAndSqrt()
+    {
+        var eExpected = GetE();
+        var eActual = new BigDec(2m, 10_000).ExpWithBigPrecision();
+        eActual = eActual.Sqrt();
         var abs = (eActual - eExpected).Abs();
         var epsilon = BigDec.PowFractionOfTen(eExpected.MaxPrecision - 1);
         Assert.InRange(abs, BigDec.Zero, epsilon);
