@@ -962,6 +962,14 @@ public class TrivialTest
         });
         Assert.Throws<InfiniteDecimalException>(() =>
         {
+            var _ = BigDec.Zero / BigDec.Zero;
+        });
+        Assert.Throws<InfiniteDecimalException>(() =>
+        {
+            var _ = BigDec.Zero / BigInteger.Zero;
+        });
+        Assert.Throws<InfiniteDecimalException>(() =>
+        {
             var _ = BigDec.One / (decimal)0;
         });
         Assert.Throws<InfiniteDecimalException>(() =>

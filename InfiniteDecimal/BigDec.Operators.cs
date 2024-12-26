@@ -262,14 +262,14 @@ public partial class BigDec
 
     public static BigDec operator /(BigDec a, BigDec b)
     {
-        if (a.IsZero)
-        {
-            return Zero;
-        }
-
         if (b.IsZero)
         {
             throw new InfiniteDecimalException("Division by zero");
+        }
+
+        if (a.IsZero)
+        {
+            return Zero;
         }
 
         var desiredPrecision = Math.Max(a.MaxPrecision, b.MaxPrecision);
