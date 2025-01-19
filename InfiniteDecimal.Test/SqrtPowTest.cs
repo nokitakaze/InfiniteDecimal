@@ -2410,13 +2410,31 @@ public class SqrtPowTest
     }
 
     [Fact]
-    public void TestPow_10001()
+    public void TestPow_10001d()
     {
         const double base1 = 1.0001d;
         for (var i = 1; i < 88; i++)
         {
             var power = -10_000 * i;
             var a = Math.Pow(base1, power);
+            var b = a * BigDec.PowFractionOfTen(-12, 50);
+            Assert.True(b > BigDec.Zero);
+        }
+    }
+
+    [Fact]
+    public void TestPow_10001m()
+    {
+        const decimal base1 = 1.0001m;
+        for (var i = 1; i < 28; i++)
+        {
+            var power = 10_000 * i;
+            var a = 1m;
+            for (var j = 0; j < power; j++)
+            {
+                a *= base1;
+            }
+
             var b = a * BigDec.PowFractionOfTen(-12, 50);
             Assert.True(b > BigDec.Zero);
         }

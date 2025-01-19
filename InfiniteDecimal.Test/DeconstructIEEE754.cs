@@ -386,5 +386,26 @@ public class DeconstructIEEE754
         }
     }
 
+    [Fact]
+    public void SmallDecimal()
+    {
+        for (var i = 1; i <= 28; i++)
+        {
+            var value = 1m;
+            for (var j = 0; j < i; j++)
+            {
+                value *= 0.1m;
+            }
+
+            var actual = new BigDec(value);
+            Assert.True(actual > BigDec.Zero);
+            Assert.True(actual < BigDec.One);
+
+            actual = new BigDec(-value);
+            Assert.True(actual < BigDec.Zero);
+            Assert.True(actual > -BigDec.One);
+        }
+    }
+
     #endregion
 }
