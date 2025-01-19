@@ -273,6 +273,7 @@ public partial class BigDec
 
         _mantissa = bio._mantissa * sign;
         Offset = bio._offset + addExp;
+        MaxPrecision = Math.Max(MaxPrecision, Offset);
         ReduceOverflowPrecision();
     }
 

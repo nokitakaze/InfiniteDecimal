@@ -370,5 +370,21 @@ public class DeconstructIEEE754
         }
     }
 
+    [Fact]
+    public void SmallDoubles()
+    {
+        for (var i = 1; i <= 323; i++)
+        {
+            var value = Math.Pow(0.1d, i);
+            var actual = new BigDec(value);
+            Assert.True(actual > BigDec.Zero);
+            Assert.True(actual < BigDec.One);
+
+            actual = new BigDec(-value);
+            Assert.True(actual < BigDec.Zero);
+            Assert.True(actual > -BigDec.One);
+        }
+    }
+
     #endregion
 }

@@ -170,7 +170,7 @@ public partial class BigDec
         // ReSharper disable once ConvertIfStatementToReturnStatement
         if (power <= 0)
         {
-            return new BigDec(BigDec.Pow10BigInt(-power));
+            return new BigDec(BigDec.Pow10BigInt(-power), maxPrecision);
         }
 
         return new BigDec(BigInteger.One, power, Math.Max(power, maxPrecision));

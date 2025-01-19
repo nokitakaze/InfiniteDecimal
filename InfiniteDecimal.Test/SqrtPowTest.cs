@@ -2409,5 +2409,18 @@ public class SqrtPowTest
         Assert.True(result.multiplier < BigDec.E);
     }
 
+    [Fact]
+    public void TestPow_10001()
+    {
+        const double base1 = 1.0001d;
+        for (var i = 1; i < 88; i++)
+        {
+            var power = -10_000 * i;
+            var a = Math.Pow(base1, power);
+            var b = a * BigDec.PowFractionOfTen(-12, 50);
+            Assert.True(b > BigDec.Zero);
+        }
+    }
+
     #endregion
 }

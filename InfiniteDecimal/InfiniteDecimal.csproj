@@ -5,7 +5,7 @@
     <Nullable>enable</Nullable>
     <LangVersion>default</LangVersion>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>0.2.2</Version>
+    <Version>0.2.3</Version>
     <Authors>NokitaKaze</Authors>
     <RepositoryUrl>https://github.com/nokitakaze/infiniteDecimal</RepositoryUrl>
     <PackageTags>ieee754</PackageTags>
