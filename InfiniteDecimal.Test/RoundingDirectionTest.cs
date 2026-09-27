@@ -184,7 +184,7 @@ public class RoundingDirectionTest
             _ => throw new ArgumentOutOfRangeException()
         };
 
-        var actual = (BigInteger) bdInput.Round(0);
+        var actual = (BigInteger)bdInput.Round(0);
         Assert.Equal<BigInteger>(expected, actual);
     }
 
@@ -214,11 +214,47 @@ public class RoundingDirectionTest
             _ => throw new ArgumentOutOfRangeException()
         };
 
-        var actual = (BigInteger) bdInput.Round(0);
+        var actual = (BigInteger)bdInput.Round(0);
         Assert.Equal<BigInteger>(expected, actual);
     }
 
     #endregion
 
     #endregion
+
+    public static object[][] RoundNegative1_Data()
+    {
+        var testCases = new (decimal input, int numberCount, decimal expected)[]
+        {
+            (-0.33m, 1, -0.3m),
+            (-0.05m, 1, 0m),
+            (-0.07m, 1, -0.1m),
+            //
+            (-1.03m, 1, -1.0m),
+            (-1.05m, 1, -1.0m),
+            (-1.07m, 1, -1.1m),
+            //
+            (-0.43m, 1, -0.4m),
+            (-0.47m, 1, -0.5m),
+            //
+            (-0.15m, 1, -0.2m),
+            (-0.17m, 1, -0.2m),
+            //
+            (-1.13m, 1, -1.1m),
+            (-1.15m, 1, -1.2m),
+            (-1.17m, 1, -1.2m),
+        };
+
+        return testCases
+            .Select(t => new object[] { t.input, t.numberCount, t.expected })
+            .ToArray();
+    }
+
+    [Theory]
+    [MemberData(nameof(RoundNegative1_Data))]
+    void RoundNegative1(decimal input, int numberCount, decimal expected)
+    {
+        var actual = new BigDec(input).Round(numberCount);
+        Assert.Equal(expected, (decimal)actual);
+    }
 }

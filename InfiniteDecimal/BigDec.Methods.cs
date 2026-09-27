@@ -30,7 +30,26 @@ public partial class BigDec
 
     public BigInteger Floor()
     {
-        return _mantissa / OffsetPower;
+        if (_mantissa.IsZero)
+        {
+            return BigInteger.Zero;
+        }
+
+        if (_mantissa.Sign == 1)
+        {
+            // Positive number
+            return _mantissa / OffsetPower;
+        }
+
+        // Negative number.
+        // The floor always tends toward negative infinity.
+        var result = _mantissa / OffsetPower;
+        if (!(_mantissa % OffsetPower).IsZero)
+        {
+            result--;
+        }
+
+        return result;
     }
 
     public bool IsZero => this._mantissa.IsZero;
@@ -45,12 +64,29 @@ public partial class BigDec
             return this.WithPrecision(Math.Max(decimalNumber, MaxDefaultPrecision));
         }
 
-        // todo Round(-0.6) = 1
+        if (_mantissa.IsZero)
+        {
+            return new BigDec(BigInteger.Zero, 0, BigInteger.One, MaxPrecision);
+        }
+
+        int sign;
+        BigInteger mantissa;
+        if (_mantissa.Sign >= 0)
+        {
+            sign = 1;
+            mantissa = _mantissa;
+        }
+        else
+        {
+            sign = -1;
+            mantissa = -_mantissa;
+        }
+
         var leftExpModifier = Offset - decimalNumber;
         var leftPow = Pow10BigInt(leftExpModifier);
-        var tail = this._mantissa % leftPow;
+        var tail = mantissa % leftPow;
         var tailDownAgain = new BigDec(tail, leftExpModifier) / leftPow;
-        var value = _mantissa / leftPow;
+        var value = mantissa / leftPow;
         if (tailDownAgain < Half)
         {
         }
@@ -69,14 +105,18 @@ public partial class BigDec
 
         var offsetPower = Pow10BigInt(decimalNumber);
         ReduceOverflowPrecision(ref value, ref decimalNumber, ref offsetPower, decimalNumber);
-        var result = new BigDec(value, decimalNumber, decimalNumber);
+        if (sign == -1)
+        {
+            value = -value;
+        }
+
+        var result = new BigDec(value, decimalNumber, offsetPower, decimalNumber);
 
         return result;
     }
 
     public BigDec Floor(int decimalNumber)
     {
-        // todo Floor(-0.6) = 1
         if (this.Offset <= decimalNumber)
         {
             return this;

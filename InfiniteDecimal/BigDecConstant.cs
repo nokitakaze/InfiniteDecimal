@@ -2,7 +2,7 @@
 
 namespace InfiniteDecimal;
 
-public static class BigDecConstant
+internal static class BigDecConstant
 {
     /// <summary>
     /// A constant BigInteger representing the numeric value ten, used as the base for decimal scaling
