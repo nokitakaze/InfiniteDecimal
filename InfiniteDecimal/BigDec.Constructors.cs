@@ -107,6 +107,7 @@ public partial class BigDec
     public BigDec(decimal value, int maxPrecision = MaxDefaultPrecision) : this(value)
     {
         MaxPrecision = maxPrecision;
+        ReduceOverflowPrecision(ref _mantissa, ref Offset, ref OffsetPower, maxPrecision: MaxPrecision);
     }
 
     /// <summary>
@@ -170,6 +171,7 @@ public partial class BigDec
         // ReSharper disable once CompareOfFloatsByEqualityOperator
         if (value == Math.Floor(value))
         {
+            // Integer number
             _mantissa = new BigInteger(value) * sign;
             return;
         }
@@ -197,6 +199,7 @@ public partial class BigDec
                 _mantissa = sign;
                 Offset = exp - 1;
                 OffsetPower = Pow10BigInt(Offset);
+                MaxPrecision = Math.Max(MaxPrecision, Offset);
 
                 return;
             }
@@ -209,6 +212,7 @@ public partial class BigDec
                 _mantissa = sign;
                 Offset = exp;
                 OffsetPower = Pow10BigInt(Offset);
+                MaxPrecision = Math.Max(MaxPrecision, Offset);
 
                 return;
             }
@@ -453,6 +457,7 @@ public partial class BigDec
         _mantissa = bio__mantissa * sign;
         Offset = bio_offset + addExp;
         OffsetPower = Pow10BigInt(Offset);
+        MaxPrecision = Math.Max(MaxPrecision, Offset);
         ReduceOverflowPrecision(ref _mantissa, ref Offset, ref OffsetPower, MaxPrecision);
     }
 

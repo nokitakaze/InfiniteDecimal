@@ -1,7 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Numerics;
-using System.Reflection;
 
 namespace InfiniteDecimal.Test;
 
@@ -1037,29 +1036,6 @@ public class TrivialTest
     }
 
     [Fact]
-    public void NegativeOffset()
-    {
-        var offsetField = typeof(BigDec)
-            .GetField("Offset", BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance);
-        if (offsetField is null)
-        {
-            throw new Exception("'Offset' field does not exist");
-        }
-
-        var bio = new BigDec(-2);
-
-        try
-        {
-            offsetField.SetValue(bio, -2);
-        }
-        catch (TargetInvocationException e)
-        {
-            Assert.NotNull(e.InnerException);
-            Assert.Equal(typeof(InfiniteDecimalException), e.InnerException.GetType());
-        }
-    }
-
-    [Fact]
     public void UnreachableTypeForCasting()
     {
         Assert.Throws<InfiniteDecimalException>(() =>
@@ -1464,4 +1440,38 @@ public class TrivialTest
     }
 
     #endregion
+
+    [Fact]
+    public void TestDelimiterBy_1e_300()
+    {
+        // 2 / 1e-300 = 2e+300
+        var denominator = new BigDec(1e-300);
+        var t = new BigDec(2) / denominator;
+        var actualLn = (double)t.Ln();
+        var expectedLn = Math.Log(2) + 300 * Math.Log(10);
+
+        Assert.InRange(actualLn, expectedLn * 0.99999d, expectedLn * 1.00001d);
+    }
+
+    [Fact]
+    public void TestFloatEpsilon()
+    {
+        var t = new BigDec(float.Epsilon);
+        Assert.True(t > 0);
+
+        var actualLn = -(double)t.Ln();
+        var expectedLn = -Math.Log(float.Epsilon);
+        Assert.InRange(actualLn, expectedLn * 0.99999d, expectedLn * 1.00001d);
+    }
+
+    [Fact]
+    public void TestDoubleEpsilon()
+    {
+        var t = new BigDec(double.Epsilon);
+        Assert.True(t > 0);
+
+        var actualLn = -(double)t.Ln();
+        var expectedLn = -Math.Log(double.Epsilon);
+        Assert.InRange(actualLn, expectedLn * 0.99999d, expectedLn * 1.00001d);
+    }
 }

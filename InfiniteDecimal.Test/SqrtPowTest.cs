@@ -138,9 +138,9 @@ public class SqrtPowTest
         var recast = new BigDec(value, precision);
         var sqrt = recast.Sqrt();
         var actual = sqrt * sqrt;
-        var diff = new BigDec(10).Pow(-precision);
+        var diff = BigDec.PowFractionOfTen(precision - 1);
 
-        Assert.InRange(actual, actual - diff, actual + diff);
+        Assert.InRange(actual, value - diff, value + diff);
     }
 
     [Fact]

@@ -20,7 +20,7 @@ public partial class BigDec
     public override int GetHashCode()
     {
         // ReSharper disable once NonReadonlyMemberInGetHashCode
-        return System.HashCode.Combine(this._mantissa, this.MaxPrecision);
+        return System.HashCode.Combine(this._mantissa, this.Offset);
     }
 
     #region operator type casting
@@ -295,9 +295,13 @@ public partial class BigDec
         var (result__mantissa, result_offset, _, result_maxPrecision) = a;
         result_maxPrecision = Math.Max(result_maxPrecision, b.MaxPrecision);
 
-        // if (result.Offset < result_maxPrecision * 2) // always true condition
         {
             var awaitedPrecision = result_maxPrecision * 10;
+            if (awaitedPrecision >= 640_000_000)
+            {
+                throw new OutOfMemoryException($"Awaited precision is too big ({awaitedPrecision:N0})");
+            }
+
             var addExp = awaitedPrecision - result_offset;
             result__mantissa *= Pow10BigInt(addExp);
             result_offset = awaitedPrecision;

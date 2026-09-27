@@ -130,6 +130,7 @@ public class SimplePrecisionTest
             (1.00015m, 4),
             (1.00015m, 3),
             (1.00015m, 0),
+            (1.23m, 1),
             (1.4m, 0),
             (1.5m, 0),
             (1.501m, 0),
@@ -145,6 +146,14 @@ public class SimplePrecisionTest
         };
 
         return input
+            .SelectMany(item =>
+            {
+                return new (decimal value, int precision)[]
+                {
+                    (item.value, item.precision),
+                    (-item.value, item.precision),
+                };
+            })
             .Select(item =>
             {
                 var power = (decimal)BigDec.Pow10BigInt(item.precision);
@@ -177,15 +186,40 @@ public class SimplePrecisionTest
         var actual = input.Floor(precision);
         Assert.Equal(expected, actual);
         Assert.NotEqual(0, actual.Mantissa % 10);
-        actual = input.WithPrecision(precision);
-        Assert.Equal(expected, actual);
-        Assert.NotEqual(0, actual.Mantissa % 10);
-        actual = new BigDec(input, precision);
-        Assert.Equal(expected, actual);
-        Assert.NotEqual(0, actual.Mantissa % 10);
+        if (input.Mantissa >= 0)
+        {
+            actual = input.WithPrecision(precision);
+            Assert.Equal(expected, actual);
+            Assert.NotEqual(0, actual.Mantissa % 10);
+            actual = new BigDec(input, precision);
+            Assert.Equal(expected, actual);
+            Assert.NotEqual(0, actual.Mantissa % 10);
+        }
     }
 
     #endregion
 
-    // TODO A * 0 => precision copy
+    [Fact]
+    public void TestPrecisionWith0OnMultiply()
+    {
+        // A * 0 => precision copy
+        for (var i = 18; i <= 100; i += 10)
+        {
+            var input = new BigDec(1.234m, maxPrecision: i);
+            var actual = input * 0m;
+            Assert.Equal(i, actual.MaxPrecision);
+            actual = input * 0d;
+            Assert.Equal(i, actual.MaxPrecision);
+            actual = input * 0f;
+            Assert.Equal(i, actual.MaxPrecision);
+            actual = input * 0;
+            Assert.Equal(i, actual.MaxPrecision);
+            actual = input * 0L;
+            Assert.Equal(i, actual.MaxPrecision);
+            actual = input * 0m;
+            Assert.Equal(i, actual.MaxPrecision);
+            actual = input * 0.00000000m;
+            Assert.Equal(i, actual.MaxPrecision);
+        }
+    }
 }

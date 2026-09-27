@@ -44,7 +44,7 @@ public partial class BigDec
         // Negative number.
         // The floor always tends toward negative infinity.
         var result = _mantissa / OffsetPower;
-        if (!(_mantissa % OffsetPower).IsZero)
+        if (!(-_mantissa % OffsetPower).IsZero)
         {
             result--;
         }
@@ -122,11 +122,25 @@ public partial class BigDec
             return this;
         }
 
+        if (decimalNumber == 0)
+        {
+            return new BigDec(this.Floor(), 0, maxPrecision: this.MaxPrecision);
+        }
+
         var expDiff = Offset - decimalNumber;
         var denominator = Pow10BigInt(expDiff);
         var biValue = this._mantissa;
         biValue /= denominator;
-        var result = new BigDec(biValue, this.Offset - expDiff, Math.Max(decimalNumber, MaxDefaultPrecision));
+        if ((this._mantissa.Sign == -1) && !(-this._mantissa % denominator).IsZero)
+        {
+            biValue--;
+        }
+
+        var newOffset = this.Offset - expDiff;
+        var offsetPower = Pow10BigInt(newOffset);
+        var maxPrecision = Math.Max(decimalNumber, MaxDefaultPrecision);
+        ReduceOverflowPrecision(ref biValue, ref newOffset, ref offsetPower, maxPrecision);
+        var result = new BigDec(biValue, newOffset, maxPrecision: maxPrecision);
         return result;
     }
 
