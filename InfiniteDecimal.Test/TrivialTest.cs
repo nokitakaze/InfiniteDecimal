@@ -473,6 +473,7 @@ public class TrivialTest
             1.00001m,
             1.00000000000001m,
             0.0001m,
+            0.00011m,
             0.00001m,
             0.00000000000001m,
             sbyte.MaxValue,
@@ -1039,10 +1040,10 @@ public class TrivialTest
     public void NegativeOffset()
     {
         var offsetField = typeof(BigDec)
-            .GetProperty("Offset", BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance);
+            .GetField("Offset", BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance);
         if (offsetField is null)
         {
-            throw new Exception("'Offset' property does not exist");
+            throw new Exception("'Offset' field does not exist");
         }
 
         var bio = new BigDec(-2);

@@ -142,10 +142,7 @@ public partial class BigDec
             return false;
         }
 
-        // Normalize both variables
-        a.ReduceTrailingZeroes();
-        b.ReduceTrailingZeroes();
-        return (a._offset == b._offset) && (a._mantissa == b._mantissa);
+        return (a.Offset == b.Offset) && (a._mantissa == b._mantissa);
     }
 
     public static bool operator >(BigDec a, BigDec b)
@@ -185,36 +182,34 @@ public partial class BigDec
     /// <returns></returns>
     public static BigDec operator -(BigDec a)
     {
-        var newValue = new BigDec(a);
-        newValue._mantissa = -newValue._mantissa;
+        var newValue = new BigDec(-a._mantissa, a.Offset, a.OffsetPower, a.MaxPrecision);
 
         return newValue;
     }
 
     public static BigDec operator +(BigDec a, BigDec b)
     {
-        var maxOffset = Math.Max(a._offset, b._offset);
+        var maxOffset = Math.Max(a.Offset, b.Offset);
 
         BigInteger valueA = a._mantissa;
-        if (a._offset < maxOffset)
+        if (a.Offset < maxOffset)
         {
-            var p = Pow10BigInt(maxOffset - a._offset);
+            var p = Pow10BigInt(maxOffset - a.Offset);
             valueA *= p;
         }
 
         BigInteger valueB = b._mantissa;
-        if (b._offset < maxOffset)
+        if (b.Offset < maxOffset)
         {
-            var p = Pow10BigInt(maxOffset - b._offset);
+            var p = Pow10BigInt(maxOffset - b.Offset);
             valueB *= p;
         }
 
-        var newValue = new BigDec(a, Math.Max(a.MaxPrecision, b.MaxPrecision))
-        {
-            _mantissa = valueA + valueB,
-            Offset = maxOffset,
-        };
-        newValue.ReduceOverflowPrecision();
+        var mantissa = valueA + valueB;
+        var maxPrecision = Math.Max(a.MaxPrecision, b.MaxPrecision);
+        var offsetPower = Pow10BigInt(maxOffset);
+        ReduceOverflowPrecision(ref mantissa, ref maxOffset, ref offsetPower, maxPrecision);
+        var newValue = new BigDec(mantissa, maxOffset, offsetPower, maxPrecision: maxPrecision);
 
         return newValue;
     }
@@ -226,9 +221,11 @@ public partial class BigDec
 
     public static BigDec operator +(BigDec a, BigInteger b)
     {
-        var newValue = new BigDec(a);
-        newValue._mantissa += b * newValue.OffsetPower;
-        newValue.ReduceOverflowPrecision();
+        var (mantissa, maxOffset, offsetPower, maxPrecision) = new BigDec(a);
+        mantissa += b * offsetPower;
+        // hint: По идее здесь это делать не нужно, ведь мы целое число прибавляем
+        ReduceOverflowPrecision(ref mantissa, ref maxOffset, ref offsetPower, maxPrecision);
+        var newValue = new BigDec(mantissa, maxOffset, offsetPower, maxPrecision: maxPrecision);
 
         return newValue;
     }
@@ -239,19 +236,25 @@ public partial class BigDec
 
     public static BigDec operator *(BigDec a, BigDec b)
     {
-        var newValue = a.WithPrecision(Math.Max(a.MaxPrecision, b.MaxPrecision));
-        newValue.Offset += b.Offset;
-        newValue._mantissa *= b._mantissa;
-        newValue.ReduceOverflowPrecision();
+        var mantissa = a._mantissa * b._mantissa;
+        var maxOffset = a.Offset + b.Offset;
+        var offsetPower = Pow10BigInt(maxOffset);
+        var maxPrecision = Math.Max(a.MaxPrecision, b.MaxPrecision);
+
+        ReduceOverflowPrecision(ref mantissa, ref maxOffset, ref offsetPower, maxPrecision);
+        var newValue = new BigDec(mantissa, maxOffset, offsetPower, maxPrecision: maxPrecision);
 
         return newValue;
     }
 
     public static BigDec operator *(BigDec a, BigInteger b)
     {
-        var newValue = new BigDec(a);
-        newValue._mantissa *= b;
-        newValue.ReduceOverflowPrecision();
+        var mantissa = a._mantissa * b;
+        var maxOffset = a.Offset;
+        var offsetPower = a.OffsetPower;
+
+        ReduceOverflowPrecision(ref mantissa, ref maxOffset, ref offsetPower, a.MaxPrecision);
+        var newValue = new BigDec(mantissa, maxOffset, offsetPower, maxPrecision: a.MaxPrecision);
 
         return newValue;
     }
@@ -289,26 +292,29 @@ public partial class BigDec
             return One.WithPrecision(desiredPrecision);
         }
 
-        var realLocalPrecision = Math.Max(desiredPrecision, Math.Max(a.Offset, b.Offset));
-        var result = new BigDec(a, realLocalPrecision);
-        // if (result._offset < result.MaxPrecision * 2) // always true condition
+        var (result__mantissa, result_offset, _, result_maxPrecision) = a;
+        result_maxPrecision = Math.Max(result_maxPrecision, b.MaxPrecision);
+
+        // if (result.Offset < result_maxPrecision * 2) // always true condition
         {
-            var awaitedPrecision = result.MaxPrecision * 10;
-            var addExp = awaitedPrecision - result._offset;
-            result._mantissa *= Pow10BigInt(addExp);
-            result.Offset = awaitedPrecision;
+            var awaitedPrecision = result_maxPrecision * 10;
+            var addExp = awaitedPrecision - result_offset;
+            result__mantissa *= Pow10BigInt(addExp);
+            result_offset = awaitedPrecision;
         }
 
-        result._mantissa /= b._mantissa;
-        var newOffset = result._offset - b._offset;
+        result__mantissa /= b._mantissa;
+        result_offset -= b.Offset;
         // codecov ignore start
-        if (newOffset < 0)
+        if (result_offset < 0)
         {
             throw new InfiniteDecimalException("Precision from arguments didn't apply to result");
         }
         // codecov ignore end
 
-        result.Offset = newOffset;
+        var offsetPower = Pow10BigInt(result_offset);
+        ReduceOverflowPrecision(ref result__mantissa, ref result_offset, ref offsetPower, result_maxPrecision);
+        var result = new BigDec(result__mantissa, result_offset, offsetPower, result_maxPrecision);
 
         return result.Round(desiredPrecision);
     }

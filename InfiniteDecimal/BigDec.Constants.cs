@@ -3,7 +3,7 @@
 public partial class BigDec
 {
     /// <summary>
-    ///  The number e is a mathematical constant approximately equal to 2.71828 that is the base
+    /// The number e is a mathematical constant approximately equal to 2.71828 that is the base
     /// of the natural logarithm and exponential function
     /// </summary>
     /// <url>https://en.wikipedia.org/wiki/E_(mathematical_constant)</url>

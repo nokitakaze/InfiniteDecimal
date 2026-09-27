@@ -45,6 +45,7 @@ public partial class BigDec
             return this.WithPrecision(Math.Max(decimalNumber, MaxDefaultPrecision));
         }
 
+        // todo Round(-0.6) = 1
         var leftExpModifier = Offset - decimalNumber;
         var leftPow = Pow10BigInt(leftExpModifier);
         var tail = this._mantissa % leftPow;
@@ -66,19 +67,22 @@ public partial class BigDec
             value++;
         }
 
+        var offsetPower = Pow10BigInt(decimalNumber);
+        ReduceOverflowPrecision(ref value, ref decimalNumber, ref offsetPower, decimalNumber);
         var result = new BigDec(value, decimalNumber, decimalNumber);
-        result.ReduceOverflowPrecision();
+
         return result;
     }
 
     public BigDec Floor(int decimalNumber)
     {
-        if (this._offset <= decimalNumber)
+        // todo Floor(-0.6) = 1
+        if (this.Offset <= decimalNumber)
         {
             return this;
         }
 
-        var expDiff = _offset - decimalNumber;
+        var expDiff = Offset - decimalNumber;
         var denominator = Pow10BigInt(expDiff);
         var biValue = this._mantissa;
         biValue /= denominator;
@@ -342,7 +346,7 @@ public partial class BigDec
 
         {
             // At the point MaxPrecision is bigger or equal to Offset, it has been normalized in "this == One"
-            var needPowerLevel = b * 2 - _offset;
+            var needPowerLevel = b * 2 - Offset;
             a = this._mantissa * Pow10BigInt(needPowerLevel);
         }
 
@@ -529,7 +533,7 @@ public partial class BigDec
 
         // Set accuracy limit to 0.001 of the precision
         int termPrecision = MaxPrecision + 4;
-        var localMantissa = Mantissa * BigDec.Pow10BigInt(termPrecision - _offset);
+        var localMantissa = Mantissa * BigDec.Pow10BigInt(termPrecision - Offset);
 
         var termPower = BigDec.Pow10BigInt(termPrecision);
         // Initial value for the result
@@ -562,7 +566,7 @@ public partial class BigDec
     public BigDec Inverse()
     {
         // 1 / (a * 10^-b) = 10^m / (a * 10^(m-b)) = 10^m / a * 10^-(m-b)
-        var m = MaxPrecision + _offset;
+        var m = MaxPrecision + Offset;
         var numerator = BigDec.Pow10BigInt(m);
         var value = numerator / this._mantissa;
 

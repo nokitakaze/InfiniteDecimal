@@ -14,7 +14,7 @@ public partial class BigDec
     /// <param name="origin"></param>
     /// <remarks>This constructor has no meaning outside of this class since the class is immutable, so it is protected</remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    protected BigDec(BigDec origin) : this(origin._mantissa, origin._offset, origin.OffsetPower, origin.MaxPrecision)
+    protected BigDec(BigDec origin) : this(origin._mantissa, origin.Offset, origin.OffsetPower, origin.MaxPrecision)
     {
     }
 
@@ -26,7 +26,7 @@ public partial class BigDec
     /// <param name="maxPrecision">The precision of the new BigDec instance.</param>
     public BigDec(BigDec origin, int maxPrecision) : this(
         origin._mantissa,
-        origin._offset,
+        origin.Offset,
         origin.OffsetPower,
         maxPrecision
     )
@@ -46,11 +46,11 @@ public partial class BigDec
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     protected BigDec(BigInteger mantissa, int offset, BigInteger offsetPower, int maxPrecision)
     {
+        ReduceOverflowPrecision(ref mantissa, ref offset, ref offsetPower, maxPrecision);
         _mantissa = mantissa;
-        _offset = offset;
+        Offset = offset;
         OffsetPower = offsetPower;
         MaxPrecision = maxPrecision;
-        ReduceOverflowPrecision();
     }
 
     /// <summary>
@@ -62,10 +62,12 @@ public partial class BigDec
     /// <param name="maxPrecision">The precision of the new BigDec instance.</param>
     public BigDec(BigInteger mantissa, int offset, int maxPrecision)
     {
+        var offsetPower = Pow10BigInt(offset);
+        ReduceOverflowPrecision(ref mantissa, ref offset, ref offsetPower, maxPrecision);
         _mantissa = mantissa;
         Offset = offset;
+        OffsetPower = offsetPower;
         MaxPrecision = maxPrecision;
-        ReduceOverflowPrecision();
     }
 
     /// <summary>
@@ -105,7 +107,6 @@ public partial class BigDec
     public BigDec(decimal value, int maxPrecision = MaxDefaultPrecision) : this(value)
     {
         MaxPrecision = maxPrecision;
-        ReduceOverflowPrecision();
     }
 
     /// <summary>
@@ -123,13 +124,21 @@ public partial class BigDec
         bool isNegative = ((uint)parts[3] & (uint)0x8000_0000) != 0;
         byte scale = (byte)((parts[3] >> 16) & 0x7F);
 
+        if (rawValue.IsZero)
+        {
+            return;
+        }
+
         Offset = scale;
+        OffsetPower = Pow10BigInt(Offset);
         _mantissa = rawValue;
-        MaxPrecision = Math.Max(MaxDefaultPrecision, _offset);
+        MaxPrecision = Math.Max(MaxDefaultPrecision, Offset);
         if (isNegative)
         {
             _mantissa = -_mantissa;
         }
+
+        ReduceOverflowPrecision(ref _mantissa, ref Offset, ref OffsetPower, maxPrecision: MaxPrecision);
     }
 
     /// <summary>
@@ -144,14 +153,13 @@ public partial class BigDec
             throw new InfiniteDecimalException($"value '{value}' is not finite");
         }
 
+        MaxPrecision = maxPrecision;
         if (value == 0)
         {
-            _mantissa = Zero._mantissa;
-            Offset = Zero._offset;
+            _mantissa = BigInteger.Zero;
             return;
         }
 
-        MaxPrecision = maxPrecision;
         var sign = 1;
         if (value < 0)
         {
@@ -188,6 +196,7 @@ public partial class BigDec
                 var exp = int.Parse(m.Groups[1].Value);
                 _mantissa = sign;
                 Offset = exp - 1;
+                OffsetPower = Pow10BigInt(Offset);
 
                 return;
             }
@@ -199,6 +208,7 @@ public partial class BigDec
                 var exp = int.Parse(m.Groups[1].Value);
                 _mantissa = sign;
                 Offset = exp;
+                OffsetPower = Pow10BigInt(Offset);
 
                 return;
             }
@@ -220,61 +230,62 @@ public partial class BigDec
             }
         }
 
-        var bio = Parse(valueStringify);
+        var (bio__mantissa, bio_offset, _, _) = Parse(valueStringify);
         if (valueStringifyLength + addExp >= 18)
         {
             // TODO It is more correct to do via IEEE-754 mantissa size
 
             {
-                var mod1_000_000 = bio._mantissa % 1_000_000;
+                var mod1_000_000 = bio__mantissa % 1_000_000;
                 if (mod1_000_000 == 0)
                 {
                 }
                 else if (mod1_000_000 <= 15)
                 {
-                    bio._mantissa -= mod1_000_000;
+                    bio__mantissa -= mod1_000_000;
                 }
                 else if (mod1_000_000 >= 1_000_000 - 15)
                 {
-                    bio._mantissa += 1_000_000 - mod1_000_000;
+                    bio__mantissa += 1_000_000 - mod1_000_000;
                 }
             }
 
             {
-                var mod10000 = bio._mantissa % 10_000;
+                var mod10000 = bio__mantissa % 10_000;
                 if (mod10000 == 0)
                 {
                 }
                 else if (mod10000 <= 10)
                 {
-                    bio._mantissa -= mod10000;
+                    bio__mantissa -= mod10000;
                 }
                 else if (mod10000 >= 10_000 - 10)
                 {
-                    bio._mantissa += 10_000 - mod10000;
+                    bio__mantissa += 10_000 - mod10000;
                 }
             }
 
             {
-                var mod1000 = bio._mantissa % 1000;
+                var mod1000 = bio__mantissa % 1000;
                 if (mod1000 == 0)
                 {
                 }
                 else if (mod1000 <= 3)
                 {
-                    bio._mantissa -= mod1000;
+                    bio__mantissa -= mod1000;
                 }
                 else if (mod1000 >= 1000 - 3)
                 {
-                    bio._mantissa += 1000 - mod1000;
+                    bio__mantissa += 1000 - mod1000;
                 }
             }
         }
 
-        _mantissa = bio._mantissa * sign;
-        Offset = bio._offset + addExp;
+        _mantissa = bio__mantissa * sign;
+        Offset = bio_offset + addExp;
+        OffsetPower = Pow10BigInt(Offset);
         MaxPrecision = Math.Max(MaxPrecision, Offset);
-        ReduceOverflowPrecision();
+        ReduceOverflowPrecision(ref _mantissa, ref Offset, ref OffsetPower, MaxPrecision);
     }
 
     /// <summary>
@@ -289,14 +300,14 @@ public partial class BigDec
             throw new InfiniteDecimalException($"value '{value}' is not finite");
         }
 
+        MaxPrecision = maxPrecision;
         if (value == 0)
         {
             _mantissa = Zero._mantissa;
-            Offset = Zero._offset;
+            Offset = Zero.Offset;
             return;
         }
 
-        MaxPrecision = maxPrecision;
         var sign = 1;
         if (value < 0)
         {
@@ -333,6 +344,7 @@ public partial class BigDec
                 var exp = int.Parse(m.Groups[1].Value);
                 _mantissa = sign;
                 Offset = exp - 1;
+                OffsetPower = Pow10BigInt(Offset);
 
                 return;
             }
@@ -344,6 +356,7 @@ public partial class BigDec
                 var exp = int.Parse(m.Groups[1].Value);
                 _mantissa = sign;
                 Offset = exp;
+                OffsetPower = Pow10BigInt(Offset);
 
                 return;
             }
@@ -365,25 +378,25 @@ public partial class BigDec
             }
         }
 
-        var bio = Parse(valueStringify);
-        bio.ReduceTrailingZeroes();
+        var (bio__mantissa, bio_offset, _, _) = Parse(valueStringify);
+        ReduceTrailingZeroesWOPower(ref bio__mantissa, ref bio_offset, out _);
         if (valueStringifyLength + addExp >= 9)
         {
             // TODO It is more correct to do via IEEE-754 mantissa size
 
             {
-                var mod1_000_000 = bio._mantissa % 1_000_000;
+                var mod1_000_000 = bio__mantissa % 1_000_000;
                 const int maxDiff = 55;
                 if (mod1_000_000 == 0)
                 {
                 }
                 else if (mod1_000_000 <= maxDiff)
                 {
-                    bio._mantissa -= mod1_000_000;
+                    bio__mantissa -= mod1_000_000;
                 }
                 else if (mod1_000_000 >= 1_000_000 - maxDiff)
                 {
-                    bio._mantissa += 1_000_000 - mod1_000_000;
+                    bio__mantissa += 1_000_000 - mod1_000_000;
                 }
             }
 
@@ -406,40 +419,41 @@ public partial class BigDec
             */
 
             {
-                var mod10000 = bio._mantissa % 10_000;
+                var mod10000 = bio__mantissa % 10_000;
                 const int maxDiff = 53;
                 if (mod10000 == 0)
                 {
                 }
                 else if (mod10000 <= maxDiff)
                 {
-                    bio._mantissa -= mod10000;
+                    bio__mantissa -= mod10000;
                 }
                 else if (mod10000 >= 10_000 - maxDiff)
                 {
-                    bio._mantissa += 10_000 - mod10000;
+                    bio__mantissa += 10_000 - mod10000;
                 }
             }
 
             {
-                var mod1000 = bio._mantissa % 1000;
+                var mod1000 = bio__mantissa % 1000;
                 if (mod1000 == 0)
                 {
                 }
                 else if (mod1000 <= 10)
                 {
-                    bio._mantissa -= mod1000;
+                    bio__mantissa -= mod1000;
                 }
                 else if (mod1000 >= 1000 - 10)
                 {
-                    bio._mantissa += 1000 - mod1000;
+                    bio__mantissa += 1000 - mod1000;
                 }
             }
         }
 
-        _mantissa = bio._mantissa * sign;
-        Offset = bio._offset + addExp;
-        ReduceOverflowPrecision();
+        _mantissa = bio__mantissa * sign;
+        Offset = bio_offset + addExp;
+        OffsetPower = Pow10BigInt(Offset);
+        ReduceOverflowPrecision(ref _mantissa, ref Offset, ref OffsetPower, MaxPrecision);
     }
 
     /// <summary>
@@ -451,5 +465,13 @@ public partial class BigDec
     public BigDec WithPrecision(int newPrecision)
     {
         return new BigDec(this, newPrecision);
+    }
+
+    public void Deconstruct(out BigInteger mantissa, out int offset, out BigInteger offsetPower, out int maxPrecision)
+    {
+        mantissa = _mantissa;
+        offset = Offset;
+        offsetPower = OffsetPower;
+        maxPrecision = MaxPrecision;
     }
 }

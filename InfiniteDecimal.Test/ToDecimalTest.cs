@@ -90,13 +90,15 @@ public class ToDecimalTest
 
         var wrkBitsInt = (int)Math.Floor(wrkBits);
 
-        var range = new BigDec(BigInteger.One << (96 - wrkBitsInt)).WithPrecision(45) / (BigInteger.One << 96);
+        var numerator = BigInteger.One << (96 - wrkBitsInt);
+        var denominator = BigInteger.One << 96;
+        var range = new BigDec(numerator, maxPrecision: 45) / denominator;
         var rangeMin = 1 - range;
         var rangeMax = 1 + range;
 
         foreach (var actual in actualValues)
         {
-            var restored = new BigDec(actual);
+            var restored = new BigDec(actual, maxPrecision: range.MaxPrecision);
             var r = restored / value;
             Assert.InRange(r, rangeMin, rangeMax);
         }

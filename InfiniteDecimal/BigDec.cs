@@ -25,7 +25,8 @@ public partial class BigDec
     /// A constant BigInteger representing the numeric value ten, used as the base for decimal scaling
     /// and exponentiation operations within the BigDec class
     /// </summary>
-    public static readonly BigInteger BigInteger10 = new BigInteger(10);
+    // ReSharper disable once MemberInitializerValueIgnored
+    public static BigInteger BigInteger10 => BigDecConstant.BigInteger10;
 
     /// <summary>
     /// Specifies the maximum number of decimal digits that the BigDec instance can accurately represent
@@ -40,42 +41,14 @@ public partial class BigDec
     /// <summary>
     /// Represents the core numeric value of the decimal as a BigInteger, without considering its decimal offset
     /// </summary>
-    protected BigInteger _mantissa = BigInteger.Zero;
+    protected readonly BigInteger _mantissa = BigInteger.Zero;
 
     /// <summary>
     /// Represents the scale of the decimal value by specifying how many digits are placed to the right
     /// of the decimal point. An offset of zero implies the value is an integer, while a positive offset shifts
     /// the decimal point accordingly
     /// </summary>
-    protected int _offset;
-
-    /// <summary>
-    /// Represents the scale of the decimal value by specifying how many digits are placed to the right
-    /// of the decimal point. An offset of zero implies the value is an integer, while a positive offset shifts
-    /// the decimal point accordingly
-    /// </summary>
-    /// <remarks>
-    /// Adjusting this property also updates the internal power-of-ten factor used for calculations.
-    /// </remarks>
-    public int Offset
-    {
-        get => _offset;
-        protected set
-        {
-            if (value < 0)
-            {
-                throw new InfiniteDecimalException($"Offset ('{value}') < 0");
-            }
-
-            if (_offset == value)
-            {
-                return;
-            }
-
-            _offset = value;
-            OffsetPower = Pow10BigInt(_offset);
-        }
-    }
+    public readonly int Offset;
 
     /// <summary>
     /// Represents the core numeric value of the decimal as a BigInteger, without considering its decimal offset
@@ -90,12 +63,12 @@ public partial class BigDec
     /// It is used internally to efficiently handle scaling operations and avoid recalculating powers
     /// of ten during arithmetic computations.
     /// </remarks>
-    protected BigInteger OffsetPower = BigInteger.One;
+    protected readonly BigInteger OffsetPower = BigInteger.One;
 
     /// <summary>
     /// Indicates whether this BigDec instance represents an integer value, i.e., a value without any fractional component.
     /// </summary>
-    public bool IsInteger => (_offset == 0);
+    public bool IsInteger => (Offset == 0);
 
     /// <summary>
     /// A read-only dictionary that maps an exponent to the corresponding power of 10 as a BigInteger.
@@ -176,23 +149,26 @@ public partial class BigDec
         return new BigDec(BigInteger.One, power, Math.Max(power, maxPrecision));
     }
 
+    #region Reduce complexity
+
     /// <summary>
     /// Reduce the offset while the body is divisible by 10
     /// </summary>
-    protected void ReduceTrailingZeroes()
+    public static void ReduceTrailingZeroes(ref BigInteger mantissa, ref int offset, ref BigInteger OffsetPower)
     {
-        if (_mantissa.IsZero)
+        if (mantissa.IsZero)
         {
-            Offset = 0;
+            offset = 0;
+            OffsetPower = BigInteger.One;
             return;
         }
 
-        if (_offset == 0)
+        if (offset == 0)
         {
             return;
         }
 
-        var value = (_mantissa > 0) ? _mantissa : -_mantissa;
+        var value = (mantissa > 0) ? mantissa : -mantissa;
         if (!(value % BigInteger10).IsZero)
         {
             return;
@@ -200,29 +176,72 @@ public partial class BigDec
 
         var s1 = value.ToString();
         var s2 = s1.TrimEnd('0');
-        var addOffset = Math.Min(s1.Length - s2.Length, this.Offset);
+        var addOffset = Math.Min(s1.Length - s2.Length, offset);
         var denominator = Pow10BigInt(addOffset);
-        Offset -= addOffset;
-        _mantissa /= denominator;
+        offset -= addOffset;
+        mantissa /= denominator;
+        OffsetPower = Pow10BigInt(offset);
+    }
+
+    /// <summary>
+    /// Reduce the offset while the body is divisible by 10
+    /// </summary>
+    public static void ReduceTrailingZeroesWOPower(ref BigInteger mantissa, ref int offset, out BigInteger OffsetPower)
+    {
+        if (mantissa.IsZero)
+        {
+            offset = 0;
+            OffsetPower = BigInteger.Zero;
+            return;
+        }
+
+        if (offset == 0)
+        {
+            OffsetPower = BigInteger.One;
+            return;
+        }
+
+        var value = (mantissa > 0) ? mantissa : -mantissa;
+        if (!(value % BigInteger10).IsZero)
+        {
+            OffsetPower = Pow10BigInt(offset);
+            return;
+        }
+
+        var s1 = value.ToString();
+        var s2 = s1.TrimEnd('0');
+        var addOffset = Math.Min(s1.Length - s2.Length, offset);
+        var denominator = Pow10BigInt(addOffset);
+        offset -= addOffset;
+        mantissa /= denominator;
+        OffsetPower = Pow10BigInt(offset);
     }
 
     /// <summary>
     /// Reducing Offset if it exceeds Max Precision
     /// </summary>
-    protected void ReduceOverflowPrecision()
+    public static void ReduceOverflowPrecision(
+        ref BigInteger mantissa,
+        ref int offset,
+        ref BigInteger offsetPower,
+        int maxPrecision
+    )
     {
-        var expDiff = _offset - MaxPrecision;
+        var expDiff = offset - maxPrecision;
         if (expDiff <= 0)
         {
-            ReduceTrailingZeroes();
+            ReduceTrailingZeroes(ref mantissa, ref offset, ref offsetPower);
             return;
         }
 
         var denominator = Pow10BigInt(expDiff);
-        _mantissa /= denominator;
-        Offset = MaxPrecision;
-        ReduceTrailingZeroes();
+        mantissa /= denominator;
+        offset = maxPrecision;
+        offsetPower = Pow10BigInt(offset);
+        ReduceTrailingZeroes(ref mantissa, ref offset, ref offsetPower);
     }
+
+    #endregion
 
     /// <summary>
     /// Represents a number in string format, which resembles the format of a floating-point number,
@@ -232,7 +251,7 @@ public partial class BigDec
     /// <returns></returns>
     public string ToStringDouble(CultureInfo? cultureInfo = null)
     {
-        if (_offset == 0)
+        if (Offset == 0)
         {
             // It's just a big integer
             return _mantissa.ToString();
@@ -250,7 +269,7 @@ public partial class BigDec
         var vEntier = (_value - vTail) / OffsetPower;
 
         var vTailString = string.Empty;
-        for (var i = 0; i < _offset; i++)
+        for (var i = 0; i < Offset; i++)
         {
             var mode = (int)(_value % BigInteger10);
             // ReSharper disable once RedundantToStringCallForValueType
@@ -348,11 +367,14 @@ public partial class BigDec
 
         {
             var newOffset = chunks1.Length;
-            // ReSharper disable once UseObjectOrCollectionInitializer
-            var valBI = new BigDec(0).WithPrecision(newOffset);
-            valBI._mantissa = BigInteger.Parse(chunks[0] + chunks1, NumberStyles.Integer);
-            valBI._mantissa *= sign;
-            valBI.Offset = newOffset;
+            var valBI__mantissa = BigInteger.Parse(chunks[0] + chunks1, NumberStyles.Integer);
+            if (sign == -1)
+            {
+                valBI__mantissa = -valBI__mantissa;
+            }
+
+            var maxPrecision = Math.Max(MaxDefaultPrecision, newOffset);
+            var valBI = new BigDec(valBI__mantissa, newOffset, maxPrecision);
 
             return valBI;
         }
