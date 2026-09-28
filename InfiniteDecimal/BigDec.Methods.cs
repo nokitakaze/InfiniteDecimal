@@ -155,9 +155,19 @@ public partial class BigDec
             return One.WithPrecision(MaxPrecision);
         }
 
+        if (IsZero && (exp < BigInteger.Zero))
+        {
+            throw new DivideByZeroException($"Can't compute 0^{exp}");
+        }
+
         if (exp.IsOne)
         {
             return this;
+        }
+
+        if (exp == BigInteger.MinusOne)
+        {
+            return this.Inverse();
         }
 
         var y = exp;
@@ -619,6 +629,11 @@ public partial class BigDec
     /// <returns></returns>
     public BigDec Inverse()
     {
+        if (this.IsZero)
+        {
+            throw new DivideByZeroException("Can't compute 0^-1");
+        }
+
         // 1 / (a * 10^-b) = 10^m / (a * 10^(m-b)) = 10^m / a * 10^-(m-b)
         var m = MaxPrecision + Offset;
         var numerator = BigDec.Pow10BigInt(m);
@@ -633,9 +648,17 @@ public partial class BigDec
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void AssertPrecision(int value, string fieldName = "newPrecision")
     {
+        // ReSharper disable once ConvertIfStatementToSwitchStatement
         if (value < 0)
         {
             throw new InfiniteDecimalException($"Precision in variable {fieldName} is negative: {value}");
+        }
+
+        // 2^31 bits / (ln(10)/ln(2)) = 646_456_993 decimal digits
+        if (value > 646_456_993)
+        {
+            long t = value * 10L;
+            throw new OutOfMemoryException($"Awaited precision ({t:N0}) is too big");
         }
     }
 }

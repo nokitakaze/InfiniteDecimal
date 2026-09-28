@@ -16,11 +16,6 @@ public partial class BigDec : System.IConvertible
         return !this.Mantissa.IsZero;
     }
 
-    public byte ToByte(IFormatProvider provider)
-    {
-        return (byte)(ulong)this.Round(0);
-    }
-
     public char ToChar(IFormatProvider provider)
     {
         throw new InfiniteDecimalException("Can't type cast BigDec to char");
@@ -41,33 +36,68 @@ public partial class BigDec : System.IConvertible
         return (double)this;
     }
 
-    public short ToInt16(IFormatProvider provider)
+    public float ToSingle(IFormatProvider provider)
     {
-        // rounded to the nearest N-bit integer
-        return (short)(long)this.Round(0);
+        return (float)(double)this;
     }
 
-    public int ToInt32(IFormatProvider provider)
+    public ulong ToUInt64(IFormatProvider provider)
     {
         // rounded to the nearest N-bit integer
-        return (int)this.Round(0);
+        var value = (BigInteger)this.Round(0);
+        if (value < ulong.MinValue || value > ulong.MaxValue)
+        {
+            throw new OverflowException($"Value {value:N0} is out of range for uint64 (ulong)");
+        }
+
+        return (ulong)value;
     }
 
     public long ToInt64(IFormatProvider provider)
     {
         // rounded to the nearest N-bit integer
-        return (long)this.Round(0);
+        var value = (BigInteger)this.Round(0);
+        if (value < long.MinValue || value > long.MaxValue)
+        {
+            throw new OverflowException($"Value {value:N0} is out of range for int64 (long)");
+        }
+
+        return (long)value;
+    }
+
+    public uint ToUInt32(IFormatProvider provider)
+    {
+        // rounded to the nearest N-bit integer
+        return Convert.ToUInt32(this.ToUInt64(provider));
+    }
+
+    public int ToInt32(IFormatProvider provider)
+    {
+        // rounded to the nearest N-bit integer
+        return Convert.ToInt32(this.ToInt64(provider));
+    }
+
+    public ushort ToUInt16(IFormatProvider provider)
+    {
+        // rounded to the nearest N-bit integer
+        return Convert.ToUInt16(this.ToUInt64(provider));
+    }
+
+    public short ToInt16(IFormatProvider provider)
+    {
+        // rounded to the nearest N-bit integer
+        return Convert.ToInt16(this.ToInt64(provider));
     }
 
     public sbyte ToSByte(IFormatProvider provider)
     {
         // rounded to the nearest N-bit integer
-        return (sbyte)(int)this.Round(0);
+        return Convert.ToSByte(this.ToInt64(provider));
     }
 
-    public float ToSingle(IFormatProvider provider)
+    public byte ToByte(IFormatProvider provider)
     {
-        return (float)(double)this;
+        return Convert.ToByte(this.ToUInt64(provider));
     }
 
     public object ToType(Type conversionType, IFormatProvider? provider)
@@ -125,27 +155,13 @@ public partial class BigDec : System.IConvertible
         {
             return (BigInteger)this;
         }
+        else if (conversionType == typeof(bool))
+        {
+            return this.ToBoolean(provider);
+        }
         else
         {
             throw new InfiniteDecimalException($"Can't convert to type '{conversionType.FullName}'");
         }
-    }
-
-    public ushort ToUInt16(IFormatProvider provider)
-    {
-        // rounded to the nearest N-bit integer
-        return (ushort)(ulong)this.Round(0);
-    }
-
-    public uint ToUInt32(IFormatProvider provider)
-    {
-        // rounded to the nearest N-bit integer
-        return (uint)(ulong)this.Round(0);
-    }
-
-    public ulong ToUInt64(IFormatProvider provider)
-    {
-        // rounded to the nearest N-bit integer
-        return (ulong)this.Round(0);
     }
 }

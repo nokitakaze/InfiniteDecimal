@@ -295,8 +295,13 @@ public partial class BigDec
         result_maxPrecision = Math.Max(result_maxPrecision, b.MaxPrecision);
 
         {
-            // We do not restrict precision in any way, because it does not affect the amount of RAM consumed.
-            // That is determined by the size of the mantissa.
+            // 2^31 bits / (ln(10)/ln(2)) = 646_456_993 decimal digits
+            if (result_maxPrecision >= 64_645_699L)
+            {
+                long t = result_maxPrecision * 10L;
+                throw new OutOfMemoryException($"Awaited precision ({t:N0}) is too big");
+            }
+
             var awaitedPrecision = result_maxPrecision * 10;
             var addExp = awaitedPrecision - result_offset;
             result__mantissa *= Pow10BigInt(addExp);

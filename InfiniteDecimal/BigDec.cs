@@ -116,6 +116,12 @@ public partial class BigDec
     /// <returns>The result of 10 raised to the power of <paramref name="exp"/>.</returns>
     public static BigInteger Pow10BigInt(int exp)
     {
+        // 2^31 bits / (ln(10)/ln(2)) = 646_456_993 decimal digits
+        if (exp > 646_456_993)
+        {
+            throw new OutOfMemoryException($"Awaited exponent ({exp:N0}) of ten is too big");
+        }
+
         // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
         if ((BigInt10Powers is not null) && BigInt10Powers.TryGetValue(exp, out var t))
         {
@@ -191,7 +197,7 @@ public partial class BigDec
         if (mantissa.IsZero)
         {
             offset = 0;
-            OffsetPower = BigInteger.Zero;
+            OffsetPower = BigInteger.One;
             return;
         }
 
@@ -249,8 +255,12 @@ public partial class BigDec
     /// taking into account cultural settings
     /// </summary>
     /// <param name="cultureInfo"></param>
+    /// <param name="numberFormatInfo"></param>
     /// <returns></returns>
-    public string ToStringDouble(CultureInfo? cultureInfo = null)
+    public string ToStringDouble(
+        CultureInfo? cultureInfo = null,
+        NumberFormatInfo? numberFormatInfo = null
+    )
     {
         if (Offset == 0)
         {
@@ -289,6 +299,10 @@ public partial class BigDec
         {
             separator = cultureInfo.NumberFormat.NumberDecimalSeparator;
         }
+        else if (numberFormatInfo != null)
+        {
+            separator = numberFormatInfo.NumberDecimalSeparator;
+        }
 
         return $"{sign}{vEntier}{separator}{vTailString}";
     }
@@ -300,16 +314,22 @@ public partial class BigDec
 
     public string ToString(IFormatProvider provider)
     {
-        if (provider is CultureInfo cultureInfo)
+        return provider switch
         {
-            return ToStringDouble(cultureInfo);
-        }
-
-        return ToStringDouble();
+            CultureInfo cultureInfo => ToStringDouble(cultureInfo: cultureInfo),
+            NumberFormatInfo numberFormatInfo => ToStringDouble(numberFormatInfo: numberFormatInfo),
+            _ => ToStringDouble(),
+        };
     }
 
     public static BigDec Parse(string value)
     {
+        // ReSharper disable once ConvertIfStatementToSwitchStatement
+        if (value is null)
+        {
+            throw new ArgumentNullException(nameof(value));
+        }
+
         if (value == "0")
         {
             return Zero;

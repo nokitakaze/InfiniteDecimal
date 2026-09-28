@@ -366,7 +366,7 @@ public class DeconstructIEEE754
             expected = new BigDec(v1Dec - v2Dec);
             if (v1Dec == v2Dec)
             {
-                var (expected_mantissa, expected_offset, expected_power, _   ) = expected;
+                var (expected_mantissa, expected_offset, expected_power, _) = expected;
                 Assert.True(expected_mantissa.IsZero);
                 Assert.Equal(0, expected_offset);
                 Assert.True(expected_power.IsOne);

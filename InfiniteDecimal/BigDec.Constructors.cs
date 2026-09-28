@@ -79,6 +79,7 @@ public partial class BigDec
     /// <param name="maxPrecision">The precision of the new BigDec instance.</param>
     public BigDec(BigInteger value, int maxPrecision = MaxDefaultPrecision)
     {
+        AssertPrecision(maxPrecision, nameof(maxPrecision));
         _mantissa = value;
         MaxPrecision = maxPrecision;
     }
@@ -156,6 +157,7 @@ public partial class BigDec
             throw new InfiniteDecimalException($"value '{value}' is not finite");
         }
 
+        AssertPrecision(maxPrecision, nameof(maxPrecision));
         MaxPrecision = maxPrecision;
         if (value == 0)
         {
@@ -306,6 +308,7 @@ public partial class BigDec
             throw new InfiniteDecimalException($"value '{value}' is not finite");
         }
 
+        AssertPrecision(maxPrecision, nameof(maxPrecision));
         MaxPrecision = maxPrecision;
         if (value == 0)
         {

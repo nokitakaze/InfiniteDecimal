@@ -1044,6 +1044,22 @@ public class TrivialTest
         });
     }
 
+    [Fact]
+    public void VeryBigExpInString()
+    {
+        foreach (var mantissa in new[] { "1", "1.5", "-1", "-2", "1.488" })
+        {
+            foreach (var exp in new[] { "646456994", "2147483647" })
+            {
+                Assert.Throws<OutOfMemoryException>(() =>
+                {
+                    var s = $"{mantissa}e-{exp}";
+                    var _ = BigDec.Parse(s);
+                });
+            }
+        }
+    }
+
     #endregion
 
     #region different small tests

@@ -70,19 +70,19 @@ public class ConvertibleTest
                     expected++;
                 }
 
-                byte actualValue = (byte) value.ToInt32(null);
+                byte actualValue = (byte)value.ToInt32(null);
                 Assert.Equal((byte)expected, actualValue);
 
-                actualValue = (byte) value.ToUInt32(null);
+                actualValue = (byte)value.ToUInt32(null);
                 Assert.Equal((byte)expected, actualValue);
 
-                actualValue = (byte) value.ToInt16(null);
+                actualValue = (byte)value.ToInt16(null);
                 Assert.Equal((byte)expected, actualValue);
 
-                actualValue = (byte) value.ToUInt16(null);
+                actualValue = (byte)value.ToUInt16(null);
                 Assert.Equal((byte)expected, actualValue);
 
-                actualValue = (byte) value.ToSByte(null);
+                actualValue = (byte)value.ToSByte(null);
                 Assert.Equal((byte)expected, actualValue);
 
                 actualValue = value.ToByte(null);
