@@ -1239,7 +1239,7 @@ public class TrivialTest
 
         foreach (var value in values)
         {
-            var u = (value > 0m);
+            var u = (value != 0m);
             var bio = new BigDec(value);
             Assert.Equal(u, bio.ToBoolean(null));
         }
@@ -1473,5 +1473,12 @@ public class TrivialTest
         var actualLn = -(double)t.Ln();
         var expectedLn = -Math.Log(double.Epsilon);
         Assert.InRange(actualLn, expectedLn * 0.99999d, expectedLn * 1.00001d);
+    }
+
+    [Fact]
+    public void TestPoisonExponent()
+    {
+        var t = BigDec.Parse("0e+2147483647");
+        Assert.True(t.IsZero);
     }
 }

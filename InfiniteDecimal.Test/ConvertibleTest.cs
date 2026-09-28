@@ -47,4 +47,47 @@ public class ConvertibleTest
             }
         }
     }
+
+    [Fact]
+    public void TestFloatingConversion()
+    {
+        for (var i = 0; i < 3; i++)
+        {
+            foreach (var entier in new[] { 0.3m, 0.5m, 0.7m })
+            {
+                var value = new BigDec(i + entier);
+                int expected = i;
+                // ReSharper disable once ConvertIfStatementToSwitchStatement
+                if (entier == 0.5m)
+                {
+                    if (i % 2 == 1)
+                    {
+                        expected++;
+                    }
+                }
+                else if (entier > 0.5m)
+                {
+                    expected++;
+                }
+
+                byte actualValue = (byte) value.ToInt32(null);
+                Assert.Equal((byte)expected, actualValue);
+
+                actualValue = (byte) value.ToUInt32(null);
+                Assert.Equal((byte)expected, actualValue);
+
+                actualValue = (byte) value.ToInt16(null);
+                Assert.Equal((byte)expected, actualValue);
+
+                actualValue = (byte) value.ToUInt16(null);
+                Assert.Equal((byte)expected, actualValue);
+
+                actualValue = (byte) value.ToSByte(null);
+                Assert.Equal((byte)expected, actualValue);
+
+                actualValue = value.ToByte(null);
+                Assert.Equal((byte)expected, actualValue);
+            }
+        }
+    }
 }

@@ -222,4 +222,44 @@ public class SimplePrecisionTest
             Assert.Equal(i, actual.MaxPrecision);
         }
     }
+
+    [Fact]
+    public void TestPrecisionWith0OnDelimiter()
+    {
+        for (var i = 18; i <= 100; i += 10)
+        {
+            var input = new BigDec(0, maxPrecision: i);
+            var actual = input / 2;
+            Assert.Equal(i, actual.MaxPrecision);
+
+            actual = input / 2f;
+            Assert.Equal(i, actual.MaxPrecision);
+
+            actual = input / 2d;
+            Assert.Equal(i, actual.MaxPrecision);
+
+            actual = input / 2m;
+            Assert.Equal(i, actual.MaxPrecision);
+        }
+    }
+
+    [Fact]
+    public void TestPrecisionWith0OnSum()
+    {
+        for (var i = 18; i <= 100; i += 10)
+        {
+            var input = new BigDec(0, maxPrecision: i);
+            var actual = input + 1;
+            Assert.Equal(i, actual.MaxPrecision);
+
+            actual = input + 1f;
+            Assert.Equal(i, actual.MaxPrecision);
+
+            actual = input + 2d;
+            Assert.Equal(i, actual.MaxPrecision);
+
+            actual = input + 2m;
+            Assert.Equal(i, actual.MaxPrecision);
+        }
+    }
 }

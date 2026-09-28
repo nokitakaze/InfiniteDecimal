@@ -270,12 +270,11 @@ public partial class BigDec
             throw new InfiniteDecimalException("Division by zero");
         }
 
+        var desiredPrecision = Math.Max(a.MaxPrecision, b.MaxPrecision);
         if (a.IsZero)
         {
-            return Zero;
+            return Zero.WithPrecision(desiredPrecision);
         }
-
-        var desiredPrecision = Math.Max(a.MaxPrecision, b.MaxPrecision);
 
         if (b == One)
         {
@@ -296,12 +295,9 @@ public partial class BigDec
         result_maxPrecision = Math.Max(result_maxPrecision, b.MaxPrecision);
 
         {
+            // We do not restrict precision in any way, because it does not affect the amount of RAM consumed.
+            // That is determined by the size of the mantissa.
             var awaitedPrecision = result_maxPrecision * 10;
-            if (awaitedPrecision >= 640_000_000)
-            {
-                throw new OutOfMemoryException($"Awaited precision is too big ({awaitedPrecision:N0})");
-            }
-
             var addExp = awaitedPrecision - result_offset;
             result__mantissa *= Pow10BigInt(addExp);
             result_offset = awaitedPrecision;

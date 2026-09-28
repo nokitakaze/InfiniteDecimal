@@ -629,4 +629,13 @@ public partial class BigDec
     }
 
     #endregion
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void AssertPrecision(int value, string fieldName = "newPrecision")
+    {
+        if (value < 0)
+        {
+            throw new InfiniteDecimalException($"Precision in variable {fieldName} is negative: {value}");
+        }
+    }
 }

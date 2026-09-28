@@ -227,6 +227,7 @@ public partial class BigDec
         int maxPrecision
     )
     {
+        AssertPrecision(maxPrecision, nameof(maxPrecision));
         var expDiff = offset - maxPrecision;
         if (expDiff <= 0)
         {
@@ -331,6 +332,12 @@ public partial class BigDec
             if (m.Success)
             {
                 var body = Parse(m.Groups[1].Value);
+                if (body.IsZero)
+                {
+                    // poison exponent
+                    return body;
+                }
+
                 var exp = int.Parse(m.Groups[2].Value);
                 var frac = PowFractionOfTen(-exp);
 

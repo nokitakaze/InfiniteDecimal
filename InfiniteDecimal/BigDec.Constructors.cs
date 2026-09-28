@@ -31,6 +31,7 @@ public partial class BigDec
         maxPrecision
     )
     {
+        AssertPrecision(maxPrecision, nameof(maxPrecision));
     }
 
     /// <summary>
@@ -46,6 +47,7 @@ public partial class BigDec
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     protected BigDec(BigInteger mantissa, int offset, BigInteger offsetPower, int maxPrecision)
     {
+        AssertPrecision(maxPrecision, nameof(maxPrecision));
         ReduceOverflowPrecision(ref mantissa, ref offset, ref offsetPower, maxPrecision);
         _mantissa = mantissa;
         Offset = offset;
@@ -349,6 +351,7 @@ public partial class BigDec
                 _mantissa = sign;
                 Offset = exp - 1;
                 OffsetPower = Pow10BigInt(Offset);
+                MaxPrecision = Math.Max(MaxPrecision, Offset);
 
                 return;
             }
@@ -361,6 +364,7 @@ public partial class BigDec
                 _mantissa = sign;
                 Offset = exp;
                 OffsetPower = Pow10BigInt(Offset);
+                MaxPrecision = Math.Max(MaxPrecision, Offset);
 
                 return;
             }
@@ -469,7 +473,7 @@ public partial class BigDec
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public BigDec WithPrecision(int newPrecision)
     {
-        return new BigDec(this, newPrecision);
+        return this.MaxPrecision == newPrecision ? this : new BigDec(this, newPrecision);
     }
 
     public void Deconstruct(out BigInteger mantissa, out int offset, out BigInteger offsetPower, out int maxPrecision)

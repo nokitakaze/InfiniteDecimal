@@ -13,12 +13,12 @@ public partial class BigDec : System.IConvertible
 
     public bool ToBoolean(IFormatProvider provider)
     {
-        return (this > Zero);
+        return !this.Mantissa.IsZero;
     }
 
     public byte ToByte(IFormatProvider provider)
     {
-        return (byte)(ulong)this;
+        return (byte)(ulong)this.Round(0);
     }
 
     public char ToChar(IFormatProvider provider)
@@ -43,22 +43,26 @@ public partial class BigDec : System.IConvertible
 
     public short ToInt16(IFormatProvider provider)
     {
-        return (short)(long)this;
+        // rounded to the nearest N-bit integer
+        return (short)(long)this.Round(0);
     }
 
     public int ToInt32(IFormatProvider provider)
     {
-        return (int)this;
+        // rounded to the nearest N-bit integer
+        return (int)this.Round(0);
     }
 
     public long ToInt64(IFormatProvider provider)
     {
-        return (long)this;
+        // rounded to the nearest N-bit integer
+        return (long)this.Round(0);
     }
 
     public sbyte ToSByte(IFormatProvider provider)
     {
-        return (sbyte)(int)this;
+        // rounded to the nearest N-bit integer
+        return (sbyte)(int)this.Round(0);
     }
 
     public float ToSingle(IFormatProvider provider)
@@ -129,16 +133,19 @@ public partial class BigDec : System.IConvertible
 
     public ushort ToUInt16(IFormatProvider provider)
     {
-        return (ushort)(ulong)this;
+        // rounded to the nearest N-bit integer
+        return (ushort)(ulong)this.Round(0);
     }
 
     public uint ToUInt32(IFormatProvider provider)
     {
-        return (uint)(ulong)this;
+        // rounded to the nearest N-bit integer
+        return (uint)(ulong)this.Round(0);
     }
 
     public ulong ToUInt64(IFormatProvider provider)
     {
-        return (ulong)this;
+        // rounded to the nearest N-bit integer
+        return (ulong)this.Round(0);
     }
 }
