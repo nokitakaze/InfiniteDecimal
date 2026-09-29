@@ -1526,11 +1526,16 @@ public class TrivialTest
         }
     }
 
-    [Fact]
-    public void TooDeepPrecision()
+    [Theory]
+    [InlineData(64_645_699)]
+    [InlineData(67_108_864)]
+    [InlineData(100_000_000)]
+    public void TooDeepPrecision(int precision)
     {
-        // This test requires raising 10 to the power of 67,108,864, which can consume 2 GB of RAM and 90 seconds of time.
-        var numerator = new BigDec(2, 67_108_864, maxPrecision: 100_000_000);
+        // This test requires raising 10 to the power of N, which can consume 2 GB of RAM and 90 seconds of time.
+        // Store a large precision budget on a small integer. Division must reject
+        // the budget before allocating 10^(precision * 10).
+        var numerator = new BigDec(new BigInteger(2), maxPrecision: precision);
         var denominator = new BigDec(3);
 
         Assert.Throws<OutOfMemoryException>(() => { _ = numerator / denominator; });
