@@ -58,15 +58,14 @@ public partial class BigDec
 
     public BigDec Round(int decimalNumber)
     {
-        // var pow = GetPow10BigInt(maxPrecision);
-        if (Offset <= decimalNumber)
-        {
-            return this.WithPrecision(Math.Max(decimalNumber, MaxDefaultPrecision));
-        }
-
         if (_mantissa.IsZero)
         {
             return new BigDec(BigInteger.Zero, 0, BigInteger.One, MaxPrecision);
+        }
+
+        if (Offset <= decimalNumber)
+        {
+            return this.WithPrecision(Math.Max(decimalNumber, MaxDefaultPrecision));
         }
 
         int sign;
@@ -117,6 +116,11 @@ public partial class BigDec
 
     public BigDec Floor(int decimalNumber)
     {
+        if (this.IsZero)
+        {
+            return Zero;
+        }
+
         if (this.Offset <= decimalNumber)
         {
             return this;
@@ -139,7 +143,7 @@ public partial class BigDec
         var newOffset = this.Offset - expDiff;
         var offsetPower = Pow10BigInt(newOffset);
         var maxPrecision = Math.Max(decimalNumber, MaxDefaultPrecision);
-        ReduceOverflowPrecision(ref biValue, ref newOffset, ref offsetPower, maxPrecision);
+        ReduceOverflowPrecision(ref biValue, ref newOffset, ref offsetPower, maxPrecision, roundingMode: 1);
         var result = new BigDec(biValue, newOffset, maxPrecision: maxPrecision);
         return result;
     }
@@ -188,7 +192,7 @@ public partial class BigDec
         while (y > 0)
         {
             // check for odd exponent
-            if ((y & 1) == 1)
+            if (!y.IsEven)
             {
                 result *= x;
             }
@@ -357,6 +361,12 @@ public partial class BigDec
 
     #region Sqrt
 
+    /// <summary>
+    /// Returns the nearest integer square root
+    /// </summary>
+    /// <param name="value"></param>
+    /// <returns></returns>
+    /// <exception cref="InfiniteDecimalException"></exception>
     public static BigInteger Sqrt(BigInteger value)
     {
         if (value.IsZero)
@@ -517,6 +527,11 @@ public partial class BigDec
     /// </returns>
     public BigDec Exp()
     {
+        if (this.IsZero)
+        {
+            return One.WithPrecision(this.MaxPrecision);
+        }
+
         if (this < Zero)
         {
             return (-this).Exp().Inverse();
@@ -635,9 +650,23 @@ public partial class BigDec
         }
 
         // 1 / (a * 10^-b) = 10^m / (a * 10^(m-b)) = 10^m / a * 10^-(m-b)
-        var m = MaxPrecision + Offset;
+        var m = MaxPrecision + Offset + 1;
         var numerator = BigDec.Pow10BigInt(m);
+
         var value = numerator / this._mantissa;
+        var remainder = BigInteger.Abs(value) % BigInteger10;
+        value /= BigInteger10;
+        if (remainder > 5)
+        {
+            value += (value.Sign == 1) ? BigInteger.One : BigInteger.MinusOne;
+        }
+        else if (remainder == 5)
+        {
+            if (!value.IsEven)
+            {
+                value += (value.Sign == 1) ? BigInteger.One : BigInteger.MinusOne;
+            }
+        }
 
         var t = new BigDec(value, MaxPrecision, MaxPrecision);
         return t;

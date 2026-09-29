@@ -78,7 +78,24 @@ public partial class BigDec
         var value = BigInteger.Abs(item._mantissa);
         if (scale > MaxDecimalScale)
         {
-            value /= Pow10BigInt(scale - MaxDecimalScale);
+            // https://learn.microsoft.com/en-us/dotnet/api/system.decimal.parse?view=net-10.0
+            // "rounding to nearest"
+            var denominator = Pow10BigInt(scale - MaxDecimalScale);
+            var remainder = value % denominator;
+            var half = Pow10BigInt(scale - MaxDecimalScale - 1) * 5;
+            value /= denominator;
+            if (remainder > half)
+            {
+                value++;
+            }
+            else if (remainder == half)
+            {
+                if (!value.IsEven)
+                {
+                    value++;
+                }
+            }
+
             scale = MaxDecimalScale;
         }
 

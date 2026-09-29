@@ -17,7 +17,7 @@ public partial class BigDec
     /// For example: 1.23e+10
     /// </summary>
     private static readonly Regex ExponentialNotationRegex = new Regex(
-        "^([+-]?[0-9]+(?:\\.[0-9]*?)?)e([+-][0-9]+)$",
+        "^([+-]?[0-9]+(?:\\.[0-9]*?)?)[eE]([+-]?[0-9]+)$",
         RegexOptions.Compiled
     );
 
@@ -131,11 +131,13 @@ public partial class BigDec
         {
             return BigInteger.Pow(BigInteger10, exp);
         }
+        // codecov ignore start
         else
         {
-            // Calling a method during static construction
-            return BigInteger.Pow(new BigInteger(10), exp);
+            // There is now way code goes here
+            throw new InfiniteDecimalException("Code flow exception. Null BigInteger10 from constants");
         }
+        // codecov ignore end
     }
 
     /// <summary>
@@ -226,11 +228,17 @@ public partial class BigDec
     /// <summary>
     /// Reducing Offset if it exceeds Max Precision
     /// </summary>
+    /// <param name="mantissa"></param>
+    /// <param name="offset"></param>
+    /// <param name="offsetPower"></param>
+    /// <param name="maxPrecision"></param>
+    /// <param name="roundingMode">0 — round to nearest, 1 — floor</param>
     public static void ReduceOverflowPrecision(
         ref BigInteger mantissa,
         ref int offset,
         ref BigInteger offsetPower,
-        int maxPrecision
+        int maxPrecision,
+        int roundingMode = 0
     )
     {
         AssertPrecision(maxPrecision, nameof(maxPrecision));
@@ -242,7 +250,44 @@ public partial class BigDec
         }
 
         var denominator = Pow10BigInt(expDiff);
-        mantissa /= denominator;
+        if (roundingMode == 0)
+        {
+            var remainder = BigInteger.Abs(mantissa) % denominator;
+            var half = Pow10BigInt(expDiff - 1) * 5;
+            var mantissaOldSign = mantissa.Sign;
+            mantissa /= denominator;
+
+            bool needIncrementMantissa;
+            if (remainder > half)
+            {
+                needIncrementMantissa = true;
+            }
+            else if (remainder == half)
+            {
+                needIncrementMantissa = !mantissa.IsEven;
+            }
+            else
+            {
+                needIncrementMantissa = false;
+            }
+
+            if (needIncrementMantissa)
+            {
+                if (mantissaOldSign >= 0)
+                {
+                    mantissa++;
+                }
+                else
+                {
+                    mantissa--;
+                }
+            }
+        }
+        else
+        {
+            mantissa /= denominator;
+        }
+
         offset = maxPrecision;
         offsetPower = Pow10BigInt(offset);
         ReduceTrailingZeroes(ref mantissa, ref offset, ref offsetPower);
@@ -289,10 +334,12 @@ public partial class BigDec
         }
 
         vTailString = vTailString.TrimEnd('0');
+        // codecov ignore start
         if (vTailString == string.Empty) // always false condition
         {
             return $"{sign}{vEntier}";
         }
+        // codecov ignore end
 
         string separator = ".";
         if (cultureInfo != null)
@@ -343,7 +390,7 @@ public partial class BigDec
             // This method could be called before static initialization
             // ReSharper disable NullCoalescingConditionIsAlwaysNotNullAccordingToAPIContract
             var exponentialNotationRegex = ExponentialNotationRegex ?? new Regex(
-                "^([+-]?[0-9]+(?:\\.[0-9]*?)?)e([+-][0-9]+)$",
+                "^([+-]?[0-9]+(?:\\.[0-9]*?)?)[eE]([+-]?[0-9]+)$",
                 RegexOptions.Compiled
             );
             // ReSharper restore NullCoalescingConditionIsAlwaysNotNullAccordingToAPIContract

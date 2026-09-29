@@ -257,4 +257,63 @@ public class RoundingDirectionTest
         var actual = new BigDec(input).Round(numberCount);
         Assert.Equal(expected, (decimal)actual);
     }
+
+    public static IEnumerable<object[]> ManyFlooring_Data()
+    {
+        var testCases = new List<object[]>();
+        for (var i = 0; i <= 3; i++)
+        {
+            foreach (var fractional in new decimal[]
+                         { 0.0001m, 0.1m, 0.3m, 0.5m, 0.500001m, 0.499999m, 0.4999995m, 0.6m, 0.999999m })
+            {
+                var input = i + fractional;
+                var current = input;
+                var digitCount = 0;
+
+                do
+                {
+                    current *= 10m;
+                    digitCount++;
+                } while (current != Math.Floor(current));
+
+                for (var j = 0; j < digitCount; j++)
+                {
+                    var pow = Enumerable
+                        .Range(0, j)
+                        .Aggregate(1m, (a, _) => a * 10m);
+
+                    var floor = Math.Floor(input * pow) / pow;
+                    var round = Math.Round(input, j);
+                    testCases.Add([input, j, floor, round]);
+                }
+            }
+        }
+
+        return testCases;
+    }
+
+    [Theory]
+    [MemberData(nameof(ManyFlooring_Data))]
+    void TestManyFlooring(decimal input, int digitCount, decimal expectedFloor, decimal _)
+    {
+        var actual = new BigDec(input).Floor(digitCount);
+        Assert.Equal(expectedFloor, (decimal)actual);
+        Assert.Equal(new BigDec(expectedFloor), actual);
+
+        if (digitCount == 0)
+        {
+            var actualBI = new BigDec(input).Floor();
+            Assert.Equal(expectedFloor, (decimal)actualBI);
+            Assert.Equal(new BigDec(expectedFloor), new BigDec(actualBI));
+        }
+    }
+
+    [Theory]
+    [MemberData(nameof(ManyFlooring_Data))]
+    void TestManyRounding(decimal input, int digitCount, decimal _, decimal expectedRound)
+    {
+        var actual = new BigDec(input).Round(digitCount);
+        Assert.Equal(expectedRound, (decimal)actual);
+        Assert.Equal(new BigDec(expectedRound), actual);
+    }
 }

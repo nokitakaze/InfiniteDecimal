@@ -177,6 +177,10 @@ public class SimplePrecisionTest
         var actual = input.Round(precision);
         Assert.Equal(expected, actual);
         Assert.NotEqual(0, actual.Mantissa % 10);
+        // Yes, "precision" is rounding, not Flooring
+        actual = new BigDec(input, precision);
+        Assert.Equal(expected, actual);
+        Assert.NotEqual(0, actual.Mantissa % 10);
     }
 
     [Theory]
@@ -188,10 +192,7 @@ public class SimplePrecisionTest
         Assert.NotEqual(0, actual.Mantissa % 10);
         if (input.Mantissa >= 0)
         {
-            actual = input.WithPrecision(precision);
-            Assert.Equal(expected, actual);
-            Assert.NotEqual(0, actual.Mantissa % 10);
-            actual = new BigDec(input, precision);
+            actual = input.Floor(precision);
             Assert.Equal(expected, actual);
             Assert.NotEqual(0, actual.Mantissa % 10);
         }

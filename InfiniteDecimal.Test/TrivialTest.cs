@@ -1497,4 +1497,42 @@ public class TrivialTest
         var t = BigDec.Parse("0e+2147483647");
         Assert.True(t.IsZero);
     }
+
+    [Fact]
+    public void TestRoundingZero()
+    {
+        for (var i = 2; i < 100; i += 20)
+        {
+            var zero = new BigDec(0, maxPrecision: i);
+            for (var j = 0; j < 100; j++)
+            {
+                var actual = zero.Round(j);
+                Assert.True(actual.IsZero);
+                Assert.True(actual.Mantissa.IsZero);
+                Assert.Equal(0, actual.Offset);
+                Assert.Equal(BigDec.Zero, actual);
+
+                actual = zero.Floor(j);
+                Assert.True(actual.IsZero);
+                Assert.True(actual.Mantissa.IsZero);
+                Assert.Equal(0, actual.Offset);
+                Assert.Equal(BigDec.Zero, actual);
+            }
+
+            {
+                var actual = zero.Floor();
+                Assert.True(actual.IsZero);
+            }
+        }
+    }
+
+    [Fact]
+    public void TooDeepPrecision()
+    {
+        // This test requires raising 10 to the power of 67,108,864, which can consume 2 GB of RAM and 90 seconds of time.
+        var numerator = new BigDec(2, 67_108_864, maxPrecision: 100_000_000);
+        var denominator = new BigDec(3);
+
+        Assert.Throws<OutOfMemoryException>(() => { _ = numerator / denominator; });
+    }
 }
