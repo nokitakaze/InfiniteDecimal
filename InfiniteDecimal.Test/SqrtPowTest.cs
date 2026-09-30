@@ -2456,7 +2456,7 @@ public class SqrtPowTest
         // 0 ^ -1 or 0 ^ -2
         foreach (var power in new decimal[] { -3, -2.5m, -1, -0.5m, })
         {
-            Assert.Throws<InfiniteDecimalException>(() => { BigDec.Zero.Pow(power); });
+            Assert.Throws<DivideByZeroException>(() => { BigDec.Zero.Pow(power); });
         }
     }
 

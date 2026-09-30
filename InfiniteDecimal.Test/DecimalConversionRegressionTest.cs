@@ -33,12 +33,14 @@ public class DecimalConversionRegressionTest
     {
         var provider = CultureInfo.InvariantCulture;
         var expected = decimal.Parse(expectedText, provider);
+        Assert.Equal(expectedText, expected.ToString(provider));
         var value = BigDec.Parse(text);
         var actual = route switch
         {
             "Cast" => (decimal)value,
             "Interface" => ((IConvertible)value).ToDecimal(provider),
             "ToType" => (decimal)value.ToType(typeof(decimal), provider),
+            // ReSharper disable once RedundantCast
             "Convert" => Convert.ToDecimal((object)value, provider),
             "ChangeType" => (decimal)Convert.ChangeType(value, typeof(decimal), provider),
             _ => throw new ArgumentOutOfRangeException(nameof(route)),

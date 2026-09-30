@@ -952,66 +952,66 @@ public class TrivialTest
     [Fact]
     public void DivisionByZero()
     {
-        Assert.Throws<InfiniteDecimalException>(() =>
+        Assert.Throws<DivideByZeroException>(() =>
         {
             var _ = BigDec.One / BigDec.Zero;
         });
-        Assert.Throws<InfiniteDecimalException>(() =>
+        Assert.Throws<DivideByZeroException>(() =>
         {
             var _ = BigDec.One / BigInteger.Zero;
         });
-        Assert.Throws<InfiniteDecimalException>(() =>
+        Assert.Throws<DivideByZeroException>(() =>
         {
             var _ = BigDec.Zero / BigDec.Zero;
         });
-        Assert.Throws<InfiniteDecimalException>(() =>
+        Assert.Throws<DivideByZeroException>(() =>
         {
             var _ = BigDec.Zero / BigInteger.Zero;
         });
-        Assert.Throws<InfiniteDecimalException>(() =>
+        Assert.Throws<DivideByZeroException>(() =>
         {
             var _ = BigDec.One / (decimal)0;
         });
-        Assert.Throws<InfiniteDecimalException>(() =>
+        Assert.Throws<DivideByZeroException>(() =>
         {
             var _ = BigDec.One / (double)0;
         });
-        Assert.Throws<InfiniteDecimalException>(() =>
+        Assert.Throws<DivideByZeroException>(() =>
         {
             var _ = BigDec.One / (float)0;
         });
 
         //
-        Assert.Throws<InfiniteDecimalException>(() =>
+        Assert.Throws<DivideByZeroException>(() =>
         {
             var _ = BigDec.One / (byte)0;
         });
-        Assert.Throws<InfiniteDecimalException>(() =>
+        Assert.Throws<DivideByZeroException>(() =>
         {
             var _ = BigDec.One / (sbyte)0;
         });
-        Assert.Throws<InfiniteDecimalException>(() =>
+        Assert.Throws<DivideByZeroException>(() =>
         {
             var _ = BigDec.One / (ushort)0;
         });
-        Assert.Throws<InfiniteDecimalException>(() =>
+        Assert.Throws<DivideByZeroException>(() =>
         {
             var _ = BigDec.One / (short)0;
         });
-        Assert.Throws<InfiniteDecimalException>(() =>
+        Assert.Throws<DivideByZeroException>(() =>
         {
             var _ = BigDec.One / (uint)0;
         });
-        Assert.Throws<InfiniteDecimalException>(() =>
+        Assert.Throws<DivideByZeroException>(() =>
         {
             // ReSharper disable once RedundantCast
             var _ = BigDec.One / (int)0;
         });
-        Assert.Throws<InfiniteDecimalException>(() =>
+        Assert.Throws<DivideByZeroException>(() =>
         {
             var _ = BigDec.One / (ulong)0;
         });
-        Assert.Throws<InfiniteDecimalException>(() =>
+        Assert.Throws<DivideByZeroException>(() =>
         {
             var _ = BigDec.One / (long)0;
         });
@@ -1301,7 +1301,7 @@ public class TrivialTest
         //
         var bio = new BigDec(value);
         var actual1 = bio.ToString(cultureInfo);
-        var actual2 = bio.ToStringDouble(cultureInfo);
+        var actual2 = bio.ToStringDouble(numberFormatInfo: cultureInfo.NumberFormat);
         var actual3 = (string)bio.ToType(typeof(string), cultureInfo);
 
         Assert.Equal(expectedString, actual1);
@@ -1539,5 +1539,18 @@ public class TrivialTest
         var denominator = new BigDec(3);
 
         Assert.Throws<OutOfMemoryException>(() => { _ = numerator / denominator; });
+    }
+
+    [Theory]
+    [InlineData(2, 0, 0)]
+    [InlineData(4, 0, 0)]
+    [InlineData(4, 1, 0.2)]
+    [InlineData(5, 1, 0.2)]
+    [InlineData(5, 0, 0)]
+    public void InverseEven(decimal input, int precision, decimal expected)
+    {
+        var inter = new BigDec(input, maxPrecision: precision);
+        var actual = inter.Inverse();
+        Assert.Equal(expected, (decimal)actual);
     }
 }

@@ -63,7 +63,7 @@ public class ParsingFormattingRegressionTest
     [InlineData("-12")]
     [InlineData("-0.125")]
     [InlineData("12.5")]
-    public void DefaultFormatting_RemainsInvariantUnderCustomCurrentCulture(string text)
+    public void DefaultFormatting_MakesVariantUnderCustomCurrentCulture(string text)
     {
         var value = BigDec.Parse(text);
         var originalCulture = CultureInfo.CurrentCulture;
@@ -73,8 +73,31 @@ public class ParsingFormattingRegressionTest
         try
         {
             CultureInfo.CurrentCulture = customCulture;
-            Assert.Equal(text, value.ToString());
             Assert.Equal(text, value.ToString(CultureInfo.InvariantCulture));
+            Assert.NotEqual(text, value.ToString(null));
+            Assert.NotEqual(text, value.ToString(CultureInfo.CurrentCulture));
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = originalCulture;
+        }
+    }
+
+    [Theory]
+    [InlineData("-12", "minus12")]
+    [InlineData("-0.125", "minus0~125")]
+    [InlineData("12.5", "12~5")]
+    public void DefaultFormatting_InheritsCurrentCulture(string input, string expected)
+    {
+        var value = BigDec.Parse(input);
+        var originalCulture = CultureInfo.CurrentCulture;
+        var customCulture = (CultureInfo)CultureInfo.InvariantCulture.Clone();
+        customCulture.NumberFormat.NegativeSign = "minus";
+        customCulture.NumberFormat.NumberDecimalSeparator = "~";
+        try
+        {
+            CultureInfo.CurrentCulture = customCulture;
+            Assert.Equal(expected, value.ToString(null));
         }
         finally
         {

@@ -5,7 +5,13 @@ namespace InfiniteDecimal.Test;
 
 public class AdditionalIntegralConversionTest
 {
-    public enum ConversionRoute { Interface, ConvertObject, ToType, ChangeType }
+    public enum ConversionRoute
+    {
+        Interface,
+        ConvertObject,
+        ToType,
+        ChangeType
+    }
 
     public static IEnumerable<object[]> BoundaryCases()
     {

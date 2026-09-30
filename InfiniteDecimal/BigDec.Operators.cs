@@ -45,6 +45,11 @@ public partial class BigDec
         return (ulong)(BigInteger)item;
     }
 
+    /// <summary>
+    /// Ln(10) / Ln(2)
+    /// </summary>
+    protected const double Log2_10 = 3.321928094887362347870319429489d;
+
     public static explicit operator decimal(BigDec item)
     {
         if (item == Zero)
@@ -55,7 +60,7 @@ public partial class BigDec
         var scale = item.Offset;
         if (scale == 0)
         {
-            // If we got "overflow here" System.Numberic will raise it anyway
+            // If we got "overflow here" System.Numeric will raise it anyway
             return (decimal)item._mantissa;
         }
 
@@ -74,15 +79,22 @@ public partial class BigDec
             }
         }
 
-        var isNegative = item._mantissa < 0;
+        var isNegative = (item._mantissa.Sign == -1);
         var value = BigInteger.Abs(item._mantissa);
-        if (scale > MaxDecimalScale)
+        if (((scale > 0) && (GetRealByteCount(value) > 12)) || (scale > MaxDecimalScale))
         {
+            var digitCount = BigInteger.Log10(value);
+            var needCropDigits = Math.Max(
+                (int)Math.Ceiling(digitCount - MaxDecimalScale),
+                scale - MaxDecimalScale
+            );
+            needCropDigits = Math.Min(needCropDigits, scale);
+
             // https://learn.microsoft.com/en-us/dotnet/api/system.decimal.parse?view=net-10.0
             // "rounding to nearest"
-            var denominator = Pow10BigInt(scale - MaxDecimalScale);
+            var denominator = Pow10BigInt(needCropDigits);
             var remainder = value % denominator;
-            var half = Pow10BigInt(scale - MaxDecimalScale - 1) * 5;
+            var half = Pow10BigInt(needCropDigits - 1) * 5;
             value /= denominator;
             if (remainder > half)
             {
@@ -96,13 +108,7 @@ public partial class BigDec
                 }
             }
 
-            scale = MaxDecimalScale;
-        }
-
-        while ((scale > 0) && (GetRealByteCount(value) > 12))
-        {
-            value /= BigInteger10;
-            scale--;
+            scale -= needCropDigits;
         }
 
         var mask = (BigInteger.One << 32) - 1;
@@ -134,13 +140,14 @@ public partial class BigDec
 
     public static explicit operator double(BigDec item)
     {
-        return double.Parse(item.ToStringDouble(CultureInfo.InvariantCulture), CultureInfo.InvariantCulture);
+        return double.Parse(item.ToStringDouble(CultureInfo.InvariantCulture.NumberFormat),
+            CultureInfo.InvariantCulture);
     }
 
     public static explicit operator float(BigDec item)
     {
         // TODO Maybe we need to do it more lower way
-        return float.Parse(item.ToStringDouble(CultureInfo.InvariantCulture), CultureInfo.InvariantCulture);
+        return Convert.ToSingle((double)item);
     }
 
     #endregion
@@ -280,11 +287,21 @@ public partial class BigDec
 
     #region operator /
 
+    /// <summary>
+    /// Dividing two numbers. Division rounds the result down by the absolute value when there is not enough precision
+    /// </summary>
+    /// <remarks>Division rounds the result, just as BigInteger do</remarks>
+    /// <param name="a"></param>
+    /// <param name="b"></param>
+    /// <returns></returns>
+    /// <exception cref="DivideByZeroException"></exception>
+    /// <exception cref="OutOfMemoryException"></exception>
+    /// <exception cref="InfiniteDecimalException"></exception>
     public static BigDec operator /(BigDec a, BigDec b)
     {
         if (b.IsZero)
         {
-            throw new InfiniteDecimalException("Division by zero");
+            throw new DivideByZeroException($"Division {a} by zero");
         }
 
         var desiredPrecision = Math.Max(a.MaxPrecision, b.MaxPrecision);

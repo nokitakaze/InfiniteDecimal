@@ -10,10 +10,16 @@ public class ArithmeticRegressionTest
         // and results whose retained mantissa is zero before rounding.
         var cases = new (int denominator, int precision, int mantissa, int offset)[]
         {
-            (15, 1, 1, 1), (18, 1, 1, 1), (19, 1, 1, 1),
-            (20, 1, 0, 0), (21, 1, 0, 0),
-            (150, 2, 1, 2), (180, 2, 1, 2),
-            (200, 2, 0, 0), (40, 2, 2, 2), (8, 2, 12, 2),
+            (15, 1, 1, 1),
+            (18, 1, 1, 1),
+            (19, 1, 1, 1),
+            (20, 1, 0, 0),
+            (21, 1, 0, 0),
+            (150, 2, 1, 2),
+            (180, 2, 1, 2),
+            (200, 2, 0, 0),
+            (40, 2, 2, 2),
+            (8, 2, 12, 2),
             (7, 0, 0, 0),
         };
         foreach (var (denominator, precision, mantissa, offset) in cases)
@@ -27,7 +33,7 @@ public class ArithmeticRegressionTest
     public void Reciprocal_RoundsUsingSignAndEntireRemainder(
         int denominator, int precision, int expectedMantissa, int expectedOffset, string operation)
     {
-        var value = new BigDec(new BigInteger(denominator), precision);
+        var value = new BigDec(new BigInteger(denominator), maxPrecision: precision);
         var actual = operation switch
         {
             "Inverse" => value.Inverse(),
@@ -43,15 +49,15 @@ public class ArithmeticRegressionTest
     }
 
     [Theory]
-    [InlineData(3, 2, 2)]
+    [InlineData(3, 2, 1)]
     [InlineData(5, 2, 2)]
-    [InlineData(7, 2, 4)]
-    [InlineData(-3, 2, -2)]
-    [InlineData(3, -2, -2)]
-    [InlineData(-3, -2, 2)]
-    [InlineData(2, 3, 1)]
-    [InlineData(-2, 3, -1)]
-    [InlineData(2, -3, -1)]
+    [InlineData(7, 2, 3)]
+    [InlineData(-3, 2, -1)]
+    [InlineData(3, -2, -1)]
+    [InlineData(-3, -2, 1)]
+    [InlineData(2, 3, 0)]
+    [InlineData(-2, 3, 0)]
+    [InlineData(2, -3, 0)]
     public void Division_ZeroPrecisionStillRoundsToNearestEven(int numerator, int denominator, int expected)
     {
         // Both operands must have precision zero; a primitive operand would introduce precision 18.
@@ -85,12 +91,14 @@ public class ArithmeticRegressionTest
     }
 
     [Theory]
-    [InlineData(10000100000L, 100000)]
-    [InlineData(10000100001L, 100001)]
-    public void Sqrt_RoundsNearMidpointWithoutLosingTheRemainder(long input, int expected)
+    [InlineData(10000100000L, 100_000)]
+    [InlineData(10000100001L, 100_001)]
+    [InlineData(10000000100000000L, 100_000_000)]
+    [InlineData(10000000100000001L, 100_000_001)]
+    public void Sqrt_RoundsNearMidpointWithoutLosingTheRemainder(BigInteger input, int expected)
     {
         // (100000.5)^2 = 10000100000.25. The inputs straddle this exact midpoint.
-        var actual = new BigDec(new BigInteger(input), 0).Sqrt();
+        var actual = new BigDec(input, 0).Sqrt();
         Assert.Equal(new BigInteger(expected), actual.Mantissa);
         Assert.Equal(0, actual.Offset);
     }

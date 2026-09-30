@@ -181,7 +181,7 @@ public partial class BigDec
             return One;
         }
 
-        var x = this;
+        var x = this.WithPrecision(MaxPrecision + PrecisionBuffer);
         if (y < 0)
         {
             y = -y; // make the exponent positive
@@ -202,7 +202,7 @@ public partial class BigDec
             // Offset is always limited to MaxPrecision
         }
 
-        return result.Round(x.MaxPrecision);
+        return result.Round(this.MaxPrecision);
     }
 
     public BigDec Pow(BigDec exp)
@@ -219,7 +219,7 @@ public partial class BigDec
 
             if (exp < Zero)
             {
-                throw new InfiniteDecimalException(
+                throw new DivideByZeroException(
                     "Operation cannot be performed: Raising zero to a negative power is undefined as it results in division by zero");
             }
 
@@ -234,6 +234,11 @@ public partial class BigDec
         if (exp == -One)
         {
             return this.Inverse();
+        }
+
+        if ((this == MinusOne) && (exp.Offset == 0))
+        {
+            return exp.Mantissa.IsEven ? One.WithPrecision(this.MaxPrecision) : this;
         }
 
         bool needReverse = false;
@@ -416,7 +421,7 @@ public partial class BigDec
         // sqrt(this) = sqrt(a) * 10^(-0.5*b)
 
         BigInteger a;
-        int b = this.MaxPrecision + PrecisionBuffer;
+        int b = this.MaxPrecision + (PrecisionBuffer + 5);
 
         {
             // At the point MaxPrecision is bigger or equal to Offset, it has been normalized in "this == One"
@@ -650,25 +655,40 @@ public partial class BigDec
         }
 
         // 1 / (a * 10^-b) = 10^m / (a * 10^(m-b)) = 10^m / a * 10^-(m-b)
-        var m = MaxPrecision + Offset + 1;
+        var m = MaxPrecision + Offset + PrecisionBuffer;
         var numerator = BigDec.Pow10BigInt(m);
+        var denominator = BigDec.Pow10BigInt(PrecisionBuffer);
 
-        var value = numerator / this._mantissa;
-        var remainder = BigInteger.Abs(value) % BigInteger10;
-        value /= BigInteger10;
-        if (remainder > 5)
+        var sign = this._mantissa.Sign;
+        var value = BigInteger.Abs(numerator / this._mantissa);
+        var remainder = value % denominator;
+        var half = 5 * Pow10BigInt(PrecisionBuffer - 1);
+        value /= denominator;
+        if (remainder > half)
         {
-            value += (value.Sign == 1) ? BigInteger.One : BigInteger.MinusOne;
-        }
-        else if (remainder == 5)
-        {
-            if (!value.IsEven)
-            {
-                value += (value.Sign == 1) ? BigInteger.One : BigInteger.MinusOne;
-            }
+            value++;
         }
 
-        var t = new BigDec(value, MaxPrecision, MaxPrecision);
+        /*
+         * "remainder" CAN'T BE exactly half for any uneven entier
+         * ------------------------------
+         * For any finite decimal value whose fractional part is 0.5 and whose integer
+         * part is odd, let a = (2k + 1) + 0.5 = (4k + 3) / 2.
+         *
+         * Its reciprocal is therefore 1/a = 2 / (4k + 3). This fraction is already
+         * reduced because 4k + 3 is odd.
+         *
+         * A rational number has a terminating decimal representation iff the
+         * denominator of its reduced fraction contains no prime factors other than
+         * 2 and 5. Since 4k + 3 is odd, a terminating representation would require
+         * 4k + 3 to be a power of 5. However, 4k + 3 ≡ 3 (mod 4), while every power
+         * of 5 is ≡ 1 (mod 4).
+         *
+         * Therefore 1/a always has a non-terminating repeating decimal expansion and
+         * cannot be represented exactly by any finite decimal notation.
+         */
+
+        var t = new BigDec(value * sign, MaxPrecision, MaxPrecision);
         return t;
     }
 

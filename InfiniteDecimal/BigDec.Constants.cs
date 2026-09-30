@@ -73,6 +73,7 @@ public partial class BigDec
     /// Max "Decimal" scale
     /// </summary>
     /// <url>https://learn.microsoft.com/en-us/dotnet/api/system.decimal.scale?view=net-9.0</url>
+    /// <remarks>96 * Ln(2)/Ln(10) = 28.898879</remarks>
     public const int MaxDecimalScale = 28;
 
     public static readonly BigDec MaxDecimalValue;

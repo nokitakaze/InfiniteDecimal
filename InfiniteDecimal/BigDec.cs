@@ -35,6 +35,7 @@ public partial class BigDec
     public readonly int MaxPrecision = MaxDefaultPrecision;
 
     public static readonly BigDec One = new BigDec(1);
+    public static readonly BigDec MinusOne = new BigDec(-1);
     public static readonly BigDec Zero = new BigDec(0);
     public static readonly BigDec Half = new BigDec(0.5m);
 
@@ -299,25 +300,39 @@ public partial class BigDec
     /// Represents a number in string format, which resembles the format of a floating-point number,
     /// taking into account cultural settings
     /// </summary>
-    /// <param name="cultureInfo"></param>
     /// <param name="numberFormatInfo"></param>
     /// <returns></returns>
     public string ToStringDouble(
-        CultureInfo? cultureInfo = null,
         NumberFormatInfo? numberFormatInfo = null
     )
     {
         if (Offset == 0)
         {
             // It's just a big integer
-            return _mantissa.ToString();
+            var effectiveCulture = (IFormatProvider?)numberFormatInfo ?? CultureInfo.CurrentCulture;
+            return _mantissa.ToString(effectiveCulture);
         }
 
         var sign = string.Empty;
         var _value = _mantissa;
         if (_mantissa < 0)
         {
-            sign = "-";
+            if (numberFormatInfo is not null)
+            {
+                sign = numberFormatInfo.NegativeSign;
+            }
+            // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
+            else if (CultureInfo.CurrentCulture is not null)
+            {
+                sign = CultureInfo.CurrentCulture.NumberFormat.NegativeSign;
+            }
+            else
+            {
+                // codecov ignore start
+                sign = "-";
+                // codecov ignore end
+            }
+
             _value = -_value;
         }
 
@@ -341,14 +356,18 @@ public partial class BigDec
         }
         // codecov ignore end
 
-        string separator = ".";
-        if (cultureInfo != null)
-        {
-            separator = cultureInfo.NumberFormat.NumberDecimalSeparator;
-        }
-        else if (numberFormatInfo != null)
+        string separator;
+        if (numberFormatInfo is not null)
         {
             separator = numberFormatInfo.NumberDecimalSeparator;
+        }
+        else if (CultureInfo.CurrentCulture is not null)
+        {
+            separator = CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator;
+        }
+        else
+        {
+            separator = ".";
         }
 
         return $"{sign}{vEntier}{separator}{vTailString}";
@@ -356,17 +375,23 @@ public partial class BigDec
 
     public override string ToString()
     {
-        return ToStringDouble(CultureInfo.InvariantCulture);
+        return ToStringDouble(numberFormatInfo: CultureInfo.InvariantCulture.NumberFormat);
     }
 
-    public string ToString(IFormatProvider provider)
+    public string ToString(IFormatProvider? provider)
     {
-        return provider switch
+        switch (provider)
         {
-            CultureInfo cultureInfo => ToStringDouble(cultureInfo: cultureInfo),
-            NumberFormatInfo numberFormatInfo => ToStringDouble(numberFormatInfo: numberFormatInfo),
-            _ => ToStringDouble(),
-        };
+            case CultureInfo cultureInfo:
+                return ToStringDouble(numberFormatInfo: cultureInfo.NumberFormat);
+            case NumberFormatInfo numberFormatInfo:
+                return ToStringDouble(numberFormatInfo: numberFormatInfo);
+            case null:
+                return ToStringDouble();
+            case var _:
+                var numberFormatInfo1 = (NumberFormatInfo?)provider.GetFormat(typeof(NumberFormatInfo));
+                return ToStringDouble(numberFormatInfo: numberFormatInfo1);
+        }
     }
 
     public static BigDec Parse(string value)
@@ -382,6 +407,7 @@ public partial class BigDec
             return Zero;
         }
 
+        var originalValue = value;
         value = value
             .Replace(" ", string.Empty)
             .Replace("_", string.Empty);
@@ -417,6 +443,11 @@ public partial class BigDec
         {
             sign = -1;
             value = value[1..];
+            if (value.StartsWith('-') || value.StartsWith('+'))
+            {
+                throw new FormatException(
+                    $"{originalValue} is not a valid number. Plus and minus cannot appear more than once");
+            }
         }
 
         var chunks = value.Split('.');
@@ -433,6 +464,12 @@ public partial class BigDec
         }
 
         var chunks1 = chunks[1].TrimEnd('0');
+        if (chunks1.StartsWith('-') || chunks1.StartsWith('+'))
+        {
+            throw new FormatException(
+                $"{originalValue} is not a valid number. Plus and minus can't be at the beginning of the fractional part");
+        }
+
         if (chunks1 == string.Empty)
         {
             var valBI = BigInteger.Parse(chunks[0]) * sign;
