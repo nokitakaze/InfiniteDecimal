@@ -5,31 +5,50 @@ namespace InfiniteDecimal.Test;
 
 public class NumericalAccuracyRegressionTest
 {
-    [Fact]
-    public void Inverse_ValueJustAboveMidpoint_DoesNotRoundToZero()
+    public static IEnumerable<object[]> Inverse_ValueJustAboveMidpoint_DoesNotRoundToZero_Data()
     {
-        var value = new BigDec(new BigInteger(199_999), maxPrecision: 5);
+        return Enumerable
+            .Range(1, 10)
+            .Select(i => new object[] { i * 2 });
+    }
+
+    [Theory]
+    [MemberData(nameof(Inverse_ValueJustAboveMidpoint_DoesNotRoundToZero_Data))]
+    public void Inverse_ValueJustAboveMidpoint_DoesNotRoundToZero(int power)
+    {
+        var i = BigInteger.Pow(new BigInteger(10), power) * 2 - BigInteger.One;
+        var value = new BigDec(i, maxPrecision: power);
 
         var actual = value.Inverse();
 
         // 1 / 199999 = 0.000005000025000125... > 0.000005.
         // At five decimal places the nearest value is 0.00001, not zero.
         Assert.Equal(BigInteger.One, actual.Mantissa);
-        Assert.Equal(5, actual.Offset);
+        Assert.Equal(power, actual.Offset);
     }
 
-    [Fact]
-    public void Sqrt_ValueJustAboveSquaredMidpoint_RoundsUp()
+    public static IEnumerable<object[]> Sqrt_ValueJustAboveSquaredMidpoint_RoundsUp_Data()
     {
-        var input = BigInteger.Parse("100000000010000000001", CultureInfo.InvariantCulture);
-        var value = new BigDec(input, maxPrecision: 0);
+        return Enumerable
+            .Range(1, 10)
+            .Select(i => new object[] { i * 2 });
+    }
 
+    [Theory]
+    [MemberData(nameof(Sqrt_ValueJustAboveSquaredMidpoint_RoundsUp_Data))]
+    public void Sqrt_ValueJustAboveSquaredMidpoint_RoundsUp(int power)
+    {
+        var i1 = BigInteger.Pow(new BigInteger(10), power + 1) + 5;
+        var input = i1 * i1 + 75;
+        input /= 100;
+        var value = new BigDec(input, maxPrecision: 0);
         var actual = value.Sqrt();
 
         // Let n = 10000000000. The input is n^2 + n + 1,
         // which is above (n + 0.5)^2 = n^2 + n + 0.25.
         // Truncating the root to ten guard places must not turn it into a tie.
-        Assert.Equal(new BigInteger(10_000_000_001L), actual.Mantissa);
+        var expectedMantissa = BigInteger.Pow(new BigInteger(10), power) + 1;
+        Assert.Equal(expectedMantissa, actual.Mantissa);
         Assert.Equal(0, actual.Offset);
     }
 
@@ -42,7 +61,7 @@ public class NumericalAccuracyRegressionTest
 
         // (101 / 100)^1000 = 20959.155637813660064441245788...
         // Rounding the exact rational result to two decimal places gives 20959.16.
-        Assert.Equal(new BigInteger(2_095_916), actual.Mantissa);
+        Assert.Equal(new BigInteger(20_959_16), actual.Mantissa);
         Assert.Equal(2, actual.Offset);
     }
 

@@ -16,6 +16,7 @@ public class CorrectnessContractTest
 
         Assert.Equal(expected, six.Inverse());
         Assert.Equal(expected, six.Pow(-1));
+        Assert.Equal(expected, six.Pow(-1d));
         Assert.Equal(expected, six.Pow(BigInteger.MinusOne));
         Assert.Equal(expected, new BigDec(BigInteger.One, precision) / six);
         Assert.Equal(expected, new BigDec(new BigInteger(2), precision) / new BigDec(new BigInteger(12), precision));

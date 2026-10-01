@@ -1553,4 +1553,23 @@ public class TrivialTest
         var actual = inter.Inverse();
         Assert.Equal(expected, (decimal)actual);
     }
+
+    [Fact]
+    public void EstimateInnerPrecisionForPow_NegativeY()
+    {
+        Assert.Throws<ArgumentOutOfRangeException>(() => { BigDec.EstimateInnerPrecisionForPow(BigInteger.One, -5, 5, 2); });
+    }
+
+    [Fact]
+    public void EstimateInnerPrecisionForPow_Power()
+    {
+        var actual = BigDec.EstimateInnerPrecisionForPow(BigInteger.One, 5, 0, 2);
+        Assert.Equal(BigDec.PrecisionPowBuffer, actual);
+
+        actual = BigDec.EstimateInnerPrecisionForPow(BigInteger.One, 5, 0, BigDec.PrecisionPowBuffer);
+        Assert.Equal(BigDec.PrecisionPowBuffer, actual);
+
+        actual = BigDec.EstimateInnerPrecisionForPow(BigInteger.One, 5, 0, BigDec.PrecisionPowBuffer + 5);
+        Assert.Equal(BigDec.PrecisionPowBuffer + 5, actual);
+    }
 }

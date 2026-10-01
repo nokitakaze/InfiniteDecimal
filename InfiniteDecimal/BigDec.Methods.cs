@@ -152,10 +152,51 @@ public partial class BigDec
 
     #region Power
 
+    public const int PrecisionPowBuffer = 5;
+
+    public static int EstimateInnerPrecisionForPow(BigInteger X, int Y, BigInteger power, int needPrecision)
+    {
+        if (Y < 0)
+            throw new ArgumentOutOfRangeException(nameof(Y), $"{Y} < 0");
+
+        if (power < 0)
+            power = -power;
+
+        if (power == 0)
+            return Math.Max(needPrecision, PrecisionPowBuffer);
+
+        // При нормированном представлении основание целое ⇔ Y == 0.
+        if (Y == 0)
+            return PrecisionPowBuffer;
+
+        // Как и прежде, для нецелых оснований поддерживается a >= 1.
+        // Проверяем X >= 10^Y без построения огромной степени.
+        X = BigInteger.Abs(X);
+
+        double d = Y;
+        var l = Math.Max(BigInteger.Log10(X), 1) - Y;
+        var denominator = d + l;
+
+        var powerD = (double)power;
+        var cap = powerD * d;
+        var stepped = d * Math.Ceiling((powerD * l + needPrecision + 3.0) / denominator);
+
+        var correction = Math.Max(
+            0.0,
+            (8.0 + d - Math.Log10(powerD) - 3.0 * l) / 2.0
+        );
+
+        var smooth = powerD * l * d / denominator + needPrecision + correction;
+        var bound = Math.Min(cap, Math.Min(stepped, smooth));
+
+        return Math.Max(checked(PrecisionPowBuffer + 2 * (int)Math.Floor(bound)), needPrecision + PrecisionPowBuffer);
+    }
+
     public BigDec Pow(BigInteger exp)
     {
-        if (IsZero && exp.IsZero)
+        if (exp.IsZero)
         {
+            // any number raised to the power of 0 equals 1
             return One.WithPrecision(MaxPrecision);
         }
 
@@ -169,25 +210,16 @@ public partial class BigDec
             return this;
         }
 
-        if (exp == BigInteger.MinusOne)
+        if (exp.Sign == -1)
         {
-            return this.Inverse();
+            return Pow(-exp).Inverse();
         }
 
+        // var currentPrecision = MaxPrecision + PrecisionBuffer;
+        var currentPrecision = EstimateInnerPrecisionForPow(this.Mantissa, this.Offset, exp, MaxPrecision);
+
+        var x = this.WithPrecision(currentPrecision);
         var y = exp;
-        if (y == 0)
-        {
-            // any number raised to the power of 0 equals 1
-            return One;
-        }
-
-        var x = this.WithPrecision(MaxPrecision + PrecisionBuffer);
-        if (y < 0)
-        {
-            y = -y; // make the exponent positive
-            x = x.Inverse(); // and take the reciprocal
-        }
-
         BigDec result = One;
         while (y > 0)
         {
@@ -421,7 +453,7 @@ public partial class BigDec
         // sqrt(this) = sqrt(a) * 10^(-0.5*b)
 
         BigInteger a;
-        int b = this.MaxPrecision + (PrecisionBuffer + 5);
+        int b = this.MaxPrecision + PrecisionBuffer + (int)Math.Ceiling(BigInteger.Log10(_mantissa) * 0.5d);
 
         {
             // At the point MaxPrecision is bigger or equal to Offset, it has been normalized in "this == One"
@@ -616,7 +648,7 @@ public partial class BigDec
         }
 
         // Set accuracy limit to 0.001 of the precision
-        int termPrecision = MaxPrecision + 4;
+        int termPrecision = MaxPrecision * 2 + 4;
         var localMantissa = Mantissa * BigDec.Pow10BigInt(termPrecision - Offset);
 
         var termPower = BigDec.Pow10BigInt(termPrecision);
@@ -655,14 +687,17 @@ public partial class BigDec
         }
 
         // 1 / (a * 10^-b) = 10^m / (a * 10^(m-b)) = 10^m / a * 10^-(m-b)
-        var m = MaxPrecision + Offset + PrecisionBuffer;
+        var precisionBuffer = PrecisionBuffer;
+        precisionBuffer += Math.Max(0, (int)Math.Ceiling(BigInteger.Log10(BigInteger.Abs(_mantissa))) - Offset);
+
+        var m = MaxPrecision + Offset + precisionBuffer;
         var numerator = BigDec.Pow10BigInt(m);
-        var denominator = BigDec.Pow10BigInt(PrecisionBuffer);
+        var denominator = BigDec.Pow10BigInt(precisionBuffer);
 
         var sign = this._mantissa.Sign;
         var value = BigInteger.Abs(numerator / this._mantissa);
         var remainder = value % denominator;
-        var half = 5 * Pow10BigInt(PrecisionBuffer - 1);
+        var half = 5 * Pow10BigInt(precisionBuffer - 1);
         value /= denominator;
         if (remainder > half)
         {
