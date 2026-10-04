@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 
@@ -18,7 +19,7 @@ public partial class BigDec
 
     public BigDec Abs()
     {
-        if (this._mantissa >= 0)
+        if (this.Mantissa >= 0)
         {
             return this;
         }
@@ -30,21 +31,21 @@ public partial class BigDec
 
     public BigInteger Floor()
     {
-        if (_mantissa.IsZero)
+        if (Mantissa.IsZero)
         {
             return BigInteger.Zero;
         }
 
-        if (_mantissa.Sign == 1)
+        if (Mantissa.Sign == 1)
         {
             // Positive number
-            return _mantissa / OffsetPower;
+            return Mantissa / OffsetPower;
         }
 
         // Negative number.
         // The floor always tends toward negative infinity.
-        var result = _mantissa / OffsetPower;
-        if (!(-_mantissa % OffsetPower).IsZero)
+        var result = Mantissa / OffsetPower;
+        if (!(-Mantissa % OffsetPower).IsZero)
         {
             result--;
         }
@@ -52,13 +53,13 @@ public partial class BigDec
         return result;
     }
 
-    public bool IsZero => this._mantissa.IsZero;
+    public bool IsZero => this.Mantissa.IsZero;
 
     #region
 
     public BigDec Round(int decimalNumber)
     {
-        if (_mantissa.IsZero)
+        if (Mantissa.IsZero)
         {
             return new BigDec(BigInteger.Zero, 0, BigInteger.One, MaxPrecision);
         }
@@ -70,15 +71,15 @@ public partial class BigDec
 
         int sign;
         BigInteger mantissa;
-        if (_mantissa.Sign >= 0)
+        if (Mantissa.Sign >= 0)
         {
             sign = 1;
-            mantissa = _mantissa;
+            mantissa = Mantissa;
         }
         else
         {
             sign = -1;
-            mantissa = -_mantissa;
+            mantissa = -Mantissa;
         }
 
         var leftExpModifier = Offset - decimalNumber;
@@ -102,14 +103,15 @@ public partial class BigDec
             value++;
         }
 
-        var offsetPower = Pow10BigInt(decimalNumber);
-        ReduceOverflowPrecision(ref value, ref decimalNumber, ref offsetPower, decimalNumber);
+        var offset = decimalNumber;
+        var offsetPower = Pow10BigInt(offset);
+        ReduceOverflowPrecision(ref value, ref offset, ref offsetPower, decimalNumber);
         if (sign == -1)
         {
             value = -value;
         }
 
-        var result = new BigDec(value, decimalNumber, offsetPower, decimalNumber);
+        var result = new BigDec(value, offset, offsetPower, decimalNumber);
 
         return result;
     }
@@ -133,9 +135,9 @@ public partial class BigDec
 
         var expDiff = Offset - decimalNumber;
         var denominator = Pow10BigInt(expDiff);
-        var biValue = this._mantissa;
+        var biValue = this.Mantissa;
         biValue /= denominator;
-        if ((this._mantissa.Sign == -1) && !(-this._mantissa % denominator).IsZero)
+        if ((this.Mantissa.Sign == -1) && !(-this.Mantissa % denominator).IsZero)
         {
             biValue--;
         }
@@ -159,11 +161,11 @@ public partial class BigDec
         if (Y < 0)
             throw new ArgumentOutOfRangeException(nameof(Y), $"{Y} < 0");
 
-        if (power < 0)
-            power = -power;
-
         if (power == 0)
             return Math.Max(needPrecision, PrecisionPowBuffer);
+
+        if (power < 0)
+            power = -power;
 
         // При нормированном представлении основание целое ⇔ Y == 0.
         if (Y == 0)
@@ -212,7 +214,22 @@ public partial class BigDec
 
         if (exp.Sign == -1)
         {
-            return Pow(-exp).Inverse();
+            if (-exp <= int.MaxValue)
+            {
+                // ReSharper disable once RedundantOverflowCheckingContext
+                int localPrecision = checked((int)(-exp * this.MaxPrecision));
+                var r = this
+                    .WithPrecision(localPrecision)
+                    .Pow(-exp)
+                    .Inverse();
+                var (rMantissa, rOffset, rPower, _) = r;
+                ReduceOverflowPrecision(ref rMantissa, ref rOffset, ref rPower, MaxPrecision);
+                return new BigDec(rMantissa, rOffset, rPower, MaxPrecision);
+            }
+            else
+            {
+                return Pow(-exp).Inverse();
+            }
         }
 
         // var currentPrecision = MaxPrecision + PrecisionBuffer;
@@ -283,7 +300,7 @@ public partial class BigDec
         int powAdditionalPrecision = 4;
         if (this.Offset > 0)
         {
-            var v = BigInteger.Log10(BigInteger.Abs(this._mantissa));
+            var v = BigInteger.Log10(BigInteger.Abs(this.Mantissa));
             var bufferPrecision = 3 * (int)Math.Ceiling(this.Offset - v);
             powAdditionalPrecision += Math.Max(bufferPrecision, 0);
         }
@@ -434,7 +451,7 @@ public partial class BigDec
 
     public BigDec Sqrt()
     {
-        if (this._mantissa < BigInteger.Zero)
+        if (this.Mantissa < BigInteger.Zero)
         {
             throw new InfiniteDecimalException($"'{this}' below zero");
         }
@@ -453,12 +470,12 @@ public partial class BigDec
         // sqrt(this) = sqrt(a) * 10^(-0.5*b)
 
         BigInteger a;
-        int b = this.MaxPrecision + PrecisionBuffer + (int)Math.Ceiling(BigInteger.Log10(_mantissa) * 0.5d);
+        int b = this.MaxPrecision + PrecisionBuffer + (int)Math.Ceiling(BigInteger.Log10(Mantissa) * 0.5d);
 
         {
             // At the point MaxPrecision is bigger or equal to Offset, it has been normalized in "this == One"
             var needPowerLevel = b * 2 - Offset;
-            a = this._mantissa * Pow10BigInt(needPowerLevel);
+            a = this.Mantissa * Pow10BigInt(needPowerLevel);
         }
 
         var aSqrt = Sqrt(a);
@@ -468,6 +485,87 @@ public partial class BigDec
     #endregion
 
     #region Ln
+
+    public static int EstimateInnerPrecisionForLn(
+        BigInteger X,
+        int Y,
+        int needPrecision
+    )
+    {
+        if (X.Sign < 0)
+            throw new ArgumentOutOfRangeException(nameof(X));
+
+        if (Y < 0)
+            throw new ArgumentOutOfRangeException(nameof(Y));
+
+        if (needPrecision < 0)
+            throw new ArgumentOutOfRangeException(nameof(needPrecision));
+
+        var p = (long) needPrecision;
+
+        // Ноль обрабатывается по указанному Вами специальному правилу.
+        // Для нормированного представления value == 1 означает X == 1, Y == 0.
+        if (X.IsZero || (X.IsOne && Y == 0))
+            return checked((int)(p + PrecisionLnBuffer));
+
+        string digits = X.ToString(CultureInfo.InvariantCulture);
+
+        // Точный floor(log10(value)), без вычисления логарифма.
+        long order = (long)digits.Length - Y - 1;
+        long extra = 3;
+
+        // Здесь 0.1 <= value < 10: можно исследовать расстояние до 1.
+        if (order is -1 or 0)
+        {
+            BigInteger unit = BigInteger.Pow(10, Y);
+            BigInteger distance = BigInteger.Abs(X - unit);
+
+            // |value - 1| < 0.4 * 10^(-p).
+            // Сравнение полностью целочисленное.
+            if (p < Y && 10 * distance < 4 * Pow10BigInt(Y - (int)p))
+            {
+                return PrecisionLnBuffer;
+            }
+
+            if (order == -1)
+            {
+                // k = Ceiling(-Log10(1 - value)).
+                long k = (long)Y
+                         - distance.ToString(CultureInfo.InvariantCulture).Length
+                         + 1;
+
+                // Покрывает наблюдаемые скачки слева от 1.
+                if (p == 2 * k)
+                    extra = Math.Max(extra, k + 1);
+
+                if (p == k - 1)
+                    extra = Math.Max(extra, k);
+            }
+        }
+
+        // Участок около e, где таблица допускает результат 5.
+        // При order == 0 имеем 1 <= value < 10.
+        if (order == 0 && p <= 12)
+        {
+            int count = Math.Min(16, digits.Length);
+
+            double leading = double.Parse(digits[..count], CultureInfo.InvariantCulture);
+            double value = leading / Math.Pow(10.0, count - 1);
+            double lnValue = Math.Log(value);
+
+            // Запас учитывает неточность короткой мантиссы и double.
+            // Для более высокой точности эта оптимизация не применяется.
+            if (Math.Abs(lnValue - 1.0) + 1e-13 < 0.49 * Math.Pow(10.0, -p))
+            {
+                return PrecisionLnBuffer;
+            }
+        }
+
+        long smallValueMinimum = Math.Max(0L, -order);
+        long result = PrecisionLnBuffer + Math.Max(p + extra, smallValueMinimum);
+
+        return checked((int)result);
+    }
 
     /// <summary>
     /// Natural logarithm
@@ -486,14 +584,14 @@ public partial class BigDec
             return Zero.WithPrecision(MaxPrecision);
         }
 
-        var zPrecision = Math.Max(MaxPrecision, Offset) + PrecisionLnBuffer;
+        var zPrecision = EstimateInnerPrecisionForLn(Mantissa, Offset, MaxPrecision);
         bool invert = (this <= 0.01m);
         var z = invert ? this.WithPrecision(zPrecision).Inverse() : this.WithPrecision(zPrecision);
 
         var result = BigDec.Zero;
         if (z > E)
         {
-            var p1 = (long)Math.Floor(BigInteger.Log(z._mantissa) - z.Offset * Math.Log(10));
+            var p1 = (long)Math.Floor(BigInteger.Log(z.Mantissa) - z.Offset * Math.Log(10));
             var denominator = E.Pow(p1);
             z /= denominator;
             result += p1;
@@ -556,6 +654,64 @@ public partial class BigDec
 
     #region Exp
 
+    public static int EstimateInnerPrecisionForLongExp(
+        BigInteger X,
+        int Y,
+        int needPrecision
+    )
+    {
+        if (Y < 0)
+            throw new ArgumentOutOfRangeException(nameof(Y));
+
+        if (needPrecision < 0)
+            throw new ArgumentOutOfRangeException(nameof(needPrecision));
+
+        // Во всех строках таблицы с needPrecision == 0 результат равен 4.
+        if (needPrecision == 0)
+            return 4;
+
+        long p = needPrecision;
+        long cap = 40L * p + 4;
+
+        // magnitude = Ceiling(0.4343 * Abs(value)).
+        // Все вычисления точные, без преобразования BigInteger в double.
+        BigInteger numerator = BigInteger.Abs(X) * 4343;
+        long scale = (long)Y + 4;
+
+        var numeratorDigitCount = Math.Max((int)Math.Ceiling(BigInteger.Log10(BigInteger.Abs(numerator))), 1);
+
+        BigInteger magnitude;
+        if (scale >= numeratorDigitCount)
+        {
+            // 0 < numerator / 10^scale < 1.
+            // Заодно избегаем построения огромного 10^scale при большом Y.
+            magnitude = BigInteger.One;
+        }
+        else
+        {
+            BigInteger denominator = BigInteger.Pow(10, (int)scale);
+
+            magnitude = BigInteger.DivRem(numerator, denominator, out BigInteger remainder);
+
+            if (!remainder.IsZero)
+                magnitude++;
+        }
+
+        // Значения выше cap уже не влияют на итог.
+        long magnitudePart = (long)BigInteger.Min(magnitude, cap);
+
+        long estimate = Math.Max(
+            2L * p + 10,
+            Math.Max(p + magnitudePart + 5, 2L * Y + 4)
+        );
+
+        // Округление вверх до чётного числа и ограничение сверху.
+        estimate = Math.Min(cap, (estimate + 1) & ~1L);
+
+        // Не допускаем переполнения с возвратом заниженного результата.
+        return checked((int)estimate);
+    }
+
     /// <summary>
     /// Calculates the exponential function of the current instance with Taylor-Maclaurin series
     /// </summary>
@@ -575,7 +731,7 @@ public partial class BigDec
         }
 
         // Set accuracy limit to 0.001 of the precision
-        int termPrecision = MaxPrecision + 4;
+        int termPrecision = EstimateInnerPrecisionForLongExp(this.Mantissa, this.Offset, this.MaxPrecision);
 
         BigDec simplifiedX;
         BigDec endedMultiplier;
@@ -626,7 +782,7 @@ public partial class BigDec
         }
 
         return new BigDec(
-            endedMultiplier._mantissa * result,
+            endedMultiplier.Mantissa * result,
             endedMultiplier.Offset + termPrecision,
             MaxPrecision
         );
@@ -648,7 +804,7 @@ public partial class BigDec
         }
 
         // Set accuracy limit to 0.001 of the precision
-        int termPrecision = MaxPrecision * 2 + 4;
+        int termPrecision = EstimateInnerPrecisionForLongExp(this.Mantissa, this.Offset, this.MaxPrecision);
         var localMantissa = Mantissa * BigDec.Pow10BigInt(termPrecision - Offset);
 
         var termPower = BigDec.Pow10BigInt(termPrecision);
@@ -688,14 +844,14 @@ public partial class BigDec
 
         // 1 / (a * 10^-b) = 10^m / (a * 10^(m-b)) = 10^m / a * 10^-(m-b)
         var precisionBuffer = PrecisionBuffer;
-        precisionBuffer += Math.Max(0, (int)Math.Ceiling(BigInteger.Log10(BigInteger.Abs(_mantissa))) - Offset);
+        precisionBuffer += Math.Max(0, (int)Math.Ceiling(BigInteger.Log10(BigInteger.Abs(Mantissa))) - Offset);
 
         var m = MaxPrecision + Offset + precisionBuffer;
         var numerator = BigDec.Pow10BigInt(m);
         var denominator = BigDec.Pow10BigInt(precisionBuffer);
 
-        var sign = this._mantissa.Sign;
-        var value = BigInteger.Abs(numerator / this._mantissa);
+        var sign = this.Mantissa.Sign;
+        var value = BigInteger.Abs(numerator / this.Mantissa);
         var remainder = value % denominator;
         var half = 5 * Pow10BigInt(precisionBuffer - 1);
         value /= denominator;

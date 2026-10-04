@@ -91,8 +91,10 @@ public class TemporaryTests
         }
     }
 
+    #region Pow
+
     // [Fact]
-    public void Exp10()
+    public void Pow()
     {
         var based = new decimal[]
         {
@@ -213,4 +215,244 @@ public class TemporaryTests
         // BigDec.PrecisionBuffer
         _testOutputHelper.WriteLine($"{baseValue}\t{power}\t{digitCount}\t{right * 2 + BigDec.PrecisionBuffer}");
     }
+
+    #endregion
+
+    #region Exp
+
+    // [Fact]
+    public void Exp()
+    {
+        var based = new decimal[]
+        {
+            1.000_01m, 1.000_1m, 1.001m, 1.01m, 1.1m,
+            10.000_01m, 10.000_1m, 10.001m, 10.01m, 10.1m,
+            100.000_01m, 100.000_1m, 100.001m, 100.01m, 100.1m,
+            0.27m,
+        };
+        based = based.Concat([
+                // Проверка известного условия: результат должен быть 0.
+                1m, 2m, 10m, 20, 100m,
+
+                // Промежуточные дробные части между имеющимися точками.
+                1.000_001m,
+                1.000_02m, 1.000_05m,
+                1.000_2m, 1.000_5m,
+                1.002m, 1.005m,
+                1.02m, 1.05m,
+
+                // Сейчас диапазон дробных частей выше 0.1 отсутствует.
+                1.2m, 1.25m, 1.5m, 1.75m, 1.9m, 1.99m,
+
+                // Подход к одному и тому же целому с двух сторон.
+                1.999_99m, 2.000_01m,
+                9.999_99m,
+                99.999_99m,
+
+                // Перенос зависимости на другие целые части.
+                2.01m, 3.01m, 5.01m,
+                20.01m, 50.01m, 200.01m, 1000.01m,
+
+                // Сопоставление одинаковых дробных частей при разных масштабах.
+                10.000_001m, 10.005m, 10.05m, 10.5m, 10.9m, 10.99m,
+                100.000_001m, 100.005m, 100.05m, 100.5m, 100.9m, 100.99m
+            ])
+            .Distinct()
+            .OrderBy(x => x)
+            // ReSharper disable once UseCollectionExpression
+            .ToArray();
+
+        var digitCounts = Enumerable.Range(0, 21)
+            .Concat([50, 100])
+            .ToArray();
+
+        foreach (var baseValue in based)
+        {
+            var expectedExp = new BigDec(baseValue, maxPrecision: 10_000);
+            expectedExp = expectedExp.ExpWithBigPrecision();
+            foreach (var digitCount in digitCounts)
+            {
+                CalcPrecisionForExp(baseValue, digitCount, expectedExp);
+            }
+        }
+    }
+
+    protected void CalcPrecisionForExp(decimal baseValue, int digitCount, BigDec expectedExp)
+    {
+        var expected = expectedExp.Round(digitCount);
+
+        var left = -1;
+        var right = digitCount * 20;
+
+        while (left < right - 1)
+        {
+            var precision = Math.Max((int)Math.Round((left + right) * 0.5), 0);
+            if (precision == left)
+            {
+                precision++;
+            }
+            else if (precision == right)
+            {
+                precision--;
+            }
+
+            var value = new BigDec(baseValue, maxPrecision: precision);
+            var actual = value.ExpWithBigPrecision().Round(digitCount);
+            if (expected == actual)
+            {
+                right = precision;
+                if (right == 0)
+                {
+                    break;
+                }
+            }
+            else
+            {
+                left = precision;
+            }
+        }
+
+        _testOutputHelper.WriteLine($"{baseValue}\t{digitCount}\t{right * 2 + 4}");
+    }
+
+    #endregion
+
+    #region Ln
+
+    // [Fact]
+    public void Ln()
+    {
+        var based = new decimal[]
+        {
+            1.000_01m, 1.000_1m, 1.001m, 1.01m, 1.1m,
+            10.000_01m, 10.000_1m, 10.001m, 10.01m, 10.1m,
+            100.000_01m, 100.000_1m, 100.001m, 100.01m, 100.1m,
+            0.27m,
+        };
+        based = based.Concat([
+                // Проверка известного условия: результат должен быть 0.
+                1m, 2m, 10m, 20, 100m,
+
+                // Промежуточные дробные части между имеющимися точками.
+                1.000_001m,
+                1.000_02m, 1.000_05m,
+                1.000_2m, 1.000_5m,
+                1.002m, 1.005m,
+                1.02m, 1.05m,
+
+                // Сейчас диапазон дробных частей выше 0.1 отсутствует.
+                1.2m, 1.25m, 1.5m, 1.75m, 1.9m, 1.99m,
+
+                // Подход к одному и тому же целому с двух сторон.
+                1.999_99m, 2.000_01m,
+                9.999_99m,
+                99.999_99m,
+
+                // Перенос зависимости на другие целые части.
+                2.01m, 3.01m, 5.01m,
+                20.01m, 50.01m, 200.01m, 1000.01m,
+
+                // Сопоставление одинаковых дробных частей при разных масштабах.
+                10.000_001m, 10.005m, 10.05m, 10.5m, 10.9m, 10.99m,
+                100.000_001m, 100.005m, 100.05m, 100.5m, 100.9m, 100.99m
+            ])
+            .Distinct()
+            .OrderBy(x => x)
+            .Where(x => x > 0)
+            // ReSharper disable once UseCollectionExpression
+            .ToArray();
+        decimal[] a =
+        [
+            0.1m, 0.01m, 0.001m, 0.0001m, 0.000_01m, 0.000_001m, 0.000_000_1m, 0.000_000_01m, 0.000_000_001m,
+            0.2m, 0.02m, 0.002m, 0.0002m,
+            0.3m, 0.03m, 0.003m, 0.0003m,
+            0.4m, 0.04m, 0.004m, 0.0004m,
+            0.5m, 0.05m, 0.005m, 0.0005m,
+        ];
+
+        based = based
+            .Concat(a)
+            .Concat(a.Select(t => 1m - t))
+            .Distinct()
+            .OrderBy(x => x)
+            // ReSharper disable once UseCollectionExpression
+            .ToArray();
+        based = a
+            .SelectMany(diff => new decimal[]
+            {
+                (decimal)(BigDec.E - diff),
+                (decimal)(BigDec.E + diff),
+            })
+            .Distinct()
+            .OrderBy(x => x)
+            // ReSharper disable once UseCollectionExpression
+            .ToArray();
+
+        var digitCounts = Enumerable.Range(0, 21)
+            .Concat([50, 100])
+            .ToArray();
+
+        foreach (var baseValue in based)
+        {
+            var expectedLn = new BigDec(baseValue, maxPrecision: 100_000);
+            expectedLn = expectedLn.Ln();
+            foreach (var digitCount in digitCounts)
+            {
+                CalcPrecisionForLn(baseValue, digitCount, expectedLn);
+            }
+        }
+    }
+
+    protected void CalcPrecisionForLn(decimal baseValue, int digitCount, BigDec expectedLn)
+    {
+        var expected = expectedLn.Round(digitCount);
+
+        var origRight = Math.Max(digitCount * 100, 100);
+        var left = -1;
+        var right = origRight;
+
+        while (left < right - 1)
+        {
+            var precision = Math.Max((int)Math.Round((left + right) * 0.5), 0);
+            if (precision == left)
+            {
+                precision++;
+            }
+            else if (precision == right)
+            {
+                precision--;
+            }
+
+            var value = new BigDec(baseValue, maxPrecision: precision);
+            if (value.IsZero)
+            {
+                // Мы убрали так много цифр, что число, которое было по модулю ниже 1, в 0 превратилось
+                left = precision;
+                continue;
+            }
+
+            var actual = value.Ln().Round(digitCount);
+            if (expected == actual)
+            {
+                right = precision;
+                if (right == 0)
+                {
+                    break;
+                }
+            }
+            else
+            {
+                left = precision;
+                if (left == origRight)
+                {
+                    origRight *= 10;
+                    right = origRight;
+                }
+            }
+        }
+
+        _testOutputHelper.WriteLine($"{baseValue}\t{digitCount}\t{right + BigDec.PrecisionLnBuffer}");
+    }
+
+    #endregion
 }

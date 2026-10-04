@@ -14,7 +14,7 @@ public partial class BigDec
     /// <param name="origin"></param>
     /// <remarks>This constructor has no meaning outside of this class since the class is immutable, so it is protected</remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    protected BigDec(BigDec origin) : this(origin._mantissa, origin.Offset, origin.OffsetPower, origin.MaxPrecision)
+    protected BigDec(BigDec origin) : this(origin.Mantissa, origin.Offset, origin.OffsetPower, origin.MaxPrecision)
     {
     }
 
@@ -25,7 +25,7 @@ public partial class BigDec
     /// <param name="origin"></param>
     /// <param name="maxPrecision">The precision of the new BigDec instance.</param>
     public BigDec(BigDec origin, int maxPrecision) : this(
-        origin._mantissa,
+        origin.Mantissa,
         origin.Offset,
         origin.OffsetPower,
         maxPrecision
@@ -49,7 +49,7 @@ public partial class BigDec
     {
         AssertPrecision(maxPrecision, nameof(maxPrecision));
         ReduceOverflowPrecision(ref mantissa, ref offset, ref offsetPower, maxPrecision);
-        _mantissa = mantissa;
+        Mantissa = mantissa;
         Offset = offset;
         OffsetPower = offsetPower;
         MaxPrecision = maxPrecision;
@@ -66,7 +66,7 @@ public partial class BigDec
     {
         var offsetPower = Pow10BigInt(offset);
         ReduceOverflowPrecision(ref mantissa, ref offset, ref offsetPower, maxPrecision);
-        _mantissa = mantissa;
+        Mantissa = mantissa;
         Offset = offset;
         OffsetPower = offsetPower;
         MaxPrecision = maxPrecision;
@@ -80,7 +80,7 @@ public partial class BigDec
     public BigDec(BigInteger value, int maxPrecision = MaxDefaultPrecision)
     {
         AssertPrecision(maxPrecision, nameof(maxPrecision));
-        _mantissa = value;
+        Mantissa = value;
         MaxPrecision = maxPrecision;
     }
 
@@ -110,7 +110,7 @@ public partial class BigDec
     public BigDec(decimal value, int maxPrecision = MaxDefaultPrecision) : this(value)
     {
         MaxPrecision = maxPrecision;
-        ReduceOverflowPrecision(ref _mantissa, ref Offset, ref OffsetPower, maxPrecision: MaxPrecision);
+        ReduceOverflowPrecision(ref Mantissa, ref Offset, ref OffsetPower, maxPrecision: MaxPrecision);
     }
 
     /// <summary>
@@ -135,14 +135,14 @@ public partial class BigDec
 
         Offset = scale;
         OffsetPower = Pow10BigInt(Offset);
-        _mantissa = rawValue;
+        Mantissa = rawValue;
         MaxPrecision = Math.Max(MaxDefaultPrecision, Offset);
         if (isNegative)
         {
-            _mantissa = -_mantissa;
+            Mantissa = -Mantissa;
         }
 
-        ReduceOverflowPrecision(ref _mantissa, ref Offset, ref OffsetPower, maxPrecision: MaxPrecision);
+        ReduceOverflowPrecision(ref Mantissa, ref Offset, ref OffsetPower, maxPrecision: MaxPrecision);
     }
 
     /// <summary>
@@ -161,7 +161,7 @@ public partial class BigDec
         MaxPrecision = maxPrecision;
         if (value == 0)
         {
-            _mantissa = BigInteger.Zero;
+            Mantissa = BigInteger.Zero;
             return;
         }
 
@@ -176,7 +176,7 @@ public partial class BigDec
         if (value == Math.Floor(value))
         {
             // Integer number
-            _mantissa = new BigInteger(value) * sign;
+            Mantissa = new BigInteger(value) * sign;
             return;
         }
 
@@ -200,7 +200,7 @@ public partial class BigDec
             if (m.Success)
             {
                 var exp = int.Parse(m.Groups[1].Value);
-                _mantissa = sign;
+                Mantissa = sign;
                 Offset = exp - 1;
                 OffsetPower = Pow10BigInt(Offset);
                 MaxPrecision = Math.Max(MaxPrecision, Offset);
@@ -213,7 +213,7 @@ public partial class BigDec
             if (m.Success)
             {
                 var exp = int.Parse(m.Groups[1].Value);
-                _mantissa = sign;
+                Mantissa = sign;
                 Offset = exp;
                 OffsetPower = Pow10BigInt(Offset);
                 MaxPrecision = Math.Max(MaxPrecision, Offset);
@@ -289,11 +289,11 @@ public partial class BigDec
             }
         }
 
-        _mantissa = bio__mantissa * sign;
+        Mantissa = bio__mantissa * sign;
         Offset = bio_offset + addExp;
         OffsetPower = Pow10BigInt(Offset);
         MaxPrecision = Math.Max(MaxPrecision, Offset);
-        ReduceOverflowPrecision(ref _mantissa, ref Offset, ref OffsetPower, MaxPrecision);
+        ReduceOverflowPrecision(ref Mantissa, ref Offset, ref OffsetPower, MaxPrecision);
     }
 
     /// <summary>
@@ -312,7 +312,7 @@ public partial class BigDec
         MaxPrecision = maxPrecision;
         if (value == 0)
         {
-            _mantissa = Zero._mantissa;
+            Mantissa = Zero.Mantissa;
             Offset = Zero.Offset;
             return;
         }
@@ -327,7 +327,7 @@ public partial class BigDec
         // ReSharper disable once CompareOfFloatsByEqualityOperator
         if (value == Math.Floor(value))
         {
-            _mantissa = new BigInteger(value) * sign;
+            Mantissa = new BigInteger(value) * sign;
             return;
         }
 
@@ -351,7 +351,7 @@ public partial class BigDec
             if (m.Success)
             {
                 var exp = int.Parse(m.Groups[1].Value);
-                _mantissa = sign;
+                Mantissa = sign;
                 Offset = exp - 1;
                 OffsetPower = Pow10BigInt(Offset);
                 MaxPrecision = Math.Max(MaxPrecision, Offset);
@@ -364,7 +364,7 @@ public partial class BigDec
             if (m.Success)
             {
                 var exp = int.Parse(m.Groups[1].Value);
-                _mantissa = sign;
+                Mantissa = sign;
                 Offset = exp;
                 OffsetPower = Pow10BigInt(Offset);
                 MaxPrecision = Math.Max(MaxPrecision, Offset);
@@ -461,11 +461,11 @@ public partial class BigDec
             }
         }
 
-        _mantissa = bio__mantissa * sign;
+        Mantissa = bio__mantissa * sign;
         Offset = bio_offset + addExp;
         OffsetPower = Pow10BigInt(Offset);
         MaxPrecision = Math.Max(MaxPrecision, Offset);
-        ReduceOverflowPrecision(ref _mantissa, ref Offset, ref OffsetPower, MaxPrecision);
+        ReduceOverflowPrecision(ref Mantissa, ref Offset, ref OffsetPower, MaxPrecision);
     }
 
     /// <summary>
@@ -481,7 +481,7 @@ public partial class BigDec
 
     public void Deconstruct(out BigInteger mantissa, out int offset, out BigInteger offsetPower, out int maxPrecision)
     {
-        mantissa = _mantissa;
+        mantissa = Mantissa;
         offset = Offset;
         offsetPower = OffsetPower;
         maxPrecision = MaxPrecision;

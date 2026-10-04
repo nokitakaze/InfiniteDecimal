@@ -20,14 +20,14 @@ public partial class BigDec
     public override int GetHashCode()
     {
         // ReSharper disable once NonReadonlyMemberInGetHashCode
-        return System.HashCode.Combine(this._mantissa, this.Offset);
+        return System.HashCode.Combine(this.Mantissa, this.Offset);
     }
 
     #region operator type casting
 
     public static explicit operator BigInteger(BigDec item)
     {
-        return item._mantissa / item.OffsetPower;
+        return item.Mantissa / item.OffsetPower;
     }
 
     public static explicit operator int(BigDec item)
@@ -61,7 +61,7 @@ public partial class BigDec
         if (scale == 0)
         {
             // If we got "overflow here" System.Numeric will raise it anyway
-            return (decimal)item._mantissa;
+            return (decimal)item.Mantissa;
         }
 
         if (item > 0)
@@ -79,8 +79,8 @@ public partial class BigDec
             }
         }
 
-        var isNegative = (item._mantissa.Sign == -1);
-        var value = BigInteger.Abs(item._mantissa);
+        var isNegative = (item.Mantissa.Sign == -1);
+        var value = BigInteger.Abs(item.Mantissa);
         if (((scale > 0) && (GetRealByteCount(value) > 12)) || (scale > MaxDecimalScale))
         {
             var digitCount = BigInteger.Log10(value);
@@ -166,7 +166,7 @@ public partial class BigDec
             return false;
         }
 
-        return (a.Offset == b.Offset) && (a._mantissa == b._mantissa);
+        return (a.Offset == b.Offset) && (a.Mantissa == b.Mantissa);
     }
 
     public static bool operator >(BigDec a, BigDec b)
@@ -178,15 +178,15 @@ public partial class BigDec
 
         if (b == Zero)
         {
-            return a._mantissa > 0;
+            return a.Mantissa > 0;
         }
 
-        if ((a._mantissa < 0) != (b._mantissa < 0))
+        if ((a.Mantissa < 0) != (b.Mantissa < 0))
         {
-            return (a._mantissa >= 0);
+            return (a.Mantissa >= 0);
         }
 
-        return (a - b)._mantissa > 0;
+        return (a - b).Mantissa > 0;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -206,7 +206,7 @@ public partial class BigDec
     /// <returns></returns>
     public static BigDec operator -(BigDec a)
     {
-        var newValue = new BigDec(-a._mantissa, a.Offset, a.OffsetPower, a.MaxPrecision);
+        var newValue = new BigDec(-a.Mantissa, a.Offset, a.OffsetPower, a.MaxPrecision);
 
         return newValue;
     }
@@ -215,14 +215,14 @@ public partial class BigDec
     {
         var maxOffset = Math.Max(a.Offset, b.Offset);
 
-        BigInteger valueA = a._mantissa;
+        BigInteger valueA = a.Mantissa;
         if (a.Offset < maxOffset)
         {
             var p = Pow10BigInt(maxOffset - a.Offset);
             valueA *= p;
         }
 
-        BigInteger valueB = b._mantissa;
+        BigInteger valueB = b.Mantissa;
         if (b.Offset < maxOffset)
         {
             var p = Pow10BigInt(maxOffset - b.Offset);
@@ -260,7 +260,7 @@ public partial class BigDec
 
     public static BigDec operator *(BigDec a, BigDec b)
     {
-        var mantissa = a._mantissa * b._mantissa;
+        var mantissa = a.Mantissa * b.Mantissa;
         var maxOffset = a.Offset + b.Offset;
         var offsetPower = Pow10BigInt(maxOffset);
         var maxPrecision = Math.Max(a.MaxPrecision, b.MaxPrecision);
@@ -273,7 +273,7 @@ public partial class BigDec
 
     public static BigDec operator *(BigDec a, BigInteger b)
     {
-        var mantissa = a._mantissa * b;
+        var mantissa = a.Mantissa * b;
         var maxOffset = a.Offset;
         var offsetPower = a.OffsetPower;
 
@@ -342,7 +342,7 @@ public partial class BigDec
             result_offset = awaitedPrecision;
         }
 
-        result__mantissa /= b._mantissa;
+        result__mantissa /= b.Mantissa;
         result_offset -= b.Offset;
         // codecov ignore start
         if (result_offset < 0)

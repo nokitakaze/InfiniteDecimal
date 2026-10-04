@@ -1554,22 +1554,107 @@ public class TrivialTest
         Assert.Equal(expected, (decimal)actual);
     }
 
+    #region EstimateInnerPrecision
+
     [Fact]
     public void EstimateInnerPrecisionForPow_NegativeY()
     {
-        Assert.Throws<ArgumentOutOfRangeException>(() => { BigDec.EstimateInnerPrecisionForPow(BigInteger.One, -5, 5, 2); });
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+        {
+            BigDec.EstimateInnerPrecisionForPow(BigInteger.One, -5, 5, 2);
+        });
+    }
+
+    [Theory]
+    [InlineData(1, 5, 0, 2, BigDec.PrecisionPowBuffer)]
+    [InlineData(1, 5, 0, BigDec.PrecisionPowBuffer, BigDec.PrecisionPowBuffer)]
+    [InlineData(1, 5, 0, BigDec.PrecisionPowBuffer + 5, BigDec.PrecisionPowBuffer + 5)]
+    [InlineData(1, 5, -1, BigDec.PrecisionPowBuffer + 5, BigDec.PrecisionPowBuffer + 10)]
+    [InlineData(1, 5, -2, BigDec.PrecisionPowBuffer + 5, BigDec.PrecisionPowBuffer + 10)]
+    public void EstimateInnerPrecisionForPow_Power(
+        BigInteger mantissa, int offset, int power, int needPrecision, int expectedPrecision)
+    {
+        var actual = BigDec.EstimateInnerPrecisionForPow(mantissa, offset, power, needPrecision);
+        Assert.InRange(actual, expectedPrecision, expectedPrecision + 10);
     }
 
     [Fact]
-    public void EstimateInnerPrecisionForPow_Power()
+    public void EstimateInnerPrecisionForLongExp_NegativeY()
     {
-        var actual = BigDec.EstimateInnerPrecisionForPow(BigInteger.One, 5, 0, 2);
-        Assert.Equal(BigDec.PrecisionPowBuffer, actual);
-
-        actual = BigDec.EstimateInnerPrecisionForPow(BigInteger.One, 5, 0, BigDec.PrecisionPowBuffer);
-        Assert.Equal(BigDec.PrecisionPowBuffer, actual);
-
-        actual = BigDec.EstimateInnerPrecisionForPow(BigInteger.One, 5, 0, BigDec.PrecisionPowBuffer + 5);
-        Assert.Equal(BigDec.PrecisionPowBuffer + 5, actual);
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+        {
+            BigDec.EstimateInnerPrecisionForLongExp(BigInteger.One, -5, 2);
+        });
     }
+
+    [Fact]
+    public void EstimateInnerPrecisionForLongExp_NegativePrecision()
+    {
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+        {
+            BigDec.EstimateInnerPrecisionForLongExp(BigInteger.One, 5, -2);
+        });
+    }
+
+    [Theory]
+    [InlineData(0, 0, 0, 4)]
+    public void EstimateInnerPrecisionForLongExp(BigInteger x, int y, int needPrecision, int expected)
+    {
+        var actual = BigDec.EstimateInnerPrecisionForLongExp(x, y, needPrecision);
+        Assert.InRange(actual, expected, expected + 50);
+    }
+
+    [Fact]
+    public void EstimateInnerPrecisionForLn_NegativeX()
+    {
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+        {
+            BigDec.EstimateInnerPrecisionForLn(BigInteger.MinusOne, 5, 2);
+        });
+    }
+
+    [Fact]
+    public void EstimateInnerPrecisionForLn_NegativeY()
+    {
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+        {
+            BigDec.EstimateInnerPrecisionForLn(BigInteger.One, -5, 2);
+        });
+    }
+
+    [Fact]
+    public void EstimateInnerPrecisionForLn_NegativePrecision()
+    {
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+        {
+            BigDec.EstimateInnerPrecisionForLn(BigInteger.One, 5, -2);
+        });
+    }
+
+    public static ICollection<object[]> EstimateInnerPrecisionForLn_Data()
+    {
+        var testCases = new List<object[]>();
+        testCases.Add([BigInteger.Zero, 0, 5, 5 + BigDec.PrecisionLnBuffer]);
+        testCases.Add([BigInteger.Zero, 0, 18, 18 + BigDec.PrecisionLnBuffer]);
+        testCases.Add([BigInteger.One, 0, 5, 5 + BigDec.PrecisionLnBuffer]);
+        testCases.Add([BigInteger.One, 0, 18, 18 + BigDec.PrecisionLnBuffer]);
+        testCases.Add([BigInteger.Parse("123456789012345678"), 18, 14, 14 + BigDec.PrecisionLnBuffer]);
+        testCases.Add([BigInteger.Parse("999999999999999999"), 18, 14, BigDec.PrecisionLnBuffer]);
+        testCases.Add([BigInteger.Parse("91001"), 5, 1, 4 + BigDec.PrecisionLnBuffer]);
+        testCases.Add([BigInteger.Parse("910001"), 6, 1, 4 + BigDec.PrecisionLnBuffer]);
+        testCases.Add([BigInteger.Parse("10001"), 4, 1, BigDec.PrecisionLnBuffer]);
+        testCases.Add([BigInteger.Parse("15001"), 4, 1, 4 + BigDec.PrecisionLnBuffer]);
+
+        return testCases;
+    }
+
+    [Theory]
+    [MemberData(nameof(EstimateInnerPrecisionForLn_Data))]
+    public void EstimateInnerPrecisionForLn(BigInteger x, int y, int needPrecision, int expected)
+    {
+        var actual = BigDec.EstimateInnerPrecisionForLn(x, y, needPrecision);
+        Assert.InRange(actual, expected, expected + 50);
+    }
+
+    #endregion
 }

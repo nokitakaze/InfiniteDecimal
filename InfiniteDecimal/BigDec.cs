@@ -42,7 +42,7 @@ public partial class BigDec
     /// <summary>
     /// Represents the core numeric value of the decimal as a BigInteger, without considering its decimal offset
     /// </summary>
-    protected readonly BigInteger _mantissa = BigInteger.Zero;
+    public readonly BigInteger Mantissa = BigInteger.Zero;
 
     /// <summary>
     /// Represents the scale of the decimal value by specifying how many digits are placed to the right
@@ -50,11 +50,6 @@ public partial class BigDec
     /// the decimal point accordingly
     /// </summary>
     public readonly int Offset;
-
-    /// <summary>
-    /// Represents the core numeric value of the decimal as a BigInteger, without considering its decimal offset
-    /// </summary>
-    public BigInteger Mantissa => _mantissa;
 
     /// <summary>
     /// Represents the numeric scale factor associated with the current offset, calculated as 10
@@ -310,12 +305,12 @@ public partial class BigDec
         {
             // It's just a big integer
             var effectiveCulture = (IFormatProvider?)numberFormatInfo ?? CultureInfo.CurrentCulture;
-            return _mantissa.ToString(effectiveCulture);
+            return Mantissa.ToString(effectiveCulture);
         }
 
         var sign = string.Empty;
-        var _value = _mantissa;
-        if (_mantissa < 0)
+        var _value = Mantissa;
+        if (Mantissa < 0)
         {
             if (numberFormatInfo is not null)
             {

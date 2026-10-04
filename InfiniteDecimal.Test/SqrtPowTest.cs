@@ -179,9 +179,47 @@ public class SqrtPowTest
 
     #region Ln
 
+    public static object[][] TestLnThroughDoubleConversion_Data()
+    {
+        var values = GetTestDecimal();
+
+        decimal[] a =
+        [
+            0m,
+            0.1m, 0.01m, 0.001m, 0.0001m, 0.000_01m, 0.000_001m, 0.000_000_1m, 0.000_000_01m, 0.000_000_001m,
+            0.2m, 0.02m, 0.002m, 0.0002m,
+            0.3m, 0.03m, 0.003m, 0.0003m,
+            0.4m, 0.04m, 0.004m, 0.0004m,
+            0.5m, 0.05m, 0.005m, 0.0005m,
+        ];
+        var b = new decimal[]
+            {
+                0.123456789012345678901m,
+                1.123456789012345678901m,
+                3.123456789012345678901m,
+                (decimal)Math.E,
+                1m,
+                0m,
+            }
+            .SelectMany(value => a.SelectMany(diff => new decimal[] { value - diff, value + diff }));
+        var c = new decimal[]
+        {
+        };
+
+        return values
+            .Concat(b)
+            .Concat(c)
+            .Distinct()
+            .Where(x => x > 0)
+            .OrderBy(t => t)
+            .Select(value => new object[] { value })
+            // ReSharper disable once UseCollectionExpression
+            .ToArray();
+    }
+
     [Theory]
-    [MemberData(nameof(TestSqrtData))]
-    public void TestLnThroughDouble(decimal input)
+    [MemberData(nameof(TestLnThroughDoubleConversion_Data))]
+    public void TestLnThroughDoubleConversion(decimal input)
     {
         if (input <= 0)
         {
@@ -190,19 +228,57 @@ public class SqrtPowTest
         }
 
         var expectedDouble = Math.Log((double)input);
-        var expected = new BigDec(expectedDouble);
         var actual = new BigDec(input).Ln().WithPrecision(20);
 
-        var diff = (actual - expected).Abs();
-        Assert.True(diff < 0.000_000_1m);
+        Assert.InRange(actual, new BigDec(expectedDouble) - 0.000_000_001m, new BigDec(expectedDouble) + 0.000_000_001m);
 
+        var maxRestoredDiff = new BigDec(1, offset: 15, maxPrecision: 15);
         var actualExp = actual.Exp();
-        diff = (actualExp - input).Abs();
-        Assert.True(diff < 0.000_000_1m);
+        Assert.InRange(actualExp, input - maxRestoredDiff, input + maxRestoredDiff);
 
         actualExp = actual.ExpWithBigPrecision();
-        diff = (actualExp - input).Abs();
-        Assert.True(diff < 0.000_000_1m);
+        Assert.InRange(actualExp, input - maxRestoredDiff, input + maxRestoredDiff);
+    }
+
+    [Theory]
+    [MemberData(nameof(TestLnThroughDoubleConversion_Data))]
+    public void TestLnThroughDoubleConversion_Precision10(decimal input)
+    {
+        if (input <= 0)
+        {
+            _testOutputHelper.WriteLine("skipped. input<=0");
+            return;
+        }
+
+        var expectedDouble = Math.Log((double)input);
+        var actual = new BigDec(input).WithPrecision(10).Ln();
+
+        Assert.InRange(actual, new BigDec(expectedDouble) - 0.000_000_1m, new BigDec(expectedDouble) + 0.000_000_1m);
+
+        var restoredEpsilon = new BigDec(1, offset: 7, maxPrecision: 7);
+        var actualExp = actual.Exp();
+        Assert.InRange(actualExp, input - restoredEpsilon, input + restoredEpsilon);
+
+        actualExp = actual.ExpWithBigPrecision();
+        Assert.InRange(actualExp, input - restoredEpsilon, input + restoredEpsilon);
+    }
+
+    [Fact]
+    public void TestLn_HalfEuler1()
+    {
+        const decimal input = 1.64872127070013m;
+        var actual = new BigDec(input).WithPrecision(10).Ln();
+
+        Assert.InRange(actual.Offset, 0, 9);
+        Assert.InRange(actual.MaxPrecision, 10, 15);
+    }
+
+    [Fact]
+    public void TestLn_HalfEuler2()
+    {
+        var actual = BigDec.E.Sqrt().WithPrecision(10).Ln();
+        Assert.InRange(actual.Offset, 0, 9);
+        Assert.InRange(actual.MaxPrecision, 10, 15);
     }
 
     [Fact]
@@ -211,17 +287,14 @@ public class SqrtPowTest
         var expected = BigDec.One;
         var actual = BigDec.E.Ln().WithPrecision(20);
 
-        var diff = (actual - expected).Abs();
         var epsilon = BigDec.Parse("0.00000000000000000001");
-        Assert.True(diff < epsilon);
+        Assert.InRange(actual, expected - epsilon, expected + epsilon);
 
         var actualExp = actual.Exp();
-        diff = (actualExp - BigDec.E).Abs();
-        Assert.True(diff < 0.000_000_1m);
+        Assert.InRange(actualExp, BigDec.E - 0.000_000_1m, BigDec.E + 0.000_000_1m);
 
         actualExp = actual.ExpWithBigPrecision();
-        diff = (actualExp - BigDec.E).Abs();
-        Assert.True(diff < 0.000_000_1m);
+        Assert.InRange(actualExp, BigDec.E - 0.000_000_1m, BigDec.E + 0.000_000_1m);
     }
 
     #region Test Ln Picked
