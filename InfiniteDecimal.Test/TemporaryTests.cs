@@ -1,8 +1,10 @@
-﻿using System.Numerics;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Numerics;
 using Xunit.Abstractions;
 
 namespace InfiniteDecimal.Test;
 
+[SuppressMessage("ReSharper", "UnusedMember.Global")]
 public class TemporaryTests
 {
     private readonly ITestOutputHelper _testOutputHelper;
@@ -277,12 +279,41 @@ public class TemporaryTests
         }
     }
 
+    // [Fact]
+    public void Exp1()
+    {
+        for (var baseValue = -10; baseValue <= 43; baseValue++)
+        {
+            var expectedExp = new BigDec(baseValue, maxPrecision: 10_000);
+            expectedExp = expectedExp.ExpWithBigPrecision();
+            CalcPrecisionForExp(baseValue, digitCount: 1, expectedExp);
+        }
+    }
+
+    // [Fact]
+    public void Exp2()
+    {
+        var diffs = new decimal[] { 0.1m, 0.2m, 0.3m, 0.5m, 0.7m, 0.9m };
+        var values = new decimal[] { 0m, 5m, 10m, 20m, 30m, 40m, };
+
+        foreach (var value in values)
+        {
+            foreach (var diff in diffs)
+            {
+                var baseValue = value + diff;
+                var expectedExp = new BigDec(baseValue, maxPrecision: 10_000);
+                expectedExp = expectedExp.ExpWithBigPrecision();
+                CalcPrecisionForExp(baseValue, digitCount: 1, expectedExp);
+            }
+        }
+    }
+
     protected void CalcPrecisionForExp(decimal baseValue, int digitCount, BigDec expectedExp)
     {
         var expected = expectedExp.Round(digitCount);
 
         var left = -1;
-        var right = digitCount * 20;
+        var right = Math.Max(digitCount * 20, 100);
 
         while (left < right - 1)
         {
@@ -312,7 +343,12 @@ public class TemporaryTests
             }
         }
 
-        _testOutputHelper.WriteLine($"{baseValue}\t{digitCount}\t{right * 2 + 4}");
+        {
+            var value = new BigDec(baseValue, maxPrecision: right);
+            var innerTermCount =
+                BigDec.EstimateInnerPrecisionForLongExp(value.Mantissa, value.Offset, value.MaxPrecision);
+            _testOutputHelper.WriteLine($"{baseValue}\t{digitCount}\t{innerTermCount}");
+        }
     }
 
     #endregion

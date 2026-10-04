@@ -1604,6 +1604,32 @@ public class TrivialTest
         Assert.InRange(actual, expected, expected + 50);
     }
 
+    public static ICollection<object[]> ExpWithBigPrecision_Data()
+    {
+        return Enumerable
+            .Range(1, 43)
+            .Select(test => new object[] { test })
+            .ToArray();
+    }
+
+    [Theory]
+    [MemberData(nameof(ExpWithBigPrecision_Data))]
+    public void ExpWithBigPrecision(decimal value)
+    {
+        if (value <= 36)
+        {
+            var expected = Math.Exp((double)value);
+            var actual = new BigDec(value, maxPrecision: 0).ExpWithBigPrecision();
+            Assert.Equal((long)Math.Round(expected), (long)actual);
+        }
+        else
+        {
+            var expected = new BigDec(value, maxPrecision: 1000).ExpWithBigPrecision();
+            var actual = new BigDec(value, maxPrecision: 0).ExpWithBigPrecision();
+            Assert.Equal((long)expected.Round(0), (long)actual);
+        }
+    }
+
     [Fact]
     public void EstimateInnerPrecisionForLn_NegativeX()
     {
@@ -1657,4 +1683,32 @@ public class TrivialTest
     }
 
     #endregion
+
+    [Fact]
+    public void PrecisionBeforePow()
+    {
+        var power = new BigDec(0.5m, maxPrecision: 30);
+        var actual = new BigDec(2, maxPrecision: 2).Pow(power);
+        Assert.InRange(actual.Offset, 25, 30);
+
+        var restore = actual * actual;
+        Assert.InRange(restore, new BigDec(2) - 0.000_000_000_000_1m, new BigDec(2) + 0.000_000_000_000_1m);
+    }
+
+    [Fact]
+    public void VerySmallNumber()
+    {
+        var basedValue = BigDec.Parse("1e-29");
+        var actual = basedValue.Exp();
+        Assert.NotEqual(BigDec.Zero, actual);
+
+        var restore = actual.Ln();
+        var r = basedValue / restore;
+        if (r > 1)
+        {
+            r = r.Inverse();
+        }
+
+        Assert.InRange((decimal)r, 0.999_999_999_999_999_999m, 1m);
+    }
 }

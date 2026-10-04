@@ -476,7 +476,7 @@ public partial class BigDec
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public BigDec WithPrecision(int newPrecision)
     {
-        return this.MaxPrecision == newPrecision ? this : new BigDec(this, newPrecision);
+        return this.MaxPrecision == newPrecision ? this : new BigDec(this, maxPrecision: newPrecision);
     }
 
     public void Deconstruct(out BigInteger mantissa, out int offset, out BigInteger offsetPower, out int maxPrecision)

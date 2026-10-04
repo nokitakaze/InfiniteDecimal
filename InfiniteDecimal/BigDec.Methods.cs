@@ -307,6 +307,7 @@ public partial class BigDec
 
         var desiredPrecision = Math.Max(exp.MaxPrecision, this.MaxPrecision);
         var desiredPrecisionWithBuf = desiredPrecision + powAdditionalPrecision;
+        var currentThis = this.WithPrecision(desiredPrecisionWithBuf);
         var entier = exp.Floor();
         var tail = exp - entier;
 
@@ -341,38 +342,38 @@ public partial class BigDec
         // ReSharper disable once ConvertIfStatementToConditionalTernaryExpression
         if (!needReverse)
         {
-            result = Pow(entier);
+            result = currentThis.Pow(entier);
         }
         else
         {
-            result = this.WithPrecision(MaxPrecision * 2).Pow(entier);
+            result = currentThis.WithPrecision(MaxPrecision * 2).Pow(entier);
         }
 
         // tail.IsZero is always false condition
-        // if (!tail.IsZero)
         {
             BigDec tailPart;
+            // TODO Вычислить через tail = 2^-N
             if (tail == Half)
             {
-                tailPart = Sqrt().WithPrecision(desiredPrecisionWithBuf);
+                tailPart = currentThis.Sqrt();
             }
             else if (tail == 0.5m / 2)
             {
-                tailPart = Sqrt().Sqrt().WithPrecision(desiredPrecisionWithBuf);
+                tailPart = currentThis.Sqrt().Sqrt();
             }
             else if (tail == 0.5m / 4)
             {
-                tailPart = Sqrt().Sqrt().Sqrt().WithPrecision(desiredPrecisionWithBuf);
+                tailPart = currentThis.Sqrt().Sqrt().Sqrt();
             }
             else if (tail == 0.5m / 8)
             {
-                tailPart = Sqrt().Sqrt().Sqrt().Sqrt().WithPrecision(desiredPrecisionWithBuf);
+                tailPart = currentThis.Sqrt().Sqrt().Sqrt().Sqrt();
             }
             else
             {
                 // Calculation via Taylor series.
                 // a^b = e^(b * ln(a))
-                var expBase = tail * this.WithPrecision(desiredPrecisionWithBuf).Ln();
+                var expBase = tail * currentThis.Ln();
                 tailPart = expBase.Exp();
             }
 
@@ -666,13 +667,24 @@ public partial class BigDec
         if (needPrecision < 0)
             throw new ArgumentOutOfRangeException(nameof(needPrecision));
 
-        // Во всех строках таблицы с needPrecision == 0 результат равен 4.
-        if (needPrecision == 0)
-            return 4;
+        if (needPrecision == 0 && Y == 0)
+        {
+            if (X <= 7)
+                return 4;
+
+            if (X <= 13)
+                return 12;
+
+            // 2 * Ceiling((0.4343 * X + 6) / 2).
+            // Точное целочисленное вычисление без double.
+            BigInteger result = 2 * ((4343 * X + 79999) / 20000);
+
+            return (int)result;
+        }
 
         long p = needPrecision;
-        long cap = 40L * p + 4;
 
+        // hint: 0.4343 ≈ ln(10)^-1
         // magnitude = Ceiling(0.4343 * Abs(value)).
         // Все вычисления точные, без преобразования BigInteger в double.
         BigInteger numerator = BigInteger.Abs(X) * 4343;
@@ -698,7 +710,7 @@ public partial class BigDec
         }
 
         // Значения выше cap уже не влияют на итог.
-        long magnitudePart = (long)BigInteger.Min(magnitude, cap);
+        long magnitudePart = (long)magnitude;
 
         long estimate = Math.Max(
             2L * p + 10,
@@ -706,7 +718,7 @@ public partial class BigDec
         );
 
         // Округление вверх до чётного числа и ограничение сверху.
-        estimate = Math.Min(cap, (estimate + 1) & ~1L);
+        estimate = (estimate + 1) & ~1L;
 
         // Не допускаем переполнения с возвратом заниженного результата.
         return checked((int)estimate);
@@ -751,6 +763,7 @@ public partial class BigDec
             endedMultiplier = One;
         }
 
+        if ((simplifiedX >= MinAbsDecimalValue) && (simplifiedX <= MaxDecimalValue))
         {
             var index = Array.BinarySearch(ExpModifiers_exp, (decimal)simplifiedX);
             if (index <= 0)
