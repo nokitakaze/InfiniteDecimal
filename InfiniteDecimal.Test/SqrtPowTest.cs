@@ -1331,60 +1331,88 @@ public class SqrtPowTest
 
     [Theory]
     [MemberData(nameof(TestDoubleReverse_Data))]
-    public void TestDoubleReverse(decimal based, decimal power)
+    public void TestDoubleReverseDirect(decimal based, decimal power)
     {
-        const decimal accuracy = 0.000_000_001m;
+        const decimal accuracy = 0.000_000_000_000_001m;
         const decimal accuracyN = 1 - accuracy;
         const decimal accuracyX = 1 + accuracy;
 
-        var basedBD = new BigDec(based);
-        {
-            var inter = basedBD.Pow(power);
-            var regrowth = inter.Pow(1m / power);
+        var basedBD = new BigDec(based, maxPrecision: 30);
+        // Direct: power and unpower
+        var inter = basedBD.Pow(power);
+        var regrowth = inter.Pow(1m / power);
 
-            Assert.InRange(regrowth, basedBD * accuracyN, basedBD * accuracyX);
+        Assert.InRange(regrowth, basedBD * accuracyN, basedBD * accuracyX);
+    }
+
+    [Theory]
+    [MemberData(nameof(TestDoubleReverse_Data))]
+    public void TestDoubleReverseInverse(decimal based, decimal power)
+    {
+        var basedBD = new BigDec(based, maxPrecision: 40);
+
+        // Invert: unpower and power
+        var accuracy1 = new BigDec(1, offset: 25, maxPrecision: 25);
+        var accuracy1N = 1 - accuracy1;
+        var accuracy1X = 1 + accuracy1;
+
+        var a = new decimal[]
+        {
+            power,
+            1m / power,
+        }.Select(Math.Abs).Max();
+        var ln = basedBD.Ln() / Math.Log(10) * a;
+        var precision = (int)Math.Max(Math.Ceiling((double)ln * 1.2d), Math.Ceiling((double)ln + 10d)) + 1;
+        precision = Math.Max(precision, 40);
+
+        var inter = basedBD.WithPrecision(precision).Pow(1m / power);
+        Assert.False(inter.IsZero);
+        var regrowth = inter.Pow(power);
+
+        Assert.InRange(regrowth, basedBD * accuracy1N, basedBD * accuracy1X);
+    }
+
+    public static IEnumerable<object[]> TestDoubleReverse_Data_Direct()
+    {
+        return TestDoubleReverse_Data()
+            .Where(x =>
+            {
+                var power = (decimal)x[1];
+                return power == Math.Floor(power);
+            });
+    }
+
+    [Theory]
+    [MemberData(nameof(TestDoubleReverse_Data_Direct))]
+    public void TestDoubleReverseInteger(decimal based, decimal power)
+    {
+        if (power != Math.Floor(power)) return;
+
+        const decimal accuracy = 0.000_000_000_000_001m;
+        const decimal accuracyN = 1 - accuracy;
+        const decimal accuracyX = 1 + accuracy;
+
+        var basedBD = new BigDec(based, maxPrecision: 30);
+        var powerBI = (BigInteger)power;
+        var inter = basedBD.Pow(powerBI);
+        var regrowth = inter.Pow(1m / power);
+        Assert.InRange(regrowth, basedBD * accuracyN, basedBD * accuracyX);
+
+        var sign = powerBI.Sign;
+        powerBI = BigInteger.Abs(powerBI);
+        inter = BigDec.One;
+        for (var i = BigInteger.One; i <= powerBI; i++)
+        {
+            inter *= basedBD;
         }
 
+        if (sign == -1)
         {
-            var a = new decimal[]
-            {
-                power,
-                1m / power,
-            }.Select(Math.Abs).Max();
-            var ln = basedBD.Ln() / Math.Log(10) * a;
-            var precision = (int)Math.Max(Math.Ceiling((double)ln * 1.5d), Math.Ceiling((double)ln + 10d)) + 1;
-            precision = Math.Max(precision, 18);
-
-            var inter = basedBD.WithPrecision(precision).Pow(1m / power);
-            Assert.False(inter.IsZero);
-            var regrowth = inter.Pow(power);
-
-            Assert.InRange(regrowth, basedBD * accuracyN, basedBD * accuracyX);
+            inter = inter.Inverse();
         }
 
-        if (power == Math.Floor(power))
-        {
-            var powerBI = (BigInteger)power;
-            var inter = basedBD.Pow(powerBI);
-            var regrowth = inter.Pow(1m / power);
-            Assert.InRange(regrowth, basedBD * accuracyN, basedBD * accuracyX);
-
-            var sign = powerBI.Sign;
-            powerBI = BigInteger.Abs(powerBI);
-            inter = BigDec.One;
-            for (var i = BigInteger.One; i <= powerBI; i++)
-            {
-                inter *= basedBD;
-            }
-
-            if (sign == -1)
-            {
-                inter = inter.Inverse();
-            }
-
-            regrowth = inter.Pow(1m / power);
-            Assert.InRange(regrowth, basedBD * accuracyN, basedBD * accuracyX);
-        }
+        regrowth = inter.Pow(1m / power);
+        Assert.InRange(regrowth, basedBD * accuracyN, basedBD * accuracyX);
     }
 
     #endregion
