@@ -83,7 +83,7 @@ public partial class BigDec
         var value = BigInteger.Abs(item.Mantissa);
         if (((scale > 0) && (GetRealByteCount(value) > 12)) || (scale > MaxDecimalScale))
         {
-            var digitCount = BigInteger.Log10(value);
+            var digitCount = Math.Max(BigInteger.Log10(value), 1);
             var needCropDigits = Math.Max(
                 (int)Math.Ceiling(digitCount - MaxDecimalScale),
                 scale - MaxDecimalScale
@@ -336,7 +336,14 @@ public partial class BigDec
                 throw new OutOfMemoryException($"Awaited precision ({t:N0}) is too big");
             }
 
-            var awaitedPrecision = result_maxPrecision * 10;
+            var awaitedPrecision = Math.Max(result_maxPrecision * 10, 3);
+            if (b.Abs() > 1)
+            {
+                var digitCount = Math.Max((int)Math.Ceiling(BigInteger.Log10(BigInteger.Abs(b.Mantissa))), 1);
+                digitCount = Math.Max(digitCount - b.Offset, 0);
+                awaitedPrecision = checked(awaitedPrecision + digitCount);
+            }
+
             var addExp = awaitedPrecision - result_offset;
             result__mantissa *= Pow10BigInt(addExp);
             result_offset = awaitedPrecision;

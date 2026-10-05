@@ -49,15 +49,15 @@ public class ArithmeticRegressionTest
     }
 
     [Theory]
-    [InlineData(3, 2, 1)]
+    [InlineData(3, 2, 2)]
     [InlineData(5, 2, 2)]
-    [InlineData(7, 2, 3)]
-    [InlineData(-3, 2, -1)]
-    [InlineData(3, -2, -1)]
-    [InlineData(-3, -2, 1)]
-    [InlineData(2, 3, 0)]
-    [InlineData(-2, 3, 0)]
-    [InlineData(2, -3, 0)]
+    [InlineData(7, 2, 4)]
+    [InlineData(-3, 2, -2)]
+    [InlineData(3, -2, -2)]
+    [InlineData(-3, -2, 2)]
+    [InlineData(2, 3, 1)]
+    [InlineData(-2, 3, -1)]
+    [InlineData(2, -3, -1)]
     public void Division_ZeroPrecisionStillRoundsToNearestEven(int numerator, int denominator, int expected)
     {
         // Both operands must have precision zero; a primitive operand would introduce precision 18.

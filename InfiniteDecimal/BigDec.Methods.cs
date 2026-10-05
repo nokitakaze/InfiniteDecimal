@@ -217,7 +217,7 @@ public partial class BigDec
             if (-exp <= int.MaxValue)
             {
                 // ReSharper disable once RedundantOverflowCheckingContext
-                int localPrecision = checked((int)(-exp * this.MaxPrecision));
+                int localPrecision = checked((int)(-exp * this.MaxPrecision) + PrecisionBuffer);
                 var r = this
                     .WithPrecision(localPrecision)
                     .Pow(-exp)
@@ -300,21 +300,38 @@ public partial class BigDec
         int powAdditionalPrecision = 4;
         if (this.Offset > 0)
         {
-            var v = BigInteger.Log10(BigInteger.Abs(this.Mantissa));
+            var v = Math.Max(BigInteger.Log10(BigInteger.Abs(this.Mantissa)), 1);
             var bufferPrecision = 3 * (int)Math.Ceiling(this.Offset - v);
             powAdditionalPrecision += Math.Max(bufferPrecision, 0);
         }
 
-        var desiredPrecision = Math.Max(exp.MaxPrecision, this.MaxPrecision);
-        var desiredPrecisionWithBuf = desiredPrecision + powAdditionalPrecision;
-        var currentThis = this.WithPrecision(desiredPrecisionWithBuf);
+        // todo через BigInteger.DivRem();
         var entier = exp.Floor();
         var tail = exp - entier;
 
+        var desiredPrecision = Math.Max(exp.MaxPrecision, this.MaxPrecision);
+        var desiredPrecisionWithBuf = desiredPrecision + powAdditionalPrecision;
+        desiredPrecisionWithBuf = Math.Max(desiredPrecisionWithBuf, (int)Math.Ceiling(this.Offset * (double)exp));
+        var mantissaDigitCount = (int)Math.Max(Math.Ceiling(BigInteger.Log10(BigInteger.Abs(this.Mantissa))), 1);
+        if (needReverse)
+        {
+            desiredPrecisionWithBuf *= 2;
+            var a = this.Offset - mantissaDigitCount + 1;
+            if (a > 0)
+            {
+                desiredPrecisionWithBuf += (int)Math.Ceiling((double)(a * exp));
+            }
+        }
+        else
+        {
+            desiredPrecisionWithBuf += (int)Math.Ceiling((double)(mantissaDigitCount * exp));
+        }
+
+        var currentThis = this.WithPrecision(desiredPrecisionWithBuf);
+
         if (tail.IsZero)
         {
-            var powPrecision = Math.Max(desiredPrecisionWithBuf, this.Offset * (int)(BigInteger)exp);
-            var t = this.WithPrecision(powPrecision).Pow((BigInteger)exp);
+            var t = currentThis.Pow(entier);
             // codecov ignore start
             if (t.IsZero)
             {
@@ -338,16 +355,7 @@ public partial class BigDec
             throw new NotImplementedException("Raising negative numbers to a fractional power is not implemented");
         }
 
-        BigDec result;
-        // ReSharper disable once ConvertIfStatementToConditionalTernaryExpression
-        if (!needReverse)
-        {
-            result = currentThis.Pow(entier);
-        }
-        else
-        {
-            result = currentThis.WithPrecision(MaxPrecision * 2).Pow(entier);
-        }
+        var result = currentThis.Pow(entier);
 
         // tail.IsZero is always false condition
         {
@@ -385,7 +393,7 @@ public partial class BigDec
             result = result.Inverse();
         }
 
-        return result.Round(desiredPrecision);
+        return result.Round(desiredPrecision).WithPrecision(desiredPrecision);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -480,6 +488,11 @@ public partial class BigDec
         }
 
         var aSqrt = Sqrt(a);
+        if (BigInteger.Pow(aSqrt, 2) < a)
+        {
+            aSqrt++;
+        }
+
         return new BigDec(aSqrt, b, MaxPrecision);
     }
 
@@ -502,7 +515,7 @@ public partial class BigDec
         if (needPrecision < 0)
             throw new ArgumentOutOfRangeException(nameof(needPrecision));
 
-        var p = (long) needPrecision;
+        var p = (long)needPrecision;
 
         // Ноль обрабатывается по указанному Вами специальному правилу.
         // Для нормированного представления value == 1 означает X == 1, Y == 0.
@@ -737,13 +750,17 @@ public partial class BigDec
             return One.WithPrecision(this.MaxPrecision);
         }
 
-        if (this < Zero)
-        {
-            return (-this).Exp().Inverse();
-        }
-
         // Set accuracy limit to 0.001 of the precision
         int termPrecision = EstimateInnerPrecisionForLongExp(this.Mantissa, this.Offset, this.MaxPrecision);
+
+        if (this < Zero)
+        {
+            return (-this)
+                .WithPrecision(termPrecision)
+                .Exp()
+                .Inverse()
+                .WithPrecision(MaxPrecision);
+        }
 
         BigDec simplifiedX;
         BigDec endedMultiplier;
@@ -811,13 +828,18 @@ public partial class BigDec
     /// </returns>
     public BigDec ExpWithBigPrecision()
     {
-        if (this < Zero)
-        {
-            return (-this).ExpWithBigPrecision().Inverse();
-        }
-
         // Set accuracy limit to 0.001 of the precision
         int termPrecision = EstimateInnerPrecisionForLongExp(this.Mantissa, this.Offset, this.MaxPrecision);
+
+        if (this < Zero)
+        {
+            return (-this)
+                .WithPrecision(termPrecision)
+                .ExpWithBigPrecision()
+                .Inverse()
+                .WithPrecision(MaxPrecision);
+        }
+
         var localMantissa = Mantissa * BigDec.Pow10BigInt(termPrecision - Offset);
 
         var termPower = BigDec.Pow10BigInt(termPrecision);

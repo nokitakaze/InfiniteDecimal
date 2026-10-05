@@ -230,7 +230,8 @@ public class SqrtPowTest
         var expectedDouble = Math.Log((double)input);
         var actual = new BigDec(input).Ln().WithPrecision(20);
 
-        Assert.InRange(actual, new BigDec(expectedDouble) - 0.000_000_001m, new BigDec(expectedDouble) + 0.000_000_001m);
+        Assert.InRange(actual, new BigDec(expectedDouble) - 0.000_000_001m,
+            new BigDec(expectedDouble) + 0.000_000_001m);
 
         var maxRestoredDiff = new BigDec(1, offset: 15, maxPrecision: 15);
         var actualExp = actual.Exp();
