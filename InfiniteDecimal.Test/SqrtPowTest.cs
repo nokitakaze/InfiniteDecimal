@@ -1317,11 +1317,12 @@ public class SqrtPowTest
     public static IEnumerable<object[]> TestDoubleReverse_Data()
     {
         var testCases = new List<object[]>();
-        for (var based = 1; based <= 8; based++)
+        for (var based = 1; based <= 8; based++) // todo 1-8
         {
+            // 2, 3, 4, 5, 6, 7, 8, 9, 2.0001m, 0.0004m, 10.0001m // todo верни
             foreach (var power in new decimal[] { 2, 3, 4, 5, 6, 7, 8, 9, 2.0001m, 0.0004m, 10.0001m })
             {
-                testCases.Add([based, power]);
+                testCases.Add([based, power]); // todo верни меня
                 testCases.Add([based, -power]);
             }
         }
@@ -1362,7 +1363,7 @@ public class SqrtPowTest
             1m / power,
         }.Select(Math.Abs).Max();
         var ln = basedBD.Ln() / Math.Log(10) * a;
-        var precision = (int)Math.Max(Math.Ceiling((double)ln * 1.2d), Math.Ceiling((double)ln + 10d)) + 1;
+        var precision = (int)Math.Ceiling((double)ln + 20d) + 1;
         precision = Math.Max(precision, 40);
 
         var inter = basedBD.WithPrecision(precision).Pow(1m / power);
@@ -1413,6 +1414,14 @@ public class SqrtPowTest
 
         regrowth = inter.Pow(1m / power);
         Assert.InRange(regrowth, basedBD * accuracyN, basedBD * accuracyX);
+    }
+
+    [Fact]
+    public void TestPow_minus_00004()
+    {
+        var input = new BigDec(BigInteger.Parse("7079811261048172892386"), offset: 1527, maxPrecision: 1527);
+        var regrowth = input.Pow(-0.0004m);
+        Assert.InRange(regrowth, new BigDec(4m - 0.000_000_000_001m), new BigDec(4m + 0.000_000_000_001m));
     }
 
     #endregion

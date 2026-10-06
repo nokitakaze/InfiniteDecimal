@@ -297,11 +297,11 @@ public partial class BigDec
             needReverse = true;
         }
 
+        var mantissaDigitCount = (int)Math.Max(Math.Ceiling(BigInteger.Log10(BigInteger.Abs(this.Mantissa))), 1);
         int powAdditionalPrecision = 4;
         if (this.Offset > 0)
         {
-            var v = Math.Max(BigInteger.Log10(BigInteger.Abs(this.Mantissa)), 1);
-            var bufferPrecision = 3 * (int)Math.Ceiling(this.Offset - v);
+            var bufferPrecision = 3 * (this.Offset - mantissaDigitCount);
             powAdditionalPrecision += Math.Max(bufferPrecision, 0);
         }
 
@@ -312,7 +312,6 @@ public partial class BigDec
         var desiredPrecision = Math.Max(exp.MaxPrecision, this.MaxPrecision);
         var desiredPrecisionWithBuf = desiredPrecision + powAdditionalPrecision;
         desiredPrecisionWithBuf = Math.Max(desiredPrecisionWithBuf, (int)Math.Ceiling(this.Offset * (double)exp));
-        var mantissaDigitCount = (int)Math.Max(Math.Ceiling(BigInteger.Log10(BigInteger.Abs(this.Mantissa))), 1);
         if (needReverse)
         {
             desiredPrecisionWithBuf *= 2;
@@ -357,7 +356,36 @@ public partial class BigDec
 
         var result = currentThis.Pow(entier);
 
-        // tail.IsZero is always false condition
+        var expDigitCount = (int)Math.Max(Math.Ceiling(BigInteger.Log10(BigInteger.Abs(tail.Mantissa))), 1);
+        if ((tail <= 0.001m) && (expDigitCount <= 4))
+        {
+            var digitBuffer = Math.Max(1000, desiredPrecisionWithBuf);
+            var temp = currentThis.Pow(tail.Mantissa);
+            var m1 = temp.Mantissa;
+            var o1 = temp.Offset;
+            for (var i = 0; i < tail.Offset; i++)
+            {
+                if (BigInteger.Log10(m1) < digitBuffer)
+                {
+                    m1 *= Pow10BigInt(digitBuffer);
+                    o1 += digitBuffer;
+                }
+
+                var o1rem = 10 - (o1 % 10);
+                if (o1rem > 0)
+                {
+                    m1 *= Pow10BigInt(o1rem);
+                    o1 += o1rem;
+                }
+
+                m1 = CalculateNthRoot(m1, 10);
+                o1 /= 10;
+            }
+
+            temp = new BigDec(m1, offset: o1, maxPrecision: desiredPrecisionWithBuf);
+            result *= temp;
+        }
+        else
         {
             BigDec tailPart;
             // TODO Вычислить через tail = 2^-N
@@ -494,6 +522,42 @@ public partial class BigDec
         }
 
         return new BigDec(aSqrt, b, MaxPrecision);
+    }
+
+    #endregion
+
+    #region Nth root
+
+    public static BigInteger CalculateNthRoot(BigInteger value, int degree)
+    {
+        if (value < 0)
+            throw new InfiniteDecimalException($"'{value}' below zero");
+
+        if (degree < 2)
+            throw new InfiniteDecimalException($"'{degree}' below 2");
+
+        if (value < 2)
+            return value;
+
+        // Находим верхнюю границу
+        BigInteger low = 0;
+        BigInteger high = 1;
+
+        while (BigInteger.Pow(high, degree) <= value)
+            high <<= 1; // high *= 2
+
+        // Бинарный поиск
+        while (high - low > 1)
+        {
+            BigInteger mid = (low + high) >> 1;
+
+            if (BigInteger.Pow(mid, degree) <= value)
+                low = mid;
+            else
+                high = mid;
+        }
+
+        return low;
     }
 
     #endregion
